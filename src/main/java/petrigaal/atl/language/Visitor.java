@@ -2,14 +2,15 @@ package petrigaal.atl.language;
 
 import petrigaal.atl.language.nodes.Expression;
 import petrigaal.atl.language.nodes.expression.*;
-import petrigaal.atl.language.nodes.predicate.BinaryPredicate;
 import petrigaal.atl.language.nodes.predicate.BooleanLiteral;
 import petrigaal.atl.language.nodes.predicate.RelationalPredicate;
+import petrigaal.atl.language.nodes.temporal.BinaryQuantifierTemporal;
 import petrigaal.atl.language.nodes.temporal.BinaryTemporal;
+import petrigaal.atl.language.nodes.temporal.UnaryQuantifierTemporal;
 import petrigaal.atl.language.nodes.temporal.UnaryTemporal;
 
 public interface Visitor<T> {
-    T visit(ATLFormula ATLFormula);
+    T visit(ATLNode ATLNode);
 
     // Expressions
     T visit(Expression expression);
@@ -27,12 +28,14 @@ public interface Visitor<T> {
     // Predicates
     T visit(BooleanLiteral boolLiteral);
 
-    T visit(BinaryPredicate binaryPredicate);
-
     T visit(RelationalPredicate relationalPredicate);
 
     // Temporal
     T visit(BinaryTemporal binaryTemporal);
 
     T visit(UnaryTemporal unaryTemporal);
+
+    T visit(BinaryQuantifierTemporal binaryQuantifierTemporal);
+
+    T visit(UnaryQuantifierTemporal unaryQuantifierTemporal);
 }

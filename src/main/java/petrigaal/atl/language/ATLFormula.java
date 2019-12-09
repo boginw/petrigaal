@@ -1,9 +1,8 @@
 package petrigaal.atl.language;
 
-public interface ATLFormula {
-    String getLiteral();
+import petrigaal.Configuration;
+import petrigaal.edg.DependencyGraphGenerator;
 
-    void accept(Visitor visitor);
-
-    <T> T visit(Visitor<T> visitor);
+public interface ATLFormula extends ATLNode {
+    void visit(Configuration parent, DependencyGraphGenerator graph);
 }

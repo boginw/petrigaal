@@ -1,10 +1,10 @@
 package petrigaal.atl.language.nodes;
 
-import petrigaal.atl.language.ATLFormula;
+import petrigaal.atl.language.ATLNode;
 
 import java.util.Objects;
 
-public abstract class Literal<T> implements ATLFormula {
+public abstract class Literal<T> implements ATLNode {
     private T value;
 
     public T getValue() {
@@ -26,5 +26,15 @@ public abstract class Literal<T> implements ATLFormula {
         if (o == null || getClass() != o.getClass()) return false;
         Literal<?> literal = (Literal<?>) o;
         return Objects.equals(value, literal.value);
+    }
+
+    @Override
+    public ATLType getType() {
+        return ATLType.Evaluate;
+    }
+
+    @Override
+    public String toString() {
+        return value.toString();
     }
 }

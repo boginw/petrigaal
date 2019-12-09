@@ -1,10 +1,10 @@
 package petrigaal.atl.language.nodes;
 
-import petrigaal.atl.language.ATLFormula;
+import petrigaal.atl.language.ATLNode;
 
 import java.util.Objects;
 
-public abstract class Unary<T extends ATLFormula> implements ATLFormula {
+public abstract class Unary<T extends ATLNode> implements ATLNode {
     private String operator;
     private T firstOperand;
 
@@ -26,7 +26,11 @@ public abstract class Unary<T extends ATLFormula> implements ATLFormula {
 
     @Override
     public String getLiteral() {
-        return getOperator() + getFirstOperand().getLiteral();
+        if (getOperator().equals("!")) {
+            return getOperator() + getFirstOperand().getLiteral();
+        } else {
+            return getOperator() + '(' + getFirstOperand().getLiteral() + ')';
+        }
     }
 
     @Override

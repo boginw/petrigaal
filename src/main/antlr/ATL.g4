@@ -1,6 +1,6 @@
 grammar ATL;
 
-start : temporalBinary? EOF;
+start : temporalQuantifier? EOF;
 
 expressionPrimary
   : IntLiteral
@@ -29,29 +29,32 @@ expressionAdditive
 predicate
   : BoolLiteral
   | expressionAdditive Bowtie expressionAdditive
-  | '(' temporalBinary ')'
+  | '(' temporalQuantifier ')'
   ;
 
 temporalUnary
   : predicate
-  | '!' temporalBinary
-  | '@' temporalBinary
-  | '#' temporalBinary
+  | '!' temporalQuantifier
   ;
 
 temporalBinary
   : temporalUnary
   | temporalUnary '&' temporalUnary
   | temporalUnary '|' temporalUnary
-  | temporalUnary 'U' temporalUnary
   ;
 
+temporalQuantifier
+  : temporalBinary
+  | PlayerQuantifier '@' '(' temporalQuantifier ')'
+  | PlayerQuantifier '#' '(' temporalQuantifier ')'
+  | PlayerQuantifier '(' temporalQuantifier 'U' temporalQuantifier ')'
+  ;
 
 /* Literals */
 BoolLiteral : 'true' | 'false';
 Bowtie: '<' | '<=' | '=' | '!=' | '>=' | '>';
 EnabledActions: 'd1' | 'd2';
-
+PlayerQuantifier: '{' Player '}';
 Identifier              : (Letter | '_') (AlphaNum | '_')*;
 
 /* Lexer rules */
@@ -60,6 +63,7 @@ Whitespace              : [ \t]+ -> skip;
 IntLiteral              : Number;
 Number                  : Digit+;
 
+fragment Player         : '1' | '2';
 fragment Letter         : [a-zA-Z];
 fragment Word           : Letter+;
 fragment AlphaNum       : Digit | Letter;

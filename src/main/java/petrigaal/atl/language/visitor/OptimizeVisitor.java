@@ -1,43 +1,43 @@
 package petrigaal.atl.language.visitor;
 
-import petrigaal.atl.language.ATLFormula;
+import petrigaal.atl.language.ATLNode;
 import petrigaal.atl.language.Visitor;
 import petrigaal.atl.language.nodes.Expression;
-import petrigaal.atl.language.nodes.Predicate;
 import petrigaal.atl.language.nodes.Temporal;
 import petrigaal.atl.language.nodes.expression.*;
-import petrigaal.atl.language.nodes.predicate.BinaryPredicate;
 import petrigaal.atl.language.nodes.predicate.BooleanLiteral;
 import petrigaal.atl.language.nodes.predicate.RelationalPredicate;
+import petrigaal.atl.language.nodes.temporal.BinaryQuantifierTemporal;
 import petrigaal.atl.language.nodes.temporal.BinaryTemporal;
+import petrigaal.atl.language.nodes.temporal.UnaryQuantifierTemporal;
 import petrigaal.atl.language.nodes.temporal.UnaryTemporal;
 
-public class OptimizeVisitor implements Visitor<ATLFormula> {
+public class OptimizeVisitor implements Visitor<ATLNode> {
     @Override
-    public ATLFormula visit(ATLFormula ATLFormula) {
-        return ATLFormula.visit(this);
+    public ATLNode visit(ATLNode ATLNode) {
+        return ATLNode.visit(this);
     }
 
     @Override
-    public ATLFormula visit(Expression expression) {
+    public ATLNode visit(Expression expression) {
         return expression.visit(this);
     }
 
     @Override
-    public ATLFormula visit(IntegerLiteralExpression intLiteral) {
+    public ATLNode visit(IntegerLiteralExpression intLiteral) {
         return intLiteral;
     }
 
     @Override
-    public ATLFormula visit(UnaryExpression unaryExpression) {
+    public ATLNode visit(UnaryExpression unaryExpression) {
         unaryExpression.setFirstOperand((Expression) unaryExpression.visit(this));
         return unaryExpression;
     }
 
     @Override
-    public ATLFormula visit(BinaryExpression binaryExpression) {
-        ATLFormula left = binaryExpression.getFirstOperand().visit(this);
-        ATLFormula right = binaryExpression.getSecondOperand().visit(this);
+    public ATLNode visit(BinaryExpression binaryExpression) {
+        ATLNode left = binaryExpression.getFirstOperand().visit(this);
+        ATLNode right = binaryExpression.getSecondOperand().visit(this);
 
         if (left instanceof IntegerLiteralExpression && right instanceof IntegerLiteralExpression) {
             int l = ((IntegerLiteralExpression) left).getValue();
@@ -60,34 +60,24 @@ public class OptimizeVisitor implements Visitor<ATLFormula> {
     }
 
     @Override
-    public ATLFormula visit(VariableExpression variableExpression) {
+    public ATLNode visit(VariableExpression variableExpression) {
         return variableExpression;
     }
 
     @Override
-    public ATLFormula visit(EnabledActions enabledActions) {
+    public ATLNode visit(EnabledActions enabledActions) {
         return enabledActions;
     }
 
     @Override
-    public ATLFormula visit(BooleanLiteral boolLiteral) {
+    public ATLNode visit(BooleanLiteral boolLiteral) {
         return boolLiteral;
     }
 
     @Override
-    public ATLFormula visit(BinaryPredicate binaryPredicate) {
-        ATLFormula left = binaryPredicate.getFirstOperand().visit(this);
-        ATLFormula right = binaryPredicate.getSecondOperand().visit(this);
-
-        binaryPredicate.setFirstOperand((Predicate) left);
-        binaryPredicate.setFirstOperand((Predicate) right);
-        return binaryPredicate;
-    }
-
-    @Override
-    public ATLFormula visit(RelationalPredicate relationalPredicate) {
-        ATLFormula left = relationalPredicate.getFirstOperand().visit(this);
-        ATLFormula right = relationalPredicate.getSecondOperand().visit(this);
+    public ATLNode visit(RelationalPredicate relationalPredicate) {
+        ATLNode left = relationalPredicate.getFirstOperand().visit(this);
+        ATLNode right = relationalPredicate.getSecondOperand().visit(this);
 
         if (left instanceof IntegerLiteralExpression && right instanceof IntegerLiteralExpression) {
             int l = ((IntegerLiteralExpression) left).getValue();
@@ -114,9 +104,9 @@ public class OptimizeVisitor implements Visitor<ATLFormula> {
     }
 
     @Override
-    public ATLFormula visit(BinaryTemporal binaryTemporal) {
-        ATLFormula left = binaryTemporal.getFirstOperand().visit(this);
-        ATLFormula right = binaryTemporal.getSecondOperand().visit(this);
+    public ATLNode visit(BinaryTemporal binaryTemporal) {
+        ATLNode left = binaryTemporal.getFirstOperand().visit(this);
+        ATLNode right = binaryTemporal.getSecondOperand().visit(this);
 
         if (left instanceof BooleanLiteral && right instanceof BooleanLiteral) {
             boolean l = ((BooleanLiteral) left).getValue();
@@ -130,15 +120,34 @@ public class OptimizeVisitor implements Visitor<ATLFormula> {
             }
         }
 
-        binaryTemporal.setFirstOperand((Predicate) left);
-        binaryTemporal.setSecondOperand((Predicate) right);
+        binaryTemporal.setFirstOperand((Temporal) left);
+        binaryTemporal.setSecondOperand((Temporal) right);
 
         return binaryTemporal;
     }
 
     @Override
-    public ATLFormula visit(UnaryTemporal unaryTemporal) {
+    public ATLNode visit(UnaryTemporal unaryTemporal) {
         unaryTemporal.setFirstOperand((Temporal) visit(unaryTemporal.getFirstOperand()));
         return unaryTemporal;
+    }
+
+    @Override
+    public ATLNode visit(BinaryQuantifierTemporal binaryQuantifierTemporal) {
+        binaryQuantifierTemporal.setFirstOperand(
+                (Temporal) visit(binaryQuantifierTemporal.getFirstOperand())
+        );
+        binaryQuantifierTemporal.setSecondOperand(
+                (Temporal) visit(binaryQuantifierTemporal.getSecondOperand())
+        );
+        return binaryQuantifierTemporal;
+    }
+
+    @Override
+    public ATLNode visit(UnaryQuantifierTemporal unaryQuantifierTemporal) {
+        unaryQuantifierTemporal.setFirstOperand(
+                (Temporal) visit(unaryQuantifierTemporal.getFirstOperand())
+        );
+        return unaryQuantifierTemporal;
     }
 }

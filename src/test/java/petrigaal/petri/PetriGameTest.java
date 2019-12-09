@@ -34,14 +34,12 @@ class PetriGameTest {
     void shouldAddTransitionForController() {
         pg.addTransition(Controller, t);
         assertEquals(expectedTransitions, pg.getTransitions(Controller));
-        assertEquals(Set.of(p1, p2), pg.getPlaces());
     }
 
     @Test
     void shouldAddTransitionForEnvironment() {
         pg.addTransition(Environment, t);
         assertEquals(expectedTransitions, pg.getTransitions(Environment));
-        assertEquals(Set.of(p1, p2), pg.getPlaces());
     }
 
     @Test

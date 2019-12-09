@@ -39,6 +39,20 @@ public class Transition {
         return outputArcs;
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Transition that = (Transition) o;
+        return Objects.equals(inputArcs, that.inputArcs) &&
+                Objects.equals(outputArcs, that.outputArcs);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(inputArcs, outputArcs);
+    }
+
     public static class Arc {
         private final String place;
         private final int weight;
@@ -63,6 +77,11 @@ public class Transition {
             Arc arc = (Arc) o;
             return weight == arc.weight &&
                     Objects.equals(place, arc.place);
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(place, weight);
         }
     }
 }

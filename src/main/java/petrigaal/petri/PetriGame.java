@@ -5,21 +5,16 @@ import java.util.stream.Collectors;
 
 public class PetriGame {
     private Map<String, Integer> markings;
-    private HashSet<String> places;
     private HashSet<Transition> controllerTransitions;
     private HashSet<Transition> environmentTransitions;
 
     public PetriGame() {
         markings = new HashMap<>();
-        places = new HashSet<>();
         controllerTransitions = new HashSet<>();
         environmentTransitions = new HashSet<>();
     }
 
     public PetriGame addTransition(Player player, Transition t) {
-        places.addAll(placesFromArcs(t.getInputsArcs()));
-        places.addAll(placesFromArcs(t.getOutputArcs()));
-
         getSetForPlayer(player).add(t);
         return this;
     }
@@ -28,15 +23,20 @@ public class PetriGame {
         return new ArrayList<>(getSetForPlayer(player));
     }
 
-    public Set<String> getPlaces() {
-        return places;
+    public List<Transition> getEnabledTransitions(Player player) {
+        return getSetForPlayer(player).stream()
+                .filter(this::isEnabled)
+                .collect(Collectors.toList());
     }
 
     public void setMarking(String place, int marking) {
-        if (marking < 0) {
+        if (marking == 0) {
+            markings.remove(place);
+        } else if (marking < 0) {
             throw new IllegalArgumentException("Negative marking is not allowed");
+        } else {
+            markings.put(place, marking);
         }
-        markings.put(place, marking);
     }
 
     public void addMarkings(String place, int markingsToAdd) {
@@ -46,7 +46,6 @@ public class PetriGame {
     public void subtractMarkings(String place, int markingsToSubtract) {
         addMarkings(place, -markingsToSubtract);
     }
-
 
     public int getMarking(String place) {
         return markings.getOrDefault(place, 0);
@@ -94,5 +93,25 @@ public class PetriGame {
     private void performTransition(Transition t) {
         t.getInputsArcs().forEach(a -> subtractMarkings(a.getPlace(), a.getWeight()));
         t.getOutputArcs().forEach(a -> addMarkings(a.getPlace(), a.getWeight()));
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        PetriGame petriGame = (PetriGame) o;
+        return Objects.equals(markings, petriGame.markings) &&
+                Objects.equals(controllerTransitions, petriGame.controllerTransitions) &&
+                Objects.equals(environmentTransitions, petriGame.environmentTransitions);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(markings, controllerTransitions, environmentTransitions);
+    }
+
+    @Override
+    public String toString() {
+        return markings.toString();
     }
 }

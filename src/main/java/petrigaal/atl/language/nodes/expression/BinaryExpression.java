@@ -7,7 +7,7 @@ import petrigaal.atl.language.nodes.Expression;
 public class BinaryExpression extends Binary<Expression> implements Expression {
 
     @Override
-    public void accept(Visitor visitor) {
+    public <T> void accept(Visitor<T> visitor) {
         visitor.visit(this);
     }
 

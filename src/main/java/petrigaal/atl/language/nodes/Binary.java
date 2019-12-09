@@ -1,10 +1,10 @@
 package petrigaal.atl.language.nodes;
 
-import petrigaal.atl.language.ATLFormula;
+import petrigaal.atl.language.ATLNode;
 
 import java.util.Objects;
 
-public abstract class Binary<T extends ATLFormula> extends Unary<T> {
+public abstract class Binary<T extends ATLNode> extends Unary<T> {
     private T secondOperand;
 
     public T getSecondOperand() {
@@ -17,8 +17,8 @@ public abstract class Binary<T extends ATLFormula> extends Unary<T> {
 
     @Override
     public String getLiteral() {
-        return getFirstOperand().getLiteral() +
-                getOperator() +
+        return getFirstOperand().getLiteral() + " " +
+                getOperator() + " " +
                 getSecondOperand().getLiteral();
     }
 

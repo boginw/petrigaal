@@ -26,7 +26,7 @@ public class VariableExpression implements Expression {
     }
 
     @Override
-    public void accept(Visitor visitor) {
+    public <T> void accept(Visitor<T> visitor) {
         visitor.visit(this);
     }
 

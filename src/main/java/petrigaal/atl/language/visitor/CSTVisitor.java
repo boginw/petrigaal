@@ -2,19 +2,48 @@ package petrigaal.atl.language.visitor;
 
 import petrigaal.antlr.ATLBaseVisitor;
 import petrigaal.antlr.ATLParser.*;
-import petrigaal.atl.language.ATLFormula;
+import petrigaal.atl.language.ATLNode;
 import petrigaal.atl.language.nodes.Expression;
 import petrigaal.atl.language.nodes.Temporal;
 import petrigaal.atl.language.nodes.expression.*;
 import petrigaal.atl.language.nodes.predicate.BooleanLiteral;
 import petrigaal.atl.language.nodes.predicate.RelationalPredicate;
+import petrigaal.atl.language.nodes.temporal.BinaryQuantifierTemporal;
 import petrigaal.atl.language.nodes.temporal.BinaryTemporal;
+import petrigaal.atl.language.nodes.temporal.UnaryQuantifierTemporal;
 import petrigaal.atl.language.nodes.temporal.UnaryTemporal;
+import petrigaal.petri.Player;
 
-public class CSTVisitor extends ATLBaseVisitor<ATLFormula> {
+public class CSTVisitor extends ATLBaseVisitor<ATLNode> {
     @Override
-    public ATLFormula visitStart(StartContext ctx) {
-        return visitTemporalBinary(ctx.temporalBinary());
+    public ATLNode visitStart(StartContext ctx) {
+        return visitTemporalQuantifier(ctx.temporalQuantifier());
+    }
+
+    @Override
+    public Temporal visitTemporalQuantifier(TemporalQuantifierContext ctx) {
+        if (ctx.children.size() == 1) {
+            return visitTemporalBinary(ctx.temporalBinary());
+        } else if (ctx.children.size() < 6){
+            UnaryQuantifierTemporal uqt = new UnaryQuantifierTemporal();
+            String playerString = ctx.PlayerQuantifier().toString();
+
+            uqt.setPlayer(playerString.contains("1") ? Player.Controller : Player.Environment);
+            uqt.setOperator(ctx.getChild(1).getText());
+            uqt.setFirstOperand(visitTemporalQuantifier(ctx.temporalQuantifier(0)));
+
+            return uqt;
+        } else {
+            BinaryQuantifierTemporal bqt = new BinaryQuantifierTemporal();
+            String playerString = ctx.PlayerQuantifier().toString();
+
+            bqt.setPlayer(playerString.contains("1") ? Player.Controller : Player.Environment);
+            bqt.setFirstOperand(visitTemporalQuantifier(ctx.temporalQuantifier(0)));
+            bqt.setOperator(ctx.getChild(3).getText());
+            bqt.setSecondOperand(visitTemporalQuantifier(ctx.temporalQuantifier(1)));
+
+            return bqt;
+        }
     }
 
     @Override
@@ -84,14 +113,14 @@ public class CSTVisitor extends ATLBaseVisitor<ATLFormula> {
     public Temporal visitPredicate(PredicateContext ctx) {
         if (ctx.BoolLiteral() != null) {
             return new BooleanLiteral(ctx.BoolLiteral().getText());
-        } else if (ctx.Bowtie() != null){
-            RelationalPredicate rp =  new RelationalPredicate();
+        } else if (ctx.Bowtie() != null) {
+            RelationalPredicate rp = new RelationalPredicate();
             rp.setFirstOperand(visitExpressionAdditive(ctx.expressionAdditive(0)));
             rp.setSecondOperand(visitExpressionAdditive(ctx.expressionAdditive(1)));
             rp.setOperator(ctx.Bowtie().getText());
             return rp;
         } else {
-            return visitTemporalBinary(ctx.temporalBinary());
+            return visitTemporalQuantifier(ctx.temporalQuantifier());
         }
     }
 
@@ -102,7 +131,7 @@ public class CSTVisitor extends ATLBaseVisitor<ATLFormula> {
         } else {
             UnaryTemporal ut = new UnaryTemporal();
             ut.setOperator(ctx.getChild(0).getText());
-            ut.setFirstOperand(visitTemporalBinary(ctx.temporalBinary()));
+            ut.setFirstOperand(visitTemporalQuantifier(ctx.temporalQuantifier()));
             return ut;
         }
     }

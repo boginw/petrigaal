@@ -14,7 +14,7 @@ public class IntegerLiteralExpression extends Literal<Integer> implements Expres
     }
 
     @Override
-    public void accept(Visitor visitor) {
+    public <T> void accept(Visitor<T> visitor) {
         visitor.visit(this);
     }
 
