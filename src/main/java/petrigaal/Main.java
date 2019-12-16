@@ -33,7 +33,7 @@ public class Main {
         game.addTransition(Player.Controller, t2);
         //game.addTransition(Player.Controller, t3);
 
-        ATLNode tree = new Parser().parse("{1}#(p1 + p2 = 1)");
+        ATLNode tree = new Parser().parse("!{1}#(p1 + p2 = 1)");
         ATLNode optimizedTree = new Optimizer().optimize(tree);
 
         Configuration c = new Configuration((ATLFormula) optimizedTree, game);
