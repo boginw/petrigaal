@@ -5,8 +5,10 @@ import java.util.*;
 public class Transition {
     private final HashSet<Arc> inputArcs;
     private final HashSet<Arc> outputArcs;
+    private final String name;
 
     public Transition(String name) {
+        this.name = name;
         inputArcs = new HashSet<>();
         outputArcs = new HashSet<>();
     }
@@ -45,12 +47,13 @@ public class Transition {
         if (o == null || getClass() != o.getClass()) return false;
         Transition that = (Transition) o;
         return Objects.equals(inputArcs, that.inputArcs) &&
-                Objects.equals(outputArcs, that.outputArcs);
+                Objects.equals(outputArcs, that.outputArcs) &&
+                Objects.equals(name, that.name);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(inputArcs, outputArcs);
+        return Objects.hash(inputArcs, outputArcs, name);
     }
 
     public static class Arc {

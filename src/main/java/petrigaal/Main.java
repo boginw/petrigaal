@@ -12,9 +12,11 @@ import petrigaal.edg.DependencyGraphGenerator;
 import petrigaal.petri.PetriGame;
 import petrigaal.petri.Player;
 import petrigaal.petri.Transition;
+import petrigaal.pnml.PNMLLoader;
 import petrigaal.solver.EDGSolver;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.Objects;
 
@@ -22,18 +24,9 @@ public class Main {
     public static int counter = 0;
 
     public static void main(String[] args) throws IOException {
-        PetriGame game = new PetriGame();
-
-        game.setMarking("p1", 1);
-        Transition t1 = new Transition("t1").addInput("p1").addOutput("p2");
-        Transition t2 = new Transition("t2").addInput("p2").addOutput("p1");
-        //Transition t3 = new Transition("t3").addInput("p2").addOutput("p3");
-
-        game.addTransition(Player.Controller, t1);
-        game.addTransition(Player.Controller, t2);
-        //game.addTransition(Player.Controller, t3);
-
-        ATLNode tree = new Parser().parse("!{1}#(p1 + p2 = 1)");
+        File pnml = new File("/home/hamburger/Downloads/experiments/order-workflow/order-workflow-10000.pnml");
+        PetriGame game = new PNMLLoader().load(new FileInputStream(pnml));
+        ATLNode tree = new Parser().parse("{1}(true U ((d1 = 1 & d2 = 1) & P17 > 0))");
         ATLNode optimizedTree = new Optimizer().optimize(tree);
 
         Configuration c = new Configuration((ATLFormula) optimizedTree, game);
@@ -44,7 +37,13 @@ public class Main {
                 f.delete();
             }
         }
-        System.out.println(new EDGSolver().solve(c, Main::openGraph));
+
+        //openGraph(c);
+
+        System.out.println(new EDGSolver().solve(c, Main::nop));
+    }
+
+    private static void nop(Configuration c) {
     }
 
     private static void openGraph(Configuration c) {

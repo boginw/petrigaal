@@ -1,10 +1,14 @@
 package petrigaal.solver;
 
+import org.antlr.v4.runtime.misc.Pair;
 import petrigaal.Configuration;
 import petrigaal.edg.Edge;
 
+import java.security.KeyPair;
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Queue;
 import java.util.function.Consumer;
 
 public class EDGSolver {
@@ -14,8 +18,11 @@ public class EDGSolver {
     private boolean evaluateNegations;
     private Consumer<Configuration> consumer;
     private Configuration firstConfig;
+    private Queue<Pair<Edge, Configuration>> queue;
 
     public String solve(Configuration c, Consumer<Configuration> consumer) {
+        queue = new LinkedList<>();
+        
         this.consumer = consumer;
         firstConfig = c;
         Edge e = new Edge(c);
@@ -28,19 +35,19 @@ public class EDGSolver {
                 consumer.accept(firstConfig);
                 edgeRemoved = false;
                 visited = new ArrayList<>();
-                visit(null, e, c);
+                visit(e, c);
             } while (edgeRemoved && e.contains(c));
 
             visited = new ArrayList<>();
             evaluateNegations = true;
 
-            visit(null, e, c);
+            visit(e, c);
         } while (edgeNegated);
 
         return "Can solve: " + !e.contains(c);
     }
 
-    private void visit(Configuration parent, Edge in, Configuration c) {
+    private void visit(Edge in, Configuration c) {
         if (visited.contains(c)) {
             return;
         }
@@ -73,15 +80,15 @@ public class EDGSolver {
                 consumer.accept(firstConfig);
                 break;
             } else {
-                visitEdge(c, edge);
+                visitEdge(edge);
             }
         }
     }
 
-    private void visitEdge(Configuration parent, Edge e) {
+    private void visitEdge(Edge e) {
         List<Configuration> configurations = new ArrayList<>(e);
         for (Configuration c : configurations) {
-            visit(parent, e, c);
+            visit(e, c);
         }
     }
 
