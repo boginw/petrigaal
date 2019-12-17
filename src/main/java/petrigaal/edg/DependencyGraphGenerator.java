@@ -2,10 +2,8 @@ package petrigaal.edg;
 
 import petrigaal.Configuration;
 import petrigaal.atl.language.ATLFormula;
-import petrigaal.atl.language.ATLNode;
 import petrigaal.atl.language.nodes.Expression;
 import petrigaal.atl.language.nodes.QuantifierTemporal;
-import petrigaal.atl.language.nodes.Temporal;
 import petrigaal.atl.language.nodes.expression.*;
 import petrigaal.atl.language.nodes.predicate.BooleanLiteral;
 import petrigaal.atl.language.nodes.predicate.RelationalPredicate;
@@ -27,7 +25,7 @@ public class DependencyGraphGenerator {
     Map<Configuration, Configuration> configurations = new HashMap<>();
     Queue<Configuration> queue = new LinkedList<>();
 
-    public void crawl(Configuration c) {
+    public int crawl(Configuration c) {
         queue.add(c);
         configurations.put(c, c);
 
@@ -35,6 +33,8 @@ public class DependencyGraphGenerator {
             Configuration configuration = Objects.requireNonNull(queue.poll());
             configuration.getFormula().visit(configuration, this);
         } while (!queue.isEmpty());
+
+        return configurations.size();
     }
 
     public void visitConjunction(Configuration c, BinaryTemporal formula) {

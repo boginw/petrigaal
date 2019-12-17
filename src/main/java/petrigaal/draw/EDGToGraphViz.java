@@ -1,5 +1,6 @@
 package petrigaal.draw;
 
+import org.antlr.v4.runtime.misc.Pair;
 import petrigaal.Configuration;
 import petrigaal.edg.Edge;
 
@@ -9,13 +10,20 @@ public class EDGToGraphViz {
     private List<String> nodesOrder = new ArrayList<>();
     private Map<String, List<String>> nodes = new HashMap<>();
     private Map<Integer, List<String>> ranks = new HashMap<>();
+    private Queue<Pair<Configuration, Integer>> queue;
     private int empties = 0;
     private int joints = 0;
 
     public String draw(Configuration configuration) {
+        queue = new LinkedList<>();
+
         StringBuilder sb = new StringBuilder();
 
-        visit(configuration, 0);
+        queue.add(new Pair<>(configuration, 0));
+
+        while(!queue.isEmpty()) {
+            visit(queue.poll());
+        }
 
         nodesOrder.forEach(k -> sb.append(k).append("\n"));
 
@@ -48,6 +56,10 @@ public class EDGToGraphViz {
                 "node [shape=box]\n" +
                 sb.toString() +
                 "}";
+    }
+
+    private void visit(Pair<Configuration, Integer> pair) {
+        visit(pair.a, pair.b);
     }
 
     private void visit(Configuration c, int rank) {
@@ -92,7 +104,7 @@ public class EDGToGraphViz {
 
         for (Configuration config : edge) {
             children.add(nameOf(config) + suffix);
-            visit(config, rank + 1);
+            queue.add(new Pair<>(config, rank + 1));
         }
     }
 
