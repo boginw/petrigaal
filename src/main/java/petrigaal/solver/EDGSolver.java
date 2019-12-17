@@ -4,11 +4,8 @@ import org.antlr.v4.runtime.misc.Pair;
 import petrigaal.Configuration;
 import petrigaal.edg.Edge;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 import java.util.concurrent.ConcurrentLinkedQueue;
-import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.BiConsumer;
 
@@ -17,13 +14,13 @@ public class EDGSolver {
     private boolean edgeRemoved;
     private boolean edgeNegated;
     private boolean evaluateNegations;
-    private BiConsumer<Long, Integer> consumer;
+    private BiConsumer<Integer, Integer> consumer;
     private Configuration firstConfig;
-    private ConcurrentLinkedQueue<Pair<Edge, Configuration>> queue;
+    private Queue<Pair<Edge, Configuration>> queue;
     private int threads = 4;
 
-    public String solve(Configuration c, BiConsumer<Long, Integer> consumer) {
-        this.queue = new ConcurrentLinkedQueue<>();
+    public String solve(Configuration c, BiConsumer<Integer, Integer> consumer) {
+        this.queue = new LinkedList<>();
         this.visited = new ArrayList<>();
         this.consumer = consumer;
         firstConfig = c;
@@ -48,41 +45,19 @@ public class EDGSolver {
     }
 
     private void visitQueue(Pair<Edge, Configuration> start) {
-        AtomicInteger report = new AtomicInteger(0);
+        int report = 0;
 
         visited.clear();
         queue.clear();
         queue.add(start);
-        CountDownLatch latch = new CountDownLatch(threads);
 
-        visit(Objects.requireNonNull(queue.poll()));
+        Pair<Edge, Configuration> pair;
+        while ((pair = queue.poll()) != null) {
+            if (report++ % 10000 == 0) {
+                consumer.accept(queue.size(), visited.size());
+            }
 
-        while (!queue.isEmpty() && queue.size() < threads) {
-            visit(queue.poll());
-        }
-
-        System.out.println(queue.size());
-
-        for (int i = 0; i < threads; i++) {
-            new Thread(() -> {
-                Pair<Edge, Configuration> pair;
-
-                while ((pair = queue.poll()) != null) {
-                    if (report.incrementAndGet() % 10000 == 0) {
-                        consumer.accept(latch.getCount(), visited.size());
-                    }
-
-                    visit(pair);
-                }
-
-                latch.countDown();
-            }).start();
-        }
-
-        try {
-            latch.await();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
+            visit(pair);
         }
     }
 

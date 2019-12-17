@@ -53,7 +53,7 @@ public class Main {
         }
     }
 
-    private static void nop(Long initial, int configurationsRemoved) {
+    private static void nop(int initial, int configurationsRemoved) {
         System.out.printf(
                 "Workers: %d, Configurations Visited: %d (%.2f%%)\n",
                 initial,
