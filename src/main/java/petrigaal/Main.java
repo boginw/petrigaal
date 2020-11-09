@@ -21,8 +21,8 @@ public class Main {
     private static int size = 0;
 
     public static void main(String[] args) throws IOException {
-        if (args.length != 2) {
-            System.err.println("Usage: java -jar petrigaal.jar [QUERY] [PNML]");
+        if (args.length != 2 && args.length != 3 && !args[2].equals("-s")) {
+            System.err.println("Usage: java -jar petrigaal.jar QUERY PATH_TO_PNML [-s for solve]");
             return;
         }
 
@@ -38,9 +38,12 @@ public class Main {
 
         openGraph(c);
         System.out.printf("Configurations: %d\n", size);
-        //long milliseconds = benchmark(() -> new EDGSolver().solve(c, Main::nop));
-        //openGraph(c);
-        //System.out.printf("Total ms: %d", milliseconds);
+
+        if (args.length == 3) {
+            long milliseconds = benchmark(() -> new EDGSolver().solve(c, Main::nop));
+            openGraph(c);
+            System.out.printf("Total ms: %d", milliseconds);
+        }
     }
 
     private static long benchmark(Runnable runnable) {
