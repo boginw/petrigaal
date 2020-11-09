@@ -12,7 +12,7 @@ import petrigaal.atl.language.nodes.temporal.BinaryQuantifierTemporal;
 import petrigaal.atl.language.nodes.temporal.BinaryTemporal;
 import petrigaal.atl.language.nodes.temporal.UnaryQuantifierTemporal;
 import petrigaal.atl.language.nodes.temporal.UnaryTemporal;
-import petrigaal.petri.Player;
+import petrigaal.petri.Path;
 
 public class CSTVisitor extends ATLBaseVisitor<ATLNode> {
     @Override
@@ -24,20 +24,20 @@ public class CSTVisitor extends ATLBaseVisitor<ATLNode> {
     public Temporal visitTemporalQuantifier(TemporalQuantifierContext ctx) {
         if (ctx.children.size() == 1) {
             return visitTemporalBinary(ctx.temporalBinary());
-        } else if (ctx.children.size() < 6){
+        } else if (ctx.children.size() < 6) {
             UnaryQuantifierTemporal uqt = new UnaryQuantifierTemporal();
-            String playerString = ctx.PlayerQuantifier().toString();
+            String playerString = ctx.Path().toString();
 
-            uqt.setPlayer(playerString.contains("1") ? Player.Controller : Player.Environment);
+            uqt.setPath(playerString.contains("E") ? Path.E : Path.A);
             uqt.setOperator(ctx.getChild(1).getText());
             uqt.setFirstOperand(visitTemporalQuantifier(ctx.temporalQuantifier(0)));
 
             return uqt;
         } else {
             BinaryQuantifierTemporal bqt = new BinaryQuantifierTemporal();
-            String playerString = ctx.PlayerQuantifier().toString();
+            String playerString = ctx.Path().toString();
 
-            bqt.setPlayer(playerString.contains("1") ? Player.Controller : Player.Environment);
+            bqt.setPath(playerString.contains("E") ? Path.E : Path.A);
             bqt.setFirstOperand(visitTemporalQuantifier(ctx.temporalQuantifier(0)));
             bqt.setOperator(ctx.getChild(3).getText());
             bqt.setSecondOperand(visitTemporalQuantifier(ctx.temporalQuantifier(1)));
@@ -52,8 +52,6 @@ public class CSTVisitor extends ATLBaseVisitor<ATLNode> {
             return new VariableExpression(ctx.Identifier().getText());
         } else if (ctx.IntLiteral() != null) {
             return new IntegerLiteralExpression(ctx.IntLiteral().getText());
-        } else if (ctx.EnabledActions() != null) {
-            return new EnabledActions(ctx.EnabledActions().getText());
         } else {
             return visitExpressionAdditive(ctx.expressionAdditive());
         }

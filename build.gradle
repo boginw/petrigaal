@@ -7,7 +7,7 @@ plugins {
 
 version '1.0'
 
-sourceCompatibility = 13
+sourceCompatibility = 15
 
 application {
     mainClassName = 'petrigaal.Main'

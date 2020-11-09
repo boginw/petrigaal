@@ -56,6 +56,11 @@ public class Transition {
         return Objects.hash(inputArcs, outputArcs, name);
     }
 
+    @Override
+    public String toString() {
+        return name;
+    }
+
     public static class Arc {
         private final String place;
         private final int weight;

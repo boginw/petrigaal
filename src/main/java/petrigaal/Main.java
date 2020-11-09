@@ -1,5 +1,8 @@
 package petrigaal;
 
+import guru.nidi.graphviz.engine.Format;
+import guru.nidi.graphviz.engine.Graphviz;
+import guru.nidi.graphviz.model.MutableGraph;
 import petrigaal.atl.Optimizer;
 import petrigaal.atl.Parser;
 import petrigaal.atl.language.ATLFormula;
@@ -18,24 +21,26 @@ public class Main {
     private static int size = 0;
 
     public static void main(String[] args) throws IOException {
-        File pnml = new File("/home/hamburger/Downloads/experiments/order-workflow/order-workflow-10000.pnml");
+        if (args.length != 2) {
+            System.err.println("Usage: java -jar petrigaal.jar [QUERY] [PNML]");
+            return;
+        }
+
+        File pnml = new File(args[1]);
         PetriGame game = new PNMLLoader().load(new FileInputStream(pnml));
-        ATLNode tree = new Parser().parse("{1}(true U ((d1 = 1 & d2 = 1) & P17 > 0))");
+        ATLNode tree = new Parser().parse(args[0]);
         ATLNode optimizedTree = new Optimizer().optimize(tree);
 
         Configuration c = new Configuration((ATLFormula) optimizedTree, game);
         size = new DependencyGraphGenerator().crawl(c);
 
-
         clearResults();
 
-
-        //openGraph(c);
+        openGraph(c);
         System.out.printf("Configurations: %d\n", size);
-        long milliseconds = benchmark(() -> new EDGSolver().solve(c, Main::nop));
+        //long milliseconds = benchmark(() -> new EDGSolver().solve(c, Main::nop));
         //openGraph(c);
-
-        System.out.printf("Total ms: %d", milliseconds);
+        //System.out.printf("Total ms: %d", milliseconds);
     }
 
     private static long benchmark(Runnable runnable) {
@@ -73,9 +78,9 @@ public class Main {
             writer.write(graph);
             writer.close();
 
-            //MutableGraph g = new guru.nidi.graphviz.parse.Parser().read(graph);
-            //Graphviz.fromGraph(g).totalMemory(480000000).render(Format.SVG).toFile(svgFile);
-            //Runtime.getRuntime().exec("xdg-open " + svgFile.getAbsolutePath());
+            MutableGraph g = new guru.nidi.graphviz.parse.Parser().read(graph);
+            Graphviz.fromGraph(g).totalMemory(480000000).render(Format.SVG).toFile(svgFile);
+            Runtime.getRuntime().exec("xdg-open " + svgFile.getAbsolutePath());
         } catch (IOException e) {
             e.printStackTrace();
         }

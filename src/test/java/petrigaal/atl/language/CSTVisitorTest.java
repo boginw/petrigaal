@@ -2,7 +2,6 @@ package petrigaal.atl.language;
 
 import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.CommonTokenStream;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import petrigaal.antlr.ATLLexer;
 import petrigaal.antlr.ATLParser;
@@ -17,11 +16,10 @@ import petrigaal.atl.language.nodes.temporal.BinaryTemporal;
 import petrigaal.atl.language.nodes.temporal.UnaryQuantifierTemporal;
 import petrigaal.atl.language.nodes.temporal.UnaryTemporal;
 import petrigaal.atl.language.visitor.CSTVisitor;
-import petrigaal.petri.Player;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static petrigaal.petri.Player.Controller;
-import static petrigaal.petri.Player.Environment;
+import static petrigaal.petri.Path.E;
+import static petrigaal.petri.Path.A;
 
 class CSTVisitorTest {
 
@@ -41,15 +39,6 @@ class CSTVisitorTest {
         Expression n = new CSTVisitor().visitExpressionPrimary(primary);
         IntegerLiteralExpression expr = checkInstance(n, IntegerLiteralExpression.class);
         assertEquals(integer, expr.getValue());
-    }
-
-    @Test
-    void visitPrimaryEnabledActionsLiteral() {
-        String enabledActions = "d1";
-        ExpressionPrimaryContext primary = parser(enabledActions).expressionPrimary();
-        Expression n = new CSTVisitor().visitExpressionPrimary(primary);
-        EnabledActions expr = checkInstance(n, EnabledActions.class);
-        assertEquals(Controller, expr.getForPlayer());
     }
 
     @Test
@@ -276,33 +265,33 @@ class CSTVisitorTest {
 
     @Test
     void visitTemporalQuantifier() {
-        String tq = "{1}@(true)";
+        String tq = "E X(true)";
         TemporalQuantifierContext tqc = parser(tq).temporalQuantifier();
         Temporal t = new CSTVisitor().visitTemporalQuantifier(tqc);
         UnaryQuantifierTemporal ut = checkInstance(t, UnaryQuantifierTemporal.class);
-        assertEquals(Controller, ut.getPlayer());
+        assertEquals(E, ut.getPath());
         assertEquals(new BooleanLiteral("true"), ut.getFirstOperand());
-        assertEquals("@", ut.getOperator());
+        assertEquals("X", ut.getOperator());
     }
 
     @Test
     void visitTemporalQuantifierEnvironment() {
-        String tq = "{2}@(true)";
+        String tq = "A X(true)";
         TemporalQuantifierContext tqc = parser(tq).temporalQuantifier();
         Temporal t = new CSTVisitor().visitTemporalQuantifier(tqc);
         UnaryQuantifierTemporal ut = checkInstance(t, UnaryQuantifierTemporal.class);
-        assertEquals(Environment, ut.getPlayer());
+        assertEquals(A, ut.getPath());
         assertEquals(new BooleanLiteral("true"), ut.getFirstOperand());
-        assertEquals("@", ut.getOperator());
+        assertEquals("X", ut.getOperator());
     }
 
     @Test
     void visitTemporalQuantifierUntil() {
-        String tq = "{1}(true U false)";
+        String tq = "E(true U false)";
         TemporalQuantifierContext tqc = parser(tq).temporalQuantifier();
         Temporal t = new CSTVisitor().visitTemporalQuantifier(tqc);
         BinaryQuantifierTemporal bt = checkInstance(t, BinaryQuantifierTemporal.class);
-        assertEquals(Controller, bt.getPlayer());
+        assertEquals(E, bt.getPath());
         assertEquals(new BooleanLiteral("true"), bt.getFirstOperand());
         assertEquals(new BooleanLiteral("false"), bt.getSecondOperand());
         assertEquals("U", bt.getOperator());
@@ -310,11 +299,11 @@ class CSTVisitorTest {
 
     @Test
     void visitTemporalQuantifierUntilEnvironment() {
-        String tq = "{2}(true U false)";
+        String tq = "A(true U false)";
         TemporalQuantifierContext tqc = parser(tq).temporalQuantifier();
         Temporal t = new CSTVisitor().visitTemporalQuantifier(tqc);
         BinaryQuantifierTemporal bt = checkInstance(t, BinaryQuantifierTemporal.class);
-        assertEquals(Environment, bt.getPlayer());
+        assertEquals(A, bt.getPath());
         assertEquals(new BooleanLiteral("true"), bt.getFirstOperand());
         assertEquals(new BooleanLiteral("false"), bt.getSecondOperand());
         assertEquals("U", bt.getOperator());
@@ -333,7 +322,7 @@ class CSTVisitorTest {
 
     @Test
     void visitStartGoesToTemporalQuantifier() {
-        String tq = "{1}(true U false)";
+        String tq = "E(true U false)";
         StartContext sc = parser(tq).start();
         TemporalQuantifierContext tbc = parser(tq).temporalQuantifier();
         assertEquals(

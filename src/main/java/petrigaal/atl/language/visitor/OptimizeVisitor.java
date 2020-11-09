@@ -65,11 +65,6 @@ public class OptimizeVisitor implements Visitor<ATLNode> {
     }
 
     @Override
-    public ATLNode visit(EnabledActions enabledActions) {
-        return enabledActions;
-    }
-
-    @Override
     public ATLNode visit(BooleanLiteral boolLiteral) {
         return boolLiteral;
     }

@@ -4,7 +4,6 @@ start : temporalQuantifier? EOF;
 
 expressionPrimary
   : IntLiteral
-  | EnabledActions
   | Identifier
   | '(' expressionAdditive ')'
   ;
@@ -45,16 +44,16 @@ temporalBinary
 
 temporalQuantifier
   : temporalBinary
-  | PlayerQuantifier '@' '(' temporalQuantifier ')'
-  | PlayerQuantifier '#' '(' temporalQuantifier ')'
-  | PlayerQuantifier '(' temporalQuantifier 'U' temporalQuantifier ')'
+  | Path 'X' '(' temporalQuantifier ')'
+  | Path 'G' '(' temporalQuantifier ')'
+  | Path 'F' '(' temporalQuantifier ')'
+  | Path '(' temporalQuantifier 'U' temporalQuantifier ')'
   ;
 
 /* Literals */
+Path: 'E' | 'A';
 BoolLiteral : 'true' | 'false';
 Bowtie: '<' | '<=' | '=' | '!=' | '>=' | '>';
-EnabledActions: 'd1' | 'd2';
-PlayerQuantifier: '{' Player '}';
 Identifier              : (Letter | '_') (AlphaNum | '_')*;
 
 /* Lexer rules */
@@ -63,7 +62,6 @@ Whitespace              : [ \t]+ -> skip;
 IntLiteral              : Number;
 Number                  : Digit+;
 
-fragment Player         : '1' | '2';
 fragment Letter         : [a-zA-Z];
 fragment Word           : Letter+;
 fragment AlphaNum       : Digit | Letter;

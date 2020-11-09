@@ -1,8 +1,8 @@
 package petrigaal.atl.language.nodes;
 
-import petrigaal.petri.Player;
+import petrigaal.petri.Path;
 
 public interface QuantifierTemporal extends Temporal {
-    Player getPlayer();
-    void setPlayer(Player player);
+    Path getPath();
+    void setPath(Path path);
 }

@@ -23,8 +23,6 @@ public interface Visitor<T> {
 
     T visit(VariableExpression variableExpression);
 
-    T visit(EnabledActions enabledActions);
-
     // Predicates
     T visit(BooleanLiteral boolLiteral);
 

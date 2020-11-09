@@ -6,7 +6,7 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 import petrigaal.petri.PetriGame;
-import petrigaal.petri.Player;
+import petrigaal.petri.Path;
 import petrigaal.petri.Transition;
 
 import javax.xml.parsers.DocumentBuilder;
@@ -91,11 +91,11 @@ public class PNMLLoader {
         }
 
         String id = purify(((Element) node).getAttribute("id"));
-        Player player = id.startsWith("_unc") ? Player.Environment : Player.Controller;
+        Path path = id.startsWith("_unc") ? Path.A : Path.E;
         Transition transition = new Transition(id);
         transitions.put(id, transition);
 
-        game.addTransition(player, transition);
+        game.addTransition(path, transition);
     }
 
     private void parsePlace(Node node) {

@@ -4,19 +4,19 @@ import petrigaal.Configuration;
 import petrigaal.atl.language.Visitor;
 import petrigaal.atl.language.nodes.QuantifierTemporal;
 import petrigaal.edg.DependencyGraphGenerator;
-import petrigaal.petri.Player;
+import petrigaal.petri.Path;
 
 public class BinaryQuantifierTemporal extends BinaryTemporal implements QuantifierTemporal {
-    private Player player;
+    private Path path;
 
     @Override
-    public Player getPlayer() {
-        return player;
+    public Path getPath() {
+        return path;
     }
 
     @Override
-    public void setPlayer(Player player) {
-        this.player = player;
+    public void setPath(Path path) {
+        this.path = path;
     }
 
     @Override
@@ -37,8 +37,8 @@ public class BinaryQuantifierTemporal extends BinaryTemporal implements Quantifi
     @Override
     public String toString() {
         return String.format(
-                "{%d} (%s %s %s)",
-                player.ordinal() + 1,
+                "%s (%s %s %s)",
+                path.toString(),
                 getFirstOperand().getLiteral(),
                 getOperator(),
                 getSecondOperand().getLiteral()

@@ -14,17 +14,17 @@ public class PetriGame {
         environmentTransitions = new HashSet<>();
     }
 
-    public PetriGame addTransition(Player player, Transition t) {
-        getSetForPlayer(player).add(t);
+    public PetriGame addTransition(Path path, Transition t) {
+        getSetForPlayer(path).add(t);
         return this;
     }
 
-    public List<Transition> getTransitions(Player player) {
-        return new ArrayList<>(getSetForPlayer(player));
+    public List<Transition> getTransitions(Path path) {
+        return new ArrayList<>(getSetForPlayer(path));
     }
 
-    public List<Transition> getEnabledTransitions(Player player) {
-        return getSetForPlayer(player).stream()
+    public List<Transition> getEnabledTransitions(Path path) {
+        return getSetForPlayer(path).stream()
                 .filter(this::isEnabled)
                 .collect(Collectors.toList());
     }
@@ -55,10 +55,10 @@ public class PetriGame {
         return t.stream().map(Transition.Arc::getPlace).collect(Collectors.toSet());
     }
 
-    private HashSet<Transition> getSetForPlayer(Player player) {
-        if (player.equals(Player.Controller)) {
+    private HashSet<Transition> getSetForPlayer(Path path) {
+        if (path.equals(Path.E)) {
             return controllerTransitions;
-        } else if (player.equals(Player.Environment)) {
+        } else if (path.equals(Path.A)) {
             return environmentTransitions;
         } else {
             throw new RuntimeException("No such player");
