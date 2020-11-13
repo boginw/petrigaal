@@ -3,7 +3,6 @@ package petrigaal.edg;
 import petrigaal.Configuration;
 import petrigaal.atl.language.ATLFormula;
 import petrigaal.atl.language.nodes.Expression;
-import petrigaal.atl.language.nodes.QuantifierTemporal;
 import petrigaal.atl.language.nodes.expression.*;
 import petrigaal.atl.language.nodes.predicate.BooleanLiteral;
 import petrigaal.atl.language.nodes.predicate.RelationalPredicate;
@@ -113,11 +112,10 @@ public class DependencyGraphGenerator {
         notFormula.setOperator("!");
         notFormula.setFirstOperand(formula.getFirstOperand());
 
-        BinaryQuantifierTemporal bqt = new BinaryQuantifierTemporal();
+        UnaryQuantifierTemporal bqt = new UnaryQuantifierTemporal();
         bqt.setPath(formula.getPath() == E ? A : E);
-        bqt.setFirstOperand(new BooleanLiteral(true));
-        bqt.setOperator("U");
-        bqt.setSecondOperand(notFormula);
+        bqt.setFirstOperand(notFormula);
+        bqt.setOperator("F");
 
         UnaryTemporal ut = new UnaryTemporal();
         ut.setOperator("!");

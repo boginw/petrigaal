@@ -2,6 +2,7 @@ package petrigaal.petri;
 
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class PetriGame {
     private Map<String, Integer> markings;
@@ -24,7 +25,7 @@ public class PetriGame {
     }
 
     public List<Transition> getEnabledTransitions(Path path) {
-        return getSetForPlayer(path).stream()
+        return Stream.concat(controllerTransitions.stream(), environmentTransitions.stream())
                 .filter(this::isEnabled)
                 .collect(Collectors.toList());
     }
