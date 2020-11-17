@@ -12,7 +12,7 @@ import petrigaal.atl.language.nodes.temporal.BinaryQuantifierTemporal;
 import petrigaal.atl.language.nodes.temporal.BinaryTemporal;
 import petrigaal.atl.language.nodes.temporal.UnaryQuantifierTemporal;
 import petrigaal.atl.language.nodes.temporal.UnaryTemporal;
-import petrigaal.petri.Path;
+import petrigaal.atl.language.Path;
 
 public class CSTVisitor extends ATLBaseVisitor<ATLNode> {
     @Override

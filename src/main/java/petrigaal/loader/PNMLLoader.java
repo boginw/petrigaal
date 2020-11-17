@@ -1,4 +1,4 @@
-package petrigaal.pnml;
+package petrigaal.loader;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -6,7 +6,8 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 import petrigaal.petri.PetriGame;
-import petrigaal.petri.Path;
+import petrigaal.atl.language.Path;
+import petrigaal.petri.Player;
 import petrigaal.petri.Transition;
 
 import javax.xml.parsers.DocumentBuilder;
@@ -18,10 +19,11 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 
-public class PNMLLoader {
+public class PNMLLoader implements Loader {
     private PetriGame game;
     private Map<String, Transition> transitions;
 
+    @Override
     public PetriGame load(InputStream file) {
         Document doc = loadDocument(file);
 
@@ -91,11 +93,11 @@ public class PNMLLoader {
         }
 
         String id = purify(((Element) node).getAttribute("id"));
-        Path path = id.startsWith("_unc") ? Path.A : Path.E;
+        Player player = id.startsWith("_unc") ? Player.Environment : Player.Controller;
         Transition transition = new Transition(id);
         transitions.put(id, transition);
 
-        game.addTransition(path, transition);
+        game.addTransition(player, transition);
     }
 
     private void parsePlace(Node node) {

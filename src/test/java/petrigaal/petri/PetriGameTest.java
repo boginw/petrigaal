@@ -6,8 +6,8 @@ import org.junit.jupiter.api.Test;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static petrigaal.petri.Path.E;
-import static petrigaal.petri.Path.A;
+import static petrigaal.atl.language.Path.E;
+import static petrigaal.atl.language.Path.A;
 
 class PetriGameTest {
     private PetriGame pg;

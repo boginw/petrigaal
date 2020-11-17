@@ -4,7 +4,7 @@ import petrigaal.Configuration;
 import petrigaal.atl.language.Visitor;
 import petrigaal.atl.language.nodes.QuantifierTemporal;
 import petrigaal.edg.DependencyGraphGenerator;
-import petrigaal.petri.Path;
+import petrigaal.atl.language.Path;
 
 public class UnaryQuantifierTemporal extends UnaryTemporal implements QuantifierTemporal {
     private Path path;

@@ -18,8 +18,8 @@ import petrigaal.atl.language.nodes.temporal.UnaryTemporal;
 import petrigaal.atl.language.visitor.CSTVisitor;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static petrigaal.petri.Path.E;
-import static petrigaal.petri.Path.A;
+import static petrigaal.atl.language.Path.E;
+import static petrigaal.atl.language.Path.A;
 
 class CSTVisitorTest {
 

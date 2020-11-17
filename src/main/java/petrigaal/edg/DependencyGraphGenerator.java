@@ -3,7 +3,10 @@ package petrigaal.edg;
 import petrigaal.Configuration;
 import petrigaal.atl.language.ATLFormula;
 import petrigaal.atl.language.nodes.Expression;
-import petrigaal.atl.language.nodes.expression.*;
+import petrigaal.atl.language.nodes.expression.BinaryExpression;
+import petrigaal.atl.language.nodes.expression.IntegerLiteralExpression;
+import petrigaal.atl.language.nodes.expression.UnaryExpression;
+import petrigaal.atl.language.nodes.expression.VariableExpression;
 import petrigaal.atl.language.nodes.predicate.BooleanLiteral;
 import petrigaal.atl.language.nodes.predicate.RelationalPredicate;
 import petrigaal.atl.language.nodes.temporal.BinaryQuantifierTemporal;
@@ -11,14 +14,14 @@ import petrigaal.atl.language.nodes.temporal.BinaryTemporal;
 import petrigaal.atl.language.nodes.temporal.UnaryQuantifierTemporal;
 import petrigaal.atl.language.nodes.temporal.UnaryTemporal;
 import petrigaal.petri.PetriGame;
-import petrigaal.petri.Path;
+import petrigaal.petri.Player;
 import petrigaal.petri.Transition;
 
 import java.util.*;
 import java.util.stream.Collectors;
 
-import static petrigaal.petri.Path.E;
-import static petrigaal.petri.Path.A;
+import static petrigaal.atl.language.Path.A;
+import static petrigaal.atl.language.Path.E;
 
 public class DependencyGraphGenerator {
     Map<Configuration, Configuration> configurations = new HashMap<>();
@@ -37,40 +40,41 @@ public class DependencyGraphGenerator {
     }
 
     public void visitConjunction(Configuration c, BinaryTemporal formula) {
-        Configuration c1 = createOrGet(formula.getFirstOperand(), c.getGame());
-        Configuration c2 = createOrGet(formula.getSecondOperand(), c.getGame());
+        Configuration c1 = createOrGet(formula.getFirstOperand(), c.getGame(), c.getMode());
+        Configuration c2 = createOrGet(formula.getSecondOperand(), c.getGame(), c.getMode());
 
         List<Configuration> configurations = List.of(c1, c2);
         c.getSuccessors().add(new Edge(configurations));
     }
 
     public void visitDisjunction(Configuration c, BinaryTemporal formula) {
-        Configuration c1 = createOrGet(formula.getFirstOperand(), c.getGame());
-        Configuration c2 = createOrGet(formula.getSecondOperand(), c.getGame());
+        Configuration c1 = createOrGet(formula.getFirstOperand(), c.getGame(), c.getMode());
+        Configuration c2 = createOrGet(formula.getSecondOperand(), c.getGame(), c.getMode());
 
         c.getSuccessors().add(new Edge(c1));
         c.getSuccessors().add(new Edge(c2));
     }
 
     public void visitNegation(Configuration c, UnaryTemporal formula) {
-        Configuration c1 = createOrGet(formula.getFirstOperand(), c.getGame());
+        Configuration c1 = createOrGet(new Configuration(
+                formula.getFirstOperand(),
+                c.getGame(),
+                c.getGenerator(),
+                !c.getMode()
+        ));
 
         c.getSuccessors().add(new Edge(true, c1));
     }
 
     public void visitNext(Configuration c, UnaryQuantifierTemporal formula) {
-        Path primary = formula.getPath();
-        Path secondary = primary == E ? A : E;
-
-        List<Configuration> primaryAfterTrans = fireAllEnabled(formula, c.getGame(), primary);
-        List<Configuration> secondaryAfterTrans = fireAllEnabled(formula, c.getGame(), secondary);
+        List<Configuration> primaryAfterTrans = fireAllEnabled(formula, c.getGame(), Player.Controller, c.getMode());
+        List<Configuration> secondaryAfterTrans = fireAllEnabled(formula, c.getGame(), Player.Environment, c.getMode());
 
         List<Edge> primaryAfterTransEdges;
         if (!primaryAfterTrans.isEmpty() && secondaryAfterTrans.isEmpty()) {
             primaryAfterTransEdges = primaryAfterTrans.stream()
                     .map(Edge::new)
                     .collect(Collectors.toList());
-
         } else {
             primaryAfterTransEdges = secondaryAfterTrans.stream()
                     .map(cont -> addToList(primaryAfterTrans, cont))
@@ -81,15 +85,15 @@ public class DependencyGraphGenerator {
     }
 
     public void visitUntil(Configuration c, BinaryQuantifierTemporal formula) {
-        Configuration end = createOrGet(formula.getSecondOperand(), c.getGame());
+        Configuration end = createOrGet(formula.getSecondOperand(), c.getGame(), c.getMode());
 
-        List<Transition> transitions = c.getGame().getEnabledTransitions(formula.getPath());
+        List<Transition> transitions = c.getGame().getEnabledTransitions();
 
         for (Transition transition : transitions) {
             PetriGame nextState = c.getGame().fire(transition);
-            Configuration conf = createOrGet(formula, nextState);
+            Configuration conf = createOrGet(formula, nextState, c.getMode());
             Configuration now = createOrGet(
-                    new Configuration(formula.getFirstOperand(), c.getGame(), transition)
+                    new Configuration(formula.getFirstOperand(), c.getGame(), transition, c.getMode())
             );
             c.getSuccessors().add(new Edge(conf, now));
         }
@@ -98,13 +102,43 @@ public class DependencyGraphGenerator {
     }
 
     public void visitFinally(Configuration c, UnaryQuantifierTemporal formula) {
-        Configuration now = createOrGet(new Configuration(formula.getFirstOperand(), c.getGame(), c.getGenerator()));
-        nextMarkings(c, formula.getPath())
-                .stream()
-                .map(m -> createOrGet(formula, m))
-                .map(Edge::new)
-                .forEach(c.getSuccessors()::add);
-        c.getSuccessors().add(new Edge(now));
+        Configuration now = createOrGet(new Configuration(
+                formula.getFirstOperand(),
+                c.getGame(),
+                c.getGenerator(),
+                c.getMode()
+        ));
+
+        if (!c.getMode()) {
+            nextMarkings(c)
+                    .stream()
+                    .map(m -> createOrGet(formula, m, c.getMode()))
+                    .map(Edge::new)
+                    .forEach(c.getSuccessors()::add);
+            c.getSuccessors().add(new Edge(now));
+        } else {
+            if (formula.getPath() == E) {
+                List<Configuration> configurations = nextMarkings(c, Player.Controller)
+                        .stream()
+                        .map(m -> createOrGet(formula, m, c.getMode()))
+                        .collect(Collectors.toList());
+                if (!configurations.isEmpty()) c.getSuccessors().add(new Edge(configurations));
+
+                nextMarkings(c, Player.Environment)
+                        .stream()
+                        .map(m -> createOrGet(formula, m, c.getMode()))
+                        .map(Edge::new)
+                        .forEach(c.getSuccessors()::add);
+                c.getSuccessors().add(new Edge(now));
+            } else {
+                List<Configuration> configurations = nextMarkings(c)
+                        .stream()
+                        .map(m -> createOrGet(formula, m, c.getMode()))
+                        .collect(Collectors.toList());
+                if (!configurations.isEmpty()) c.getSuccessors().add(new Edge(configurations));
+                c.getSuccessors().add(new Edge(now));
+            }
+        }
     }
 
     public void visitAlways(Configuration c, UnaryQuantifierTemporal formula) {
@@ -161,8 +195,8 @@ public class DependencyGraphGenerator {
         }
     }
 
-    private Configuration createOrGet(ATLFormula formula, PetriGame game) {
-        Configuration config = new Configuration(formula, game);
+    private Configuration createOrGet(ATLFormula formula, PetriGame game, boolean mode) {
+        Configuration config = new Configuration(formula, game, null, mode);
         return createOrGet(config);
     }
 
@@ -184,14 +218,19 @@ public class DependencyGraphGenerator {
         return e;
     }
 
-    private List<Configuration> fireAllEnabled(UnaryTemporal formula, PetriGame game, Path path) {
-        return nextMarkings(game, path).stream()
-                .map(g -> createOrGet(formula.getFirstOperand(), g))
+    private List<Configuration> fireAllEnabled(UnaryTemporal formula, PetriGame game, Player player, boolean mode) {
+        return nextMarkings(game, player).stream()
+                .map(g -> createOrGet(formula.getFirstOperand(), g, mode))
                 .collect(Collectors.toList());
     }
 
-    private List<PetriGame> nextMarkings(Configuration c, Path path) {
-        List<Transition> transitions = c.getGame().getEnabledTransitions(path);
+    private List<PetriGame> nextMarkings(Configuration c) {
+        List<Transition> transitions = c.getGame().getEnabledTransitions();
+        return transitions.stream().map(c.getGame()::fire).collect(Collectors.toList());
+    }
+
+    private List<PetriGame> nextMarkings(Configuration c, Player player) {
+        List<Transition> transitions = c.getGame().getEnabledTransitions(player);
         if (c.getGenerator() != null) {
             transitions = List.of(c.getGenerator());
             if (!c.getGame().isEnabled(c.getGenerator())) {
@@ -201,8 +240,8 @@ public class DependencyGraphGenerator {
         return transitions.stream().map(c.getGame()::fire).collect(Collectors.toList());
     }
 
-    private List<PetriGame> nextMarkings(PetriGame game, Path path) {
-        List<Transition> transitions = game.getEnabledTransitions(path);
+    private List<PetriGame> nextMarkings(PetriGame game, Player player) {
+        List<Transition> transitions = game.getEnabledTransitions(player);
         return transitions.stream().map(game::fire).collect(Collectors.toList());
     }
 

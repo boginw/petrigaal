@@ -9,8 +9,9 @@ import petrigaal.atl.language.ATLFormula;
 import petrigaal.atl.language.ATLNode;
 import petrigaal.draw.EDGToGraphViz;
 import petrigaal.edg.DependencyGraphGenerator;
+import petrigaal.loader.TAPNLoader;
 import petrigaal.petri.PetriGame;
-import petrigaal.pnml.PNMLLoader;
+import petrigaal.loader.PNMLLoader;
 import petrigaal.solver.EDGSolver;
 
 import java.io.*;
@@ -27,7 +28,7 @@ public class Main {
         }
 
         File pnml = new File(args[1]);
-        PetriGame game = new PNMLLoader().load(new FileInputStream(pnml));
+        PetriGame game = loadGame(pnml);
         ATLNode tree = new Parser().parse(args[0]);
         ATLNode optimizedTree = new Optimizer().optimize(tree);
 
@@ -43,6 +44,16 @@ public class Main {
             long milliseconds = benchmark(() -> new EDGSolver().solve(c, Main::nop));
             openGraph(c);
             System.out.printf("Total ms: %d", milliseconds);
+        }
+    }
+
+    private static PetriGame loadGame(File file) throws FileNotFoundException {
+        if (file.getName().endsWith(".pnml")) {
+            return new PNMLLoader().load(new FileInputStream(file));
+        } else if (file.getName().endsWith(".tapn")) {
+            return new TAPNLoader().load(new FileInputStream(file));
+        } else {
+            throw new RuntimeException("Unsupported file format");
         }
     }
 

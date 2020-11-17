@@ -4,9 +4,10 @@ import org.antlr.v4.runtime.misc.Pair;
 import petrigaal.Configuration;
 import petrigaal.edg.Edge;
 
-import java.util.*;
-import java.util.concurrent.ConcurrentLinkedQueue;
-import java.util.concurrent.atomic.AtomicInteger;
+import java.util.ArrayList;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Queue;
 import java.util.function.BiConsumer;
 
 public class EDGSolver {
