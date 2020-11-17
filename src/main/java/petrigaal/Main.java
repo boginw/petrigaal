@@ -9,9 +9,9 @@ import petrigaal.atl.language.ATLFormula;
 import petrigaal.atl.language.ATLNode;
 import petrigaal.draw.EDGToGraphViz;
 import petrigaal.edg.DependencyGraphGenerator;
+import petrigaal.loader.PNMLLoader;
 import petrigaal.loader.TAPNLoader;
 import petrigaal.petri.PetriGame;
-import petrigaal.loader.PNMLLoader;
 import petrigaal.solver.EDGSolver;
 
 import java.io.*;
@@ -22,7 +22,7 @@ public class Main {
     private static int size = 0;
 
     public static void main(String[] args) throws IOException {
-        if (args.length != 2 && args.length != 3 && !args[2].equals("-s")) {
+        if (args.length != 2 && args.length != 3) {
             System.err.println("Usage: java -jar petrigaal.jar QUERY PATH_TO_PNML [-s for solve]");
             return;
         }

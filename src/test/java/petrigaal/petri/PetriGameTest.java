@@ -6,8 +6,6 @@ import org.junit.jupiter.api.Test;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static petrigaal.atl.language.Path.E;
-import static petrigaal.atl.language.Path.A;
 
 class PetriGameTest {
     private PetriGame pg;
@@ -31,14 +29,14 @@ class PetriGameTest {
 
     @Test
     void shouldAddTransitionForController() {
-        pg.addTransition(E, t);
-        assertEquals(expectedTransitions, pg.getTransitions(E));
+        pg.addTransition(Player.Controller, t);
+        assertEquals(expectedTransitions, pg.getTransitions(Player.Controller));
     }
 
     @Test
     void shouldAddTransitionForEnvironment() {
-        pg.addTransition(A, t);
-        assertEquals(expectedTransitions, pg.getTransitions(A));
+        pg.addTransition(Player.Environment, t);
+        assertEquals(expectedTransitions, pg.getTransitions(Player.Environment));
     }
 
     @Test
@@ -81,7 +79,7 @@ class PetriGameTest {
                 .addInput(p1, pg.getMarking(p1))
                 .addInput(p2, pg.getMarking(p2));
 
-        pg.addTransition(E, t);
+        pg.addTransition(Player.Controller, t);
         assertTrue(pg.isEnabled(t));
     }
 
@@ -91,7 +89,7 @@ class PetriGameTest {
                 .addInput(p1, pg.getMarking(p1))
                 .addInput(p2, pg.getMarking(p2) + 1);
 
-        pg.addTransition(E, t);
+        pg.addTransition(Player.Controller, t);
         assertFalse(pg.isEnabled(t));
     }
 
@@ -102,7 +100,7 @@ class PetriGameTest {
                 .addOutput(p2)
                 .addOutput(p3);
 
-        pg.addTransition(E, t1);
+        pg.addTransition(Player.Controller, t1);
         pg.setMarking(p1, 1);
         pg.setMarking(p2, 0);
 
@@ -116,8 +114,8 @@ class PetriGameTest {
         Transition t1 = new Transition("t1").addInput(p1).addOutput(p2);
         Transition t2 = new Transition("t2").addInput(p2).addOutput(p1);
 
-        pg.addTransition(E, t1);
-        pg.addTransition(A, t2);
+        pg.addTransition(Player.Controller, t1);
+        pg.addTransition(Player.Environment, t2);
 
         pg.setMarking(p1, 1);
         pg.setMarking(p2, 0);
@@ -137,7 +135,7 @@ class PetriGameTest {
                 .addOutput(p2)
                 .addOutput(p3);
 
-        pg.addTransition(E, t1);
+        pg.addTransition(Player.Controller, t1);
         pg.setMarking(p1, 1);
         pg.setMarking(p2, 0);
         pg.setMarking(p3, 0);
@@ -155,7 +153,7 @@ class PetriGameTest {
                 .addInput(p2)
                 .addOutput(p3);
 
-        pg.addTransition(E, t1);
+        pg.addTransition(Player.Controller, t1);
         pg.setMarking(p1, 1);
         pg.setMarking(p2, 1);
         pg.setMarking(p3, 0);

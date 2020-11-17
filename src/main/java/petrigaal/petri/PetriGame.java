@@ -1,7 +1,5 @@
 package petrigaal.petri;
 
-import petrigaal.atl.language.Path;
-
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
