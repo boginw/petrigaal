@@ -59,7 +59,6 @@ public class DependencyGraphGenerator {
         Configuration c1 = createOrGet(new Configuration(
                 formula.getFirstOperand(),
                 c.getGame(),
-                c.getGenerator(),
                 !c.getMode()
         ));
 
@@ -93,7 +92,7 @@ public class DependencyGraphGenerator {
             PetriGame nextState = c.getGame().fire(transition);
             Configuration conf = createOrGet(formula, nextState, c.getMode());
             Configuration now = createOrGet(
-                    new Configuration(formula.getFirstOperand(), c.getGame(), transition, c.getMode())
+                    new Configuration(formula.getFirstOperand(), c.getGame(), c.getMode())
             );
             c.getSuccessors().add(new Edge(conf, now));
         }
@@ -105,7 +104,6 @@ public class DependencyGraphGenerator {
         Configuration now = createOrGet(new Configuration(
                 formula.getFirstOperand(),
                 c.getGame(),
-                c.getGenerator(),
                 c.getMode()
         ));
 
@@ -196,7 +194,7 @@ public class DependencyGraphGenerator {
     }
 
     private Configuration createOrGet(ATLFormula formula, PetriGame game, boolean mode) {
-        Configuration config = new Configuration(formula, game, null, mode);
+        Configuration config = new Configuration(formula, game, mode);
         return createOrGet(config);
     }
 
@@ -231,12 +229,6 @@ public class DependencyGraphGenerator {
 
     private List<PetriGame> nextMarkings(Configuration c, Player player) {
         List<Transition> transitions = c.getGame().getEnabledTransitions(player);
-        if (c.getGenerator() != null) {
-            transitions = List.of(c.getGenerator());
-            if (!c.getGame().isEnabled(c.getGenerator())) {
-                return List.of();
-            }
-        }
         return transitions.stream().map(c.getGame()::fire).collect(Collectors.toList());
     }
 
