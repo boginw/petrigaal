@@ -1,11 +1,11 @@
 package petrigaal.atl.language.nodes.temporal;
 
-import petrigaal.Configuration;
 import petrigaal.atl.language.Visitor;
 import petrigaal.atl.language.nodes.ATLType;
 import petrigaal.atl.language.nodes.Temporal;
 import petrigaal.atl.language.nodes.Unary;
 import petrigaal.edg.DependencyGraphGenerator;
+import petrigaal.edg.Target;
 
 public class UnaryTemporal extends Unary<Temporal> implements Temporal {
     public UnaryTemporal() {
@@ -27,7 +27,7 @@ public class UnaryTemporal extends Unary<Temporal> implements Temporal {
     }
 
     @Override
-    public void visit(Configuration parent, DependencyGraphGenerator graph) {
+    public void visit(Target parent, DependencyGraphGenerator graph) {
         graph.visit(parent, this);
     }
 

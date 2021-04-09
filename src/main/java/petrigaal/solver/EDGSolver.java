@@ -3,6 +3,7 @@ package petrigaal.solver;
 import org.antlr.v4.runtime.misc.Pair;
 import petrigaal.Configuration;
 import petrigaal.edg.Edge;
+import petrigaal.edg.Target;
 
 import java.util.ArrayList;
 import java.util.LinkedList;
@@ -16,15 +17,13 @@ public class EDGSolver {
     private boolean edgeNegated;
     private boolean evaluateNegations;
     private BiConsumer<Integer, Integer> consumer;
-    private Configuration firstConfig;
     private Queue<Pair<Edge, Configuration>> queue;
-    private int threads = 4;
+    private final int threads = 4;
 
     public String solve(Configuration c, BiConsumer<Integer, Integer> consumer) {
         this.queue = new LinkedList<>();
         this.visited = new ArrayList<>();
         this.consumer = consumer;
-        firstConfig = c;
         Edge e = new Edge(c);
 
         do {
@@ -34,7 +33,7 @@ public class EDGSolver {
             do {
                 edgeRemoved = false;
                 visitQueue(new Pair<>(e, c));
-            } while (edgeRemoved && e.contains(c));
+            } while (edgeRemoved && isConfigurationTargetOfEdge(c, e));
 
             evaluateNegations = true;
 
@@ -42,7 +41,7 @@ public class EDGSolver {
             visitQueue(new Pair<>(e, c));
         } while (edgeNegated);
 
-        return "Can solve: " + !e.contains(c);
+        return "Can solve: " + !isConfigurationTargetOfEdge(c, e);
     }
 
     private void visitQueue(Pair<Edge, Configuration> start) {
@@ -101,17 +100,21 @@ public class EDGSolver {
     }
 
     private void visitEdge(Edge e) {
-        List<Configuration> configurations = new ArrayList<>(e);
+        List<Target> targets = new ArrayList<>(e);
 
-        for (Configuration c : configurations) {
-            queue.add(new Pair<>(e, c));
+        for (Target t : targets) {
+            queue.add(new Pair<>(e, t.getConfiguration()));
             // visit(e, c);
         }
     }
 
     private void propagateEmptySet(Edge in, Configuration c, Edge edge) {
         edgeRemoved = true;
-        in.remove(c);
+        in.removeIf(t -> t.getConfiguration().equals(c));
         c.getSuccessors().retainAll(List.of(edge));
+    }
+
+    private boolean isConfigurationTargetOfEdge(Configuration c, Edge e) {
+        return e.stream().anyMatch(t -> t.getConfiguration().equals(c));
     }
 }

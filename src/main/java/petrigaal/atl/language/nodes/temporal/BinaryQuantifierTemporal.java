@@ -1,10 +1,10 @@
 package petrigaal.atl.language.nodes.temporal;
 
-import petrigaal.Configuration;
 import petrigaal.atl.language.Visitor;
 import petrigaal.atl.language.nodes.QuantifierTemporal;
 import petrigaal.edg.DependencyGraphGenerator;
 import petrigaal.atl.language.Path;
+import petrigaal.edg.Target;
 
 public class BinaryQuantifierTemporal extends BinaryTemporal implements QuantifierTemporal {
     private Path path;
@@ -20,7 +20,7 @@ public class BinaryQuantifierTemporal extends BinaryTemporal implements Quantifi
     }
 
     @Override
-    public void visit(Configuration parent, DependencyGraphGenerator graph) {
+    public void visit(Target parent, DependencyGraphGenerator graph) {
         graph.visit(parent, this);
     }
 

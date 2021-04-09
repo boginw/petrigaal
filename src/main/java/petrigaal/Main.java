@@ -95,13 +95,17 @@ public class Main {
             MutableGraph g = new guru.nidi.graphviz.parse.Parser().read(graph);
             Graphviz.fromGraph(g).totalMemory(480000000).render(Format.SVG).toFile(svgFile);
 
-            if (System.getProperty("os.name").equals("Mac OS X")) {
-                Runtime.getRuntime().exec("open " + svgFile.getAbsolutePath());
-            } else {
-                Runtime.getRuntime().exec("xdg-open " + svgFile.getAbsolutePath());
-            }
+            Runtime.getRuntime().exec(getOpenCmd() + " " + svgFile.getAbsolutePath());
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    private static String getOpenCmd() {
+        String openCmd = "xdg-open";
+        if (System.getProperty("os.name").equals("Mac OS X")) {
+            openCmd = "open";
+        }
+        return openCmd;
     }
 }

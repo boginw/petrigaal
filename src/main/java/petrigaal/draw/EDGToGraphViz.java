@@ -3,19 +3,20 @@ package petrigaal.draw;
 import org.antlr.v4.runtime.misc.Pair;
 import petrigaal.Configuration;
 import petrigaal.edg.Edge;
+import petrigaal.edg.Target;
 
 import java.util.*;
 
 public class EDGToGraphViz {
-    private List<String> nodesOrder = new ArrayList<>();
-    private Map<String, List<String>> nodes = new HashMap<>();
-    private Map<Integer, List<String>> ranks = new HashMap<>();
-    private Queue<Pair<Configuration, Integer>> queue;
+    private final List<String> nodesOrder = new ArrayList<>();
+    private final Map<String, List<String>> nodes = new HashMap<>();
+    private final Map<Integer, List<String>> ranks = new HashMap<>();
+    private final Queue<Pair<Configuration, Integer>> queue = new LinkedList<>();
     private int empties = 0;
     private int joints = 0;
 
     public String draw(Configuration configuration) {
-        queue = new LinkedList<>();
+        queue.clear();
 
         StringBuilder sb = new StringBuilder();
 
@@ -52,9 +53,9 @@ public class EDGToGraphViz {
         }
 
         return "digraph G {\n" +
-                "graph [rankdir=\"TB\", splines=ortho];\n" +
+                "graph [pad=\"1\", nodesep=\"1\", ranksep=\"1\", rankdir=\"TB\", splines=ortho];\n" +
                 "node [shape=box]\n" +
-                sb.toString() +
+                sb +
                 "}";
     }
 
@@ -102,9 +103,13 @@ public class EDGToGraphViz {
             return;
         }
 
-        for (Configuration config : edge) {
-            children.add(nameOf(config) + suffix);
-            queue.add(new Pair<>(config, rank + 1));
+        for (Target target : edge) {
+            String label = "";
+            if (target.getTransition() != null) {
+                label = target.getTransition().toString();
+            }
+            children.add(nameOf(target.getConfiguration()) + suffix + " [xlabel=\"" + label + "\"]");
+            queue.add(new Pair<>(target.getConfiguration(), rank + 1));
         }
     }
 

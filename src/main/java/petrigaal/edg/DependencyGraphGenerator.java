@@ -33,21 +33,23 @@ public class DependencyGraphGenerator {
 
         do {
             Configuration configuration = Objects.requireNonNull(queue.poll());
-            configuration.getFormula().visit(configuration, this);
+            configuration.getFormula().visit(new Target(configuration), this);
         } while (!queue.isEmpty());
 
         return configurations.size();
     }
 
-    public void visitConjunction(Configuration c, BinaryTemporal formula) {
+    public void visitConjunction(Target target, BinaryTemporal formula) {
+        Configuration c = target.getConfiguration();
         Configuration c1 = createOrGet(formula.getFirstOperand(), c.getGame(), c.getMode());
         Configuration c2 = createOrGet(formula.getSecondOperand(), c.getGame(), c.getMode());
 
         List<Configuration> configurations = List.of(c1, c2);
-        c.getSuccessors().add(new Edge(configurations));
+        c.getSuccessors().add(new Edge(configurations.stream().map(Target::new).collect(Collectors.toList())));
     }
 
-    public void visitDisjunction(Configuration c, BinaryTemporal formula) {
+    public void visitDisjunction(Target target, BinaryTemporal formula) {
+        Configuration c = target.getConfiguration();
         Configuration c1 = createOrGet(formula.getFirstOperand(), c.getGame(), c.getMode());
         Configuration c2 = createOrGet(formula.getSecondOperand(), c.getGame(), c.getMode());
 
@@ -55,7 +57,8 @@ public class DependencyGraphGenerator {
         c.getSuccessors().add(new Edge(c2));
     }
 
-    public void visitNegation(Configuration c, UnaryTemporal formula) {
+    public void visitNegation(Target target, UnaryTemporal formula) {
+        Configuration c = target.getConfiguration();
         Configuration c1 = createOrGet(new Configuration(
                 formula.getFirstOperand(),
                 c.getGame(),
@@ -65,9 +68,11 @@ public class DependencyGraphGenerator {
         c.getSuccessors().add(new Edge(true, c1));
     }
 
-    public void visitNext(Configuration c, UnaryQuantifierTemporal formula) {
-        List<Configuration> primaryAfterTrans = fireAllEnabled(formula, c.getGame(), Player.Controller, c.getMode());
-        List<Configuration> secondaryAfterTrans = fireAllEnabled(formula, c.getGame(), Player.Environment, c.getMode());
+    public void visitNext(Target target, UnaryQuantifierTemporal formula) {
+        Configuration c = target.getConfiguration();
+
+        List<Target> primaryAfterTrans = fireAllEnabled(formula, c.getGame(), Player.Controller, c.getMode());
+        List<Target> secondaryAfterTrans = fireAllEnabled(formula, c.getGame(), Player.Environment, c.getMode());
 
         List<Edge> primaryAfterTransEdges;
         if (!primaryAfterTrans.isEmpty() && secondaryAfterTrans.isEmpty()) {
@@ -83,7 +88,9 @@ public class DependencyGraphGenerator {
         c.getSuccessors().addAll(primaryAfterTransEdges);
     }
 
-    public void visitUntil(Configuration c, BinaryQuantifierTemporal formula) {
+    public void visitUntil(Target target, BinaryQuantifierTemporal formula) {
+        Configuration c = target.getConfiguration();
+
         Configuration end = createOrGet(formula.getSecondOperand(), c.getGame(), c.getMode());
 
         List<Transition> transitions = c.getGame().getEnabledTransitions();
@@ -94,13 +101,15 @@ public class DependencyGraphGenerator {
             Configuration now = createOrGet(
                     new Configuration(formula.getFirstOperand(), c.getGame(), c.getMode())
             );
-            c.getSuccessors().add(new Edge(conf, now));
+            c.getSuccessors().add(new Edge(new Target(conf, transition), new Target(now)));
         }
 
         c.getSuccessors().add(new Edge(end));
     }
 
-    public void visitFinally(Configuration c, UnaryQuantifierTemporal formula) {
+    public void visitFinally(Target target, UnaryQuantifierTemporal formula) {
+        Configuration c = target.getConfiguration();
+
         Configuration now = createOrGet(new Configuration(
                 formula.getFirstOperand(),
                 c.getGame(),
@@ -108,38 +117,40 @@ public class DependencyGraphGenerator {
         ));
 
         if (!c.getMode()) {
-            nextMarkings(c)
+            nextMarkingsWithTransitions(c)
                     .stream()
-                    .map(m -> createOrGet(formula, m, c.getMode()))
+                    .map(m -> new Target(createOrGet(formula, m.getGame(), c.getMode()), m.getTransition()))
                     .map(Edge::new)
                     .forEach(c.getSuccessors()::add);
             c.getSuccessors().add(new Edge(now));
         } else {
             if (formula.getPath() == E) {
-                List<Configuration> configurations = nextMarkings(c, Player.Controller)
+                List<Target> targets = nextMarkingsWithTransitions(c, Player.Controller)
                         .stream()
-                        .map(m -> createOrGet(formula, m, c.getMode()))
+                        .map(m -> new Target(createOrGet(formula, m.getGame(), c.getMode()), m.getTransition()))
                         .collect(Collectors.toList());
-                if (!configurations.isEmpty()) c.getSuccessors().add(new Edge(configurations));
+                if (!targets.isEmpty()) c.getSuccessors().add(new Edge(targets));
 
-                nextMarkings(c, Player.Environment)
+                nextMarkingsWithTransitions(c, Player.Environment)
                         .stream()
-                        .map(m -> createOrGet(formula, m, c.getMode()))
+                        .map(m -> new Target(createOrGet(formula, m.getGame(), c.getMode()), m.getTransition()))
                         .map(Edge::new)
                         .forEach(c.getSuccessors()::add);
                 c.getSuccessors().add(new Edge(now));
             } else {
-                List<Configuration> configurations = nextMarkings(c)
+                List<Target> targets = nextMarkingsWithTransitions(c)
                         .stream()
-                        .map(m -> createOrGet(formula, m, c.getMode()))
+                        .map(m -> new Target(createOrGet(formula, m.getGame(), c.getMode()), m.getTransition()))
                         .collect(Collectors.toList());
-                if (!configurations.isEmpty()) c.getSuccessors().add(new Edge(configurations));
+                if (!targets.isEmpty()) c.getSuccessors().add(new Edge(targets));
                 c.getSuccessors().add(new Edge(now));
             }
         }
     }
 
-    public void visitAlways(Configuration c, UnaryQuantifierTemporal formula) {
+    public void visitAlways(Target target, UnaryQuantifierTemporal formula) {
+        Configuration c = target.getConfiguration();
+
         UnaryTemporal notFormula = new UnaryTemporal();
         notFormula.setOperator("!");
         notFormula.setFirstOperand(formula.getFirstOperand());
@@ -153,18 +164,18 @@ public class DependencyGraphGenerator {
         ut.setOperator("!");
         ut.setFirstOperand(bqt);
 
-        ut.visit(c, this);
+        ut.visit(target.withConfiguration(c), this);
     }
 
-    public void visit(Configuration parent, UnaryTemporal unaryTemporal) {
+    public void visit(Target parent, UnaryTemporal unaryTemporal) {
         visitNegation(parent, unaryTemporal);
     }
 
-    public void visit(Configuration parent, BinaryQuantifierTemporal binaryQuantifierTemporal) {
+    public void visit(Target parent, BinaryQuantifierTemporal binaryQuantifierTemporal) {
         visitUntil(parent, binaryQuantifierTemporal);
     }
 
-    public void visit(Configuration parent, UnaryQuantifierTemporal unaryQuantifierTemporal) {
+    public void visit(Target parent, UnaryQuantifierTemporal unaryQuantifierTemporal) {
         String operator = unaryQuantifierTemporal.getOperator();
         switch (operator) {
             case "X" -> visitNext(parent, unaryQuantifierTemporal);
@@ -173,7 +184,7 @@ public class DependencyGraphGenerator {
         }
     }
 
-    public void visit(Configuration parent, BinaryTemporal binaryTemporal) {
+    public void visit(Target parent, BinaryTemporal binaryTemporal) {
         switch (binaryTemporal.getOperator()) {
             case "&" -> visitConjunction(parent, binaryTemporal);
             case "|" -> visitDisjunction(parent, binaryTemporal);
@@ -181,13 +192,17 @@ public class DependencyGraphGenerator {
         }
     }
 
-    public void visit(Configuration c, BooleanLiteral booleanLiteral) {
+    public void visit(Target target, BooleanLiteral booleanLiteral) {
+        Configuration c = target.getConfiguration();
+
         if (booleanLiteral.getValue()) {
             c.getSuccessors().add(new Edge());
         }
     }
 
-    public void visit(Configuration c, RelationalPredicate relationalPredicate) {
+    public void visit(Target target, RelationalPredicate relationalPredicate) {
+        Configuration c = target.getConfiguration();
+
         if (evaluatePredicate(relationalPredicate, c.getGame())) {
             c.getSuccessors().add(new Edge());
         }
@@ -210,31 +225,31 @@ public class DependencyGraphGenerator {
         }
     }
 
-    private Edge addToList(List<Configuration> environmentAfterTrans, Configuration cont) {
+    private Edge addToList(List<Target> environmentAfterTrans, Target cont) {
         Edge e = new Edge(environmentAfterTrans);
         e.add(cont);
         return e;
     }
 
-    private List<Configuration> fireAllEnabled(UnaryTemporal formula, PetriGame game, Player player, boolean mode) {
-        return nextMarkings(game, player).stream()
-                .map(g -> createOrGet(formula.getFirstOperand(), g, mode))
+    private List<Target> fireAllEnabled(UnaryTemporal formula, PetriGame game, Player player, boolean mode) {
+        return nextMarkingsWithTransitions(game, player).stream()
+                .map(g -> new Target(createOrGet(formula.getFirstOperand(), g.getGame(), mode), g.getTransition()))
                 .collect(Collectors.toList());
     }
 
-    private List<PetriGame> nextMarkings(Configuration c) {
+    private List<TransitionMarkingPair> nextMarkingsWithTransitions(Configuration c) {
         List<Transition> transitions = c.getGame().getEnabledTransitions();
-        return transitions.stream().map(c.getGame()::fire).collect(Collectors.toList());
+        return transitions.stream().map(t -> TransitionMarkingPair.of(t, c.getGame().fire(t))).collect(Collectors.toList());
     }
 
-    private List<PetriGame> nextMarkings(Configuration c, Player player) {
+    private List<TransitionMarkingPair> nextMarkingsWithTransitions(Configuration c, Player player) {
         List<Transition> transitions = c.getGame().getEnabledTransitions(player);
-        return transitions.stream().map(c.getGame()::fire).collect(Collectors.toList());
+        return transitions.stream().map(t -> TransitionMarkingPair.of(t, c.getGame().fire(t))).collect(Collectors.toList());
     }
 
-    private List<PetriGame> nextMarkings(PetriGame game, Player player) {
+    private List<TransitionMarkingPair> nextMarkingsWithTransitions(PetriGame game, Player player) {
         List<Transition> transitions = game.getEnabledTransitions(player);
-        return transitions.stream().map(game::fire).collect(Collectors.toList());
+        return transitions.stream().map(t -> TransitionMarkingPair.of(t, game.fire(t))).collect(Collectors.toList());
     }
 
     private boolean evaluatePredicate(RelationalPredicate predicate, PetriGame game) {
@@ -271,6 +286,28 @@ public class DependencyGraphGenerator {
             };
         } else {
             throw new RuntimeException("Unsupported operation");
+        }
+    }
+
+    private static class TransitionMarkingPair {
+        private final Transition key;
+        private final PetriGame value;
+
+        private TransitionMarkingPair(Transition transition, PetriGame game) {
+            this.key = transition;
+            this.value = game;
+        }
+
+        public static <A, B> TransitionMarkingPair of(Transition transition, PetriGame game) {
+            return new TransitionMarkingPair(transition, game);
+        }
+
+        public Transition getTransition() {
+            return key;
+        }
+
+        public PetriGame getGame() {
+            return value;
         }
     }
 }
