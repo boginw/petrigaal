@@ -9,13 +9,17 @@ import petrigaal.atl.language.ATLFormula;
 import petrigaal.atl.language.ATLNode;
 import petrigaal.draw.EDGToGraphViz;
 import petrigaal.edg.DependencyGraphGenerator;
+import petrigaal.loader.CompleteGraphPetriGameGenerator;
 import petrigaal.loader.PNMLLoader;
 import petrigaal.loader.TAPNLoader;
 import petrigaal.petri.PetriGame;
 import petrigaal.solver.EDGSolver;
 
 import java.io.*;
+import java.util.Collection;
+import java.util.HashSet;
 import java.util.Objects;
+import java.util.Set;
 
 public class Main {
     public static int counter = 0;
@@ -28,7 +32,9 @@ public class Main {
         }
 
         File pnml = new File(args[1]);
-        PetriGame game = loadGame(pnml);
+        //PetriGame game = loadGame(pnml);
+        PetriGame game = new CompleteGraphPetriGameGenerator().generate(9);
+
         ATLNode tree = new Parser().parse(args[0]);
         ATLNode optimizedTree = new Optimizer().optimize(tree);
 
@@ -37,7 +43,7 @@ public class Main {
 
         clearResults();
 
-        openGraph(c);
+        //openGraph(c);
         System.out.printf("Configurations: %d\n", size);
 
         if (args.length == 3) {

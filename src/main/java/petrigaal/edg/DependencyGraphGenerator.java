@@ -20,7 +20,6 @@ import petrigaal.petri.Transition;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import static petrigaal.atl.language.Path.A;
 import static petrigaal.atl.language.Path.E;
 
 public class DependencyGraphGenerator {
@@ -31,10 +30,21 @@ public class DependencyGraphGenerator {
         queue.add(c);
         configurations.put(c, c);
 
+        TimerTask timerTask = new TimerTask() {
+            @Override
+            public void run() {
+                System.out.println("Current number of configurations: " + configurations.size());
+            }
+        };
+
+        Timer timer = new Timer();
+        timer.schedule(timerTask, 0, 5000);
         do {
             Configuration configuration = Objects.requireNonNull(queue.poll());
             configuration.getFormula().visit(configuration, this);
         } while (!queue.isEmpty());
+
+        timer.cancel();
 
         return configurations.size();
     }
@@ -59,7 +69,7 @@ public class DependencyGraphGenerator {
         Configuration c1 = createOrGet(new Configuration(
                 formula.getFirstOperand(),
                 c.getGame(),
-                c.getGenerator(),
+                c.getHistory(),
                 !c.getMode()
         ));
 
@@ -93,7 +103,7 @@ public class DependencyGraphGenerator {
             PetriGame nextState = c.getGame().fire(transition);
             Configuration conf = createOrGet(formula, nextState, c.getMode());
             Configuration now = createOrGet(
-                    new Configuration(formula.getFirstOperand(), c.getGame(), transition, c.getMode())
+                    new Configuration(formula.getFirstOperand(), c.getGame(), null, c.getMode())
             );
             c.getSuccessors().add(new Edge(conf, now));
         }
@@ -105,7 +115,7 @@ public class DependencyGraphGenerator {
         Configuration now = createOrGet(new Configuration(
                 formula.getFirstOperand(),
                 c.getGame(),
-                c.getGenerator(),
+                c.getHistory(),
                 c.getMode()
         ));
 
@@ -142,6 +152,25 @@ public class DependencyGraphGenerator {
     }
 
     public void visitAlways(Configuration c, UnaryQuantifierTemporal formula) {
+
+        List<Transition> transitions = c.getGame().getEnabledTransitions();
+        Transition enforced = c.getHistory().get(c.getGame());
+
+        if (enforced != null) {
+            transitions = Collections.singletonList(enforced);
+        }
+
+        for (Transition transition : transitions) {
+            PetriGame nextState = c.getGame().fire(transition);
+            Map<PetriGame, Transition> history = new HashMap<>(c.getHistory());
+            history.put(c.getGame(), transition);
+            Configuration conf = createOrGet(new Configuration(formula, nextState, history, c.getMode()));
+            Configuration now = createOrGet(
+                    new Configuration(formula.getFirstOperand(), c.getGame(), history, c.getMode())
+            );
+            c.getSuccessors().add(new Edge(conf/*, now*/));
+        }
+        /*
         UnaryTemporal notFormula = new UnaryTemporal();
         notFormula.setOperator("!");
         notFormula.setFirstOperand(formula.getFirstOperand());
@@ -155,7 +184,7 @@ public class DependencyGraphGenerator {
         ut.setOperator("!");
         ut.setFirstOperand(bqt);
 
-        ut.visit(c, this);
+        ut.visit(c, this);*/
     }
 
     public void visit(Configuration parent, UnaryTemporal unaryTemporal) {
@@ -231,11 +260,13 @@ public class DependencyGraphGenerator {
 
     private List<PetriGame> nextMarkings(Configuration c, Player player) {
         List<Transition> transitions = c.getGame().getEnabledTransitions(player);
-        if (c.getGenerator() != null) {
-            transitions = List.of(c.getGenerator());
-            if (!c.getGame().isEnabled(c.getGenerator())) {
+        if (c.getHistory() != null) {
+            Transition enforcedTrans = c.getHistory().get(c.getGame());
+
+            if (!c.getGame().isEnabled(enforcedTrans)) {
                 return List.of();
             }
+            transitions = List.of(c.getHistory().get(c.getGame()));
         }
         return transitions.stream().map(c.getGame()::fire).collect(Collectors.toList());
     }

@@ -5,41 +5,40 @@ import petrigaal.edg.Edge;
 import petrigaal.petri.PetriGame;
 import petrigaal.petri.Transition;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
+import java.util.stream.Collectors;
 
 public class Configuration {
     private final ATLFormula formula;
     private final PetriGame game;
-    private final Transition generator;
+    private final Map<PetriGame, Transition> history;
     private final boolean mode;
     private final List<Edge> successors;
 
     public Configuration(
             ATLFormula formula,
             PetriGame game,
-            Transition generator,
+            Map<PetriGame, Transition> history,
             List<Edge> successors,
             boolean mode
     ) {
         this.formula = formula;
         this.game = game;
         this.successors = successors;
-        this.generator = generator;
+        this.history = history;
         this.mode = mode;
     }
 
-    public Configuration(ATLFormula formula, PetriGame game, Transition generator, boolean mode) {
-        this(formula, game, generator, new ArrayList<>(), mode);
+    public Configuration(ATLFormula formula, PetriGame game, Map<PetriGame, Transition> history, boolean mode) {
+        this(formula, game, history, new ArrayList<>(), mode);
     }
 
-    public Configuration(ATLFormula formula, PetriGame game, Transition generator) {
-        this(formula, game, generator, new ArrayList<>(), false);
+    public Configuration(ATLFormula formula, PetriGame game, Map<PetriGame, Transition> history) {
+        this(formula, game, history, new ArrayList<>(), false);
     }
 
     public Configuration(ATLFormula formula, PetriGame game) {
-        this(formula, game, null);
+        this(formula, game, new HashMap<>());
     }
 
     public ATLFormula getFormula() {
@@ -54,8 +53,8 @@ public class Configuration {
         return successors;
     }
 
-    public Transition getGenerator() {
-        return generator;
+    public Map<PetriGame, Transition> getHistory() {
+        return history;
     }
 
     public boolean getMode() {
@@ -69,17 +68,21 @@ public class Configuration {
         Configuration that = (Configuration) o;
         return Objects.equals(formula, that.formula) &&
                 Objects.equals(game, that.game) &&
-                Objects.equals(generator, that.generator) &&
+                Objects.equals(new HashMap<>(history), new HashMap<>(that.history)) &&
                 Objects.equals(mode, that.mode);
     }
 
     @Override
     public String toString() {
-        return "{" + game + ", " + generator + ", " + formula.getLiteral() + ", " + mode + '}';
+        String hist = history.entrySet()
+                .stream()
+                .map(e -> e.getKey() + ":" + e.getValue())
+                .collect(Collectors.joining(","));
+        return "{" + game + ", {" + hist + "}, " + formula.getLiteral() + '}';
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(formula, game, generator, mode);
+        return Objects.hash(formula, game, history, mode);
     }
 }
