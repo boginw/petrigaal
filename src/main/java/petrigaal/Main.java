@@ -7,12 +7,14 @@ import petrigaal.atl.Optimizer;
 import petrigaal.atl.Parser;
 import petrigaal.atl.language.ATLFormula;
 import petrigaal.atl.language.ATLNode;
+import petrigaal.draw.AutomataStrategyToGraphViz;
 import petrigaal.draw.EDGToGraphViz;
 import petrigaal.edg.DependencyGraphGenerator;
 import petrigaal.loader.PNMLLoader;
 import petrigaal.loader.TAPNLoader;
 import petrigaal.petri.PetriGame;
 import petrigaal.solver.NonModifyingEDGSolver;
+import petrigaal.strategy.AutomataStrategy;
 import petrigaal.strategy.TopDownStrategySynthesiser;
 
 import java.io.*;
@@ -45,12 +47,12 @@ public class Main {
         if (args.length == 3) {
             long startTime = System.nanoTime();
             long endTime = System.nanoTime();
-            var propagationByConfiguration = new NonModifyingEDGSolver().solve(c, Main::nop);
+            Map<Configuration, Boolean> propagationByConfiguration = new NonModifyingEDGSolver().solve(c, Main::nop);
             long milliseconds = (endTime - startTime) / 1000000;
 
             openGraph(c, propagationByConfiguration);
             System.out.printf("Total ms: %d", milliseconds);
-            new TopDownStrategySynthesiser().synthesize(game, c, propagationByConfiguration);
+            new TopDownStrategySynthesiser().synthesize(game, c, propagationByConfiguration, Main::openGraph);
         } else {
             openGraph(c);
         }
@@ -91,9 +93,16 @@ public class Main {
         openGraph(c, new HashMap<>());
     }
 
+    private static void openGraph(AutomataStrategy strategy) {
+        openGraph(new AutomataStrategyToGraphViz().draw(strategy));
+    }
+
     private static void openGraph(Configuration c, Map<Configuration, Boolean> propagationByConfiguration) {
+        openGraph(new EDGToGraphViz().draw(c, propagationByConfiguration));
+    }
+
+    private static void openGraph(String graph) {
         try {
-            String graph = new EDGToGraphViz().draw(c, propagationByConfiguration);
             //File svgFile = File.createTempFile("graph",".svg");
             File vizFile = new File("./out/" + (counter++) + ".gv");
             File svgFile = new File("./out/" + (counter++) + ".svg");
