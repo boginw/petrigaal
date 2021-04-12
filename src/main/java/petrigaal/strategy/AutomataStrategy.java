@@ -13,8 +13,8 @@ import java.util.stream.Stream;
 
 public class AutomataStrategy {
     private final PetriGame game;
-    private Map<Pair<AutomataState, PetriGame>, Set<Pair<Transition, AutomataState>>> stateTransitions = new HashMap<>();
-    private AutomataState initialState = new AutomataState("init");
+    private final Map<Pair<AutomataState, PetriGame>, Set<Pair<Transition, AutomataState>>> stateTransitions = new HashMap<>();
+    private final AutomataState initialState = new AutomataState("init");
 
     public AutomataStrategy(PetriGame game) {
         this.game = game;

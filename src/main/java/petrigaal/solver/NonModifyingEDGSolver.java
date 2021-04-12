@@ -15,7 +15,6 @@ public class NonModifyingEDGSolver {
     public Map<Configuration, Boolean> solve(Configuration c, BiConsumer<Integer, Integer> consumer) {
         this.consumer = consumer;
         propagationByConfiguration.clear();
-        c = c.copy();
 
         propagationByConfiguration.put(c, false);
         while (true) {

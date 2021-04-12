@@ -68,7 +68,7 @@ public class TopDownStrategySynthesiser implements StrategySynthesiser {
                     continue;
                 }
 
-                drawSet(closures);
+                //drawSet(closures);
 
                 if (controllable.isEmpty()) {
                     for (Closure closure : uncontrollable) {
@@ -122,6 +122,7 @@ public class TopDownStrategySynthesiser implements StrategySynthesiser {
                 }
             }
         }
+        consumer.accept(strategy);
     }
 
     private void drawSet(Set<Closure> successors) {
