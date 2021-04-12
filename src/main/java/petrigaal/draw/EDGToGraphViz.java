@@ -12,17 +12,23 @@ public class EDGToGraphViz {
     private final Map<String, List<String>> nodes = new HashMap<>();
     private final Map<Integer, List<String>> ranks = new HashMap<>();
     private final Queue<Pair<Configuration, Integer>> queue = new LinkedList<>();
+    private Map<Configuration, Boolean> propagationByConfiguration;
     private int empties = 0;
     private int joints = 0;
 
     public String draw(Configuration configuration) {
+        return draw(configuration, new HashMap<>());
+    }
+
+    public String draw(Configuration configuration, Map<Configuration, Boolean> propagationByConfiguration) {
+        this.propagationByConfiguration = propagationByConfiguration;
         queue.clear();
 
         StringBuilder sb = new StringBuilder();
 
         queue.add(new Pair<>(configuration, 0));
 
-        while(!queue.isEmpty()) {
+        while (!queue.isEmpty()) {
             visit(queue.poll());
         }
 
@@ -66,11 +72,16 @@ public class EDGToGraphViz {
     private void visit(Configuration c, int rank) {
         String name = nameOf(c);
 
+        String suffix = "";
+        if (propagationByConfiguration.getOrDefault(c, false)) {
+            suffix = " [color=green, penwidth=5]";
+        }
+
         if (nodes.containsKey(name)) {
             return;
         }
 
-        nodesOrder.add(name);
+        nodesOrder.add(name + suffix);
         ranks.computeIfAbsent(rank, n -> new ArrayList<>());
         nodes.computeIfAbsent(name, n -> new ArrayList<>());
         ranks.get(rank).add(name);
@@ -88,7 +99,7 @@ public class EDGToGraphViz {
 
         if (edge.isNegated()) {
             nameWithoutArrow = name + " [arrowhead=\"none\", style=\"dashed\"]";
-            suffix = "[style=\"dashed\"]";
+            suffix = ", style=\"dashed\"";
         }
 
         ranks.computeIfAbsent(rank, n -> new ArrayList<>());
@@ -108,7 +119,7 @@ public class EDGToGraphViz {
             if (target.getTransition() != null) {
                 label = target.getTransition().toString();
             }
-            children.add(nameOf(target.getConfiguration()) + suffix + " [xlabel=\"" + label + "\"]");
+            children.add(nameOf(target.getConfiguration()) + " [xlabel=\"" + label + "\"" + suffix + "]");
             queue.add(new Pair<>(target.getConfiguration(), rank + 1));
         }
     }

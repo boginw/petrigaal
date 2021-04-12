@@ -12,10 +12,12 @@ import petrigaal.edg.DependencyGraphGenerator;
 import petrigaal.loader.PNMLLoader;
 import petrigaal.loader.TAPNLoader;
 import petrigaal.petri.PetriGame;
-import petrigaal.solver.EDGSolver;
+import petrigaal.solver.NonModifyingEDGSolver;
 import petrigaal.strategy.TopDownStrategySynthesiser;
 
 import java.io.*;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Objects;
 
 public class Main {
@@ -38,16 +40,21 @@ public class Main {
 
         clearResults();
 
-        openGraph(c);
         System.out.printf("Configurations: %d\n", size);
 
         if (args.length == 3) {
-            long milliseconds = benchmark(() -> new EDGSolver().solve(c, Main::nop));
-            openGraph(c);
+            long startTime = System.nanoTime();
+            long endTime = System.nanoTime();
+            var propagationByConfiguration = new NonModifyingEDGSolver().solve(c, Main::nop);
+            long milliseconds = (endTime - startTime) / 1000000;
+
+            openGraph(c, propagationByConfiguration);
             System.out.printf("Total ms: %d", milliseconds);
+            new TopDownStrategySynthesiser().synthesize(game, c, propagationByConfiguration);
+        } else {
+            openGraph(c);
         }
 
-        new TopDownStrategySynthesiser().synthesize(game, c);
     }
 
     private static PetriGame loadGame(File file) throws FileNotFoundException {
@@ -58,13 +65,6 @@ public class Main {
         } else {
             throw new RuntimeException("Unsupported file format");
         }
-    }
-
-    private static long benchmark(Runnable runnable) {
-        long startTime = System.nanoTime();
-        runnable.run();
-        long endTime = System.nanoTime();
-        return (endTime - startTime) / 1000000;
     }
 
     private static void clearResults() {
@@ -88,8 +88,12 @@ public class Main {
     }
 
     private static void openGraph(Configuration c) {
+        openGraph(c, new HashMap<>());
+    }
+
+    private static void openGraph(Configuration c, Map<Configuration, Boolean> propagationByConfiguration) {
         try {
-            String graph = new EDGToGraphViz().draw(c);
+            String graph = new EDGToGraphViz().draw(c, propagationByConfiguration);
             //File svgFile = File.createTempFile("graph",".svg");
             File vizFile = new File("./out/" + (counter++) + ".gv");
             File svgFile = new File("./out/" + (counter++) + ".svg");

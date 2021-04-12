@@ -14,7 +14,6 @@ public class Configuration {
     private final PetriGame game;
     private final boolean mode;
     private final List<Edge> successors;
-    private boolean propagates = false;
 
     public Configuration(
             ATLFormula formula,
@@ -50,14 +49,6 @@ public class Configuration {
 
     public boolean getMode() {
         return mode;
-    }
-
-    public boolean isPropagates() {
-        return propagates;
-    }
-
-    public void setPropagates(boolean propagates) {
-        this.propagates = propagates;
     }
 
     @Override

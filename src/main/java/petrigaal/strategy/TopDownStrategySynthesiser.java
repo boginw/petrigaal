@@ -13,9 +13,18 @@ import java.util.stream.Collectors;
 public class TopDownStrategySynthesiser implements StrategySynthesiser {
     private final Set<ConfigurationSetStatePair> visited = new HashSet<>();
     private final Queue<ConfigurationSetStatePair> waiting = new LinkedList<>();
+    private Map<Configuration, Boolean> propagationByConfiguration;
+    private PetriGame game;
 
     @Override
-    public void synthesize(PetriGame game, Configuration root) {
+    public void synthesize(
+            PetriGame game,
+            Configuration root,
+            Map<Configuration, Boolean> propagationByConfiguration
+    ) {
+        this.game = game;
+        this.propagationByConfiguration = propagationByConfiguration;
+
         visited.clear();
         waiting.clear();
 
@@ -33,7 +42,7 @@ public class TopDownStrategySynthesiser implements StrategySynthesiser {
                 Set<Closure> uncontrollable = new HashSet<>();
 
                 for (Closure closure : closures) {
-                    if (isControllable(game, closure)) {
+                    if (isControllable(closure)) {
                         controllable.add(closure);
                     } else {
                         uncontrollable.add(closure);
@@ -88,7 +97,12 @@ public class TopDownStrategySynthesiser implements StrategySynthesiser {
     }
 
     private boolean propagatesZero(Set<Closure> closures) {
-        return false;
+        for (Closure closure : closures) {
+            if (!propagationByConfiguration.get(closure.getTarget().getConfiguration())) {
+                return false;
+            }
+        }
+        return true;
     }
 
     private Optional<ConfigurationSetStatePair> getPreviouslyVisitedPair(Set<Closure> closures) {
@@ -103,7 +117,7 @@ public class TopDownStrategySynthesiser implements StrategySynthesiser {
                 .collect(Collectors.toSet());
     }
 
-    private static boolean isControllable(PetriGame game, Closure closure) {
+    private boolean isControllable(Closure closure) {
         return game.getTransitions(Player.Controller).contains(closure.getTarget().getTransition());
     }
 
