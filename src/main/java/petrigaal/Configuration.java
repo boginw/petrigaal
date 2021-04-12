@@ -3,17 +3,18 @@ package petrigaal;
 import petrigaal.atl.language.ATLFormula;
 import petrigaal.edg.Edge;
 import petrigaal.petri.PetriGame;
-import petrigaal.petri.Transition;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 public class Configuration {
     private final ATLFormula formula;
     private final PetriGame game;
     private final boolean mode;
     private final List<Edge> successors;
+    private boolean propagates = false;
 
     public Configuration(
             ATLFormula formula,
@@ -51,6 +52,14 @@ public class Configuration {
         return mode;
     }
 
+    public boolean isPropagates() {
+        return propagates;
+    }
+
+    public void setPropagates(boolean propagates) {
+        this.propagates = propagates;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -69,5 +78,10 @@ public class Configuration {
     @Override
     public int hashCode() {
         return Objects.hash(formula, game, mode);
+    }
+
+    public Configuration copy() {
+        List<Edge> copiedEdges = successors.stream().map(Edge::copy).collect(Collectors.toList());
+        return new Configuration(formula, game, copiedEdges, mode);
     }
 }

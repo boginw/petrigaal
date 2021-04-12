@@ -12,6 +12,7 @@ import java.util.Queue;
 import java.util.function.BiConsumer;
 
 public class EDGSolver {
+    private static final int REPORT_LIMIT = 10;
     private List<Configuration> visited;
     private boolean edgeRemoved;
     private boolean edgeNegated;
@@ -19,6 +20,7 @@ public class EDGSolver {
     private BiConsumer<Integer, Integer> consumer;
     private Queue<Pair<Edge, Configuration>> queue;
     private final int threads = 4;
+    private int report = 0;
 
     public String solve(Configuration c, BiConsumer<Integer, Integer> consumer) {
         this.queue = new LinkedList<>();
@@ -45,15 +47,13 @@ public class EDGSolver {
     }
 
     private void visitQueue(Pair<Edge, Configuration> start) {
-        int report = 0;
-
         visited.clear();
         queue.clear();
         queue.add(start);
 
         Pair<Edge, Configuration> pair;
         while ((pair = queue.poll()) != null) {
-            if (report++ % 10000 == 0) {
+            if (report++ % REPORT_LIMIT == 0) {
                 consumer.accept(queue.size(), visited.size());
             }
 
@@ -114,7 +114,7 @@ public class EDGSolver {
         c.getSuccessors().retainAll(List.of(edge));
     }
 
-    private boolean isConfigurationTargetOfEdge(Configuration c, Edge e) {
+    private static boolean isConfigurationTargetOfEdge(Configuration c, Edge e) {
         return e.stream().anyMatch(t -> t.getConfiguration().equals(c));
     }
 }

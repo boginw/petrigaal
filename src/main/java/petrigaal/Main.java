@@ -13,6 +13,7 @@ import petrigaal.loader.PNMLLoader;
 import petrigaal.loader.TAPNLoader;
 import petrigaal.petri.PetriGame;
 import petrigaal.solver.EDGSolver;
+import petrigaal.strategy.TopDownStrategySynthesiser;
 
 import java.io.*;
 import java.util.Objects;
@@ -45,6 +46,8 @@ public class Main {
             openGraph(c);
             System.out.printf("Total ms: %d", milliseconds);
         }
+
+        new TopDownStrategySynthesiser().synthesize(game, c);
     }
 
     private static PetriGame loadGame(File file) throws FileNotFoundException {
@@ -65,16 +68,19 @@ public class Main {
     }
 
     private static void clearResults() {
-        if (new File("./out").exists()) {
-            for (File f : Objects.requireNonNull(new File("./out").listFiles())) {
-                f.delete();
+        File outFolder = new File("./out");
+        if (outFolder.exists()) {
+            for (File f : Objects.requireNonNull(outFolder.listFiles())) {
+                assert f.delete();
             }
+        } else {
+            assert outFolder.mkdir();
         }
     }
 
     private static void nop(int initial, int configurationsRemoved) {
         System.out.printf(
-                "Workers: %d, Configurations Visited: %d (%.2f%%)\n",
+                "Queue Size: %d, Configurations Visited: %d (%.2f%%)\n",
                 initial,
                 configurationsRemoved,
                 ((configurationsRemoved / (float) size) * 100)

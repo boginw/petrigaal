@@ -2,10 +2,7 @@ package petrigaal.edg;
 
 import petrigaal.Configuration;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class Edge extends ArrayList<Target> {
@@ -49,4 +46,8 @@ public class Edge extends ArrayList<Target> {
         return this;
     }
 
+    public Edge copy() {
+        List<Target> copy = this.stream().map(Target::copy).collect(Collectors.toList());
+        return new Edge(new ArrayList<>(copy), isNegated);
+    }
 }
