@@ -9,14 +9,12 @@ import petrigaal.petri.Transition;
 import petrigaal.strategy.AutomataStrategy.AutomataState;
 
 import java.util.*;
-import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 public class TopDownStrategySynthesiser implements StrategySynthesiser {
     private final Set<ConfigurationSetStatePair> visited = new HashSet<>();
     private final Queue<ConfigurationSetStatePair> waiting = new LinkedList<>();
-    private Configuration root;
     private Map<Configuration, Boolean> propagationByConfiguration;
     private Consumer<AutomataStrategy> consumer;
     private PetriGame game;
@@ -31,7 +29,6 @@ public class TopDownStrategySynthesiser implements StrategySynthesiser {
             Consumer<AutomataStrategy> consumer
     ) {
         this.game = game;
-        this.root = root;
         this.propagationByConfiguration = propagationByConfiguration;
         this.consumer = consumer;
         this.strategy = new AutomataStrategy(game);
