@@ -10,6 +10,7 @@ import petrigaal.strategy.AutomataStrategy.AutomataState;
 
 import java.util.*;
 import java.util.function.Consumer;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 public class TopDownStrategySynthesiser implements StrategySynthesiser {
@@ -41,6 +42,7 @@ public class TopDownStrategySynthesiser implements StrategySynthesiser {
         ConfigurationSetStatePair initialPair = ConfigurationSetStatePair.of(null, Set.of(root), strategy.getInitialState());
         waiting.add(initialPair);
 
+        System.out.println();
         while (!waiting.isEmpty()) {
             ConfigurationSetStatePair pair = waiting.poll();
             Set<Set<Closure>> successors = close(pair.getConfigurations());
@@ -74,57 +76,37 @@ public class TopDownStrategySynthesiser implements StrategySynthesiser {
 
                 if (controllable.isEmpty()) {
                     for (Closure closure : uncontrollable) {
-                        Optional<ConfigurationSetStatePair> foundPair = getPreviouslyVisitedPair(Set.of(closure));
-                        AutomataState state;
-                        if (foundPair.isEmpty()) {
-                            state = new AutomataState("state" + counter++);
-                            ConfigurationSetStatePair newPair = ConfigurationSetStatePair.of(
-                                    pair,
-                                    getConfigurations(Set.of(closure)),
-                                    state
-                            );
-                            if (!deadPairs.contains(newPair)) {
-                                visited.add(newPair);
-                                waiting.add(newPair);
-                                dead = false;
-                            }
-                        } else {
-                            state = foundPair.get().getState();
+                        ConfigurationSetStatePair newPair = getOrCreatePair(pair, Set.of(closure));
+                        if (!deadPairs.contains(newPair)) {
+                            dead = false;
+                        }
+                        if (!visited.contains(newPair)) {
+                            visited.add(newPair);
+                            waiting.add(newPair);
                         }
 
-                        strategy.addTransition(pair.getState(), closure.getSource().getGame(), null, state);
+                        strategy.addTransition(pair.getState(), closure.getSource().getGame(), null, newPair.getState());
                     }
                 } else {
                     for (Closure closure : uncontrollable) {
-                        Optional<ConfigurationSetStatePair> foundPair = getPreviouslyVisitedPair(Set.of(closure));
-                        if (foundPair.isEmpty()) {
-                            ConfigurationSetStatePair newPair = ConfigurationSetStatePair.of(
-                                    pair,
-                                    getConfigurations(Set.of(closure)),
-                                    pair.getState()
-                            );
-                            if (!deadPairs.contains(newPair)) {
-                                waiting.add(newPair);
-                                dead = false;
-                            }
+                        ConfigurationSetStatePair newPair = getOrCreatePair(pair, Set.of(closure), pair::getState);
+
+                        if (!deadPairs.contains(newPair)) {
+                            dead = false;
+                        }
+                        if (!visited.contains(newPair)) {
+                            waiting.add(newPair);
                         }
                     }
 
-                    Optional<ConfigurationSetStatePair> foundPair = getPreviouslyVisitedPair(controllable).or(() -> {
-                        AutomataState state = new AutomataState("state" + counter++);
-                        ConfigurationSetStatePair newPair = ConfigurationSetStatePair.of(
-                                pair,
-                                getConfigurations(controllable),
-                                state
-                        );
-                        if (!deadPairs.contains(newPair)) {
-                            waiting.add(newPair);
-                            visited.add(newPair);
-                        }
-                        return Optional.of(newPair);
-                    });
-                    ConfigurationSetStatePair newPair = foundPair.orElseThrow();
+                    ConfigurationSetStatePair newPair = getOrCreatePair(pair, controllable);
+
                     if (!deadPairs.contains(newPair)) {
+                        dead = false;
+                    }
+                    if (!visited.contains(newPair)) {
+                        waiting.add(newPair);
+                        visited.add(newPair);
                         dead = false;
                     }
                     strategy.addTransition(
@@ -158,9 +140,27 @@ public class TopDownStrategySynthesiser implements StrategySynthesiser {
         return false;
     }
 
-    private Optional<ConfigurationSetStatePair> getPreviouslyVisitedPair(Set<Closure> closures) {
+    private ConfigurationSetStatePair getOrCreatePair(
+            ConfigurationSetStatePair previous,
+            Set<Closure> closures
+    ) {
+        return getOrCreatePair(previous, closures, () -> new AutomataState("state" + counter++));
+    }
+
+    private ConfigurationSetStatePair getOrCreatePair(
+            ConfigurationSetStatePair previous,
+            Set<Closure> closures,
+            Supplier<AutomataState> supplier
+    ) {
         Set<Configuration> configurations = getConfigurations(closures);
-        return visited.stream().filter(c -> c.getConfigurations().equals(configurations)).findAny();
+        return visited.stream()
+                .filter(c -> c.getConfigurations().equals(configurations))
+                .findAny()
+                .orElseGet(() -> ConfigurationSetStatePair.of(
+                        previous,
+                        getConfigurations(closures),
+                        supplier.get()
+                ));
     }
 
     private Set<Configuration> getConfigurations(Set<Closure> closures) {

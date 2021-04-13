@@ -59,7 +59,7 @@ public class EDGToGraphViz {
         }
 
         return "digraph G {\n" +
-                "graph [pad=\"1\", nodesep=\"1\", ranksep=\"1\", rankdir=\"TB\", splines=ortho];\n" +
+                "graph [pad=\"2\", nodesep=\"2\", ranksep=\"1\", rankdir=\"TB\", splines=ortho];\n" +
                 "node [shape=box]\n" +
                 sb +
                 "}";
