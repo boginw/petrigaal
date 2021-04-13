@@ -1,7 +1,6 @@
-package petrigaal;
+package petrigaal.edg;
 
 import petrigaal.atl.language.ATLFormula;
-import petrigaal.edg.Edge;
 import petrigaal.petri.PetriGame;
 
 import java.util.ArrayList;
@@ -63,7 +62,7 @@ public class Configuration {
 
     @Override
     public String toString() {
-        return "{" + game + ", " + formula.getLiteral() + ", " + mode + '}';
+        return "{" + game + ", " + formula.getLiteral() + (mode ? ", true" : "") + '}';
     }
 
     @Override

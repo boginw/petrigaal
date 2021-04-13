@@ -34,7 +34,7 @@ public class AutomataStrategyToGraphViz {
         });
 
         return "digraph G {\n" +
-                "graph [pad=\"1\", nodesep=\"1\", ranksep=\"1\", rankdir=\"TB\", splines=ortho];\n" +
+                "graph [pad=\"2\", nodesep=\"2\", ranksep=\"1\", rankdir=\"TB\"];\n" +
                 "node [shape=oval]\n" +
                 sb +
                 "}";

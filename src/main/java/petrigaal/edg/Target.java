@@ -1,6 +1,5 @@
 package petrigaal.edg;
 
-import petrigaal.Configuration;
 import petrigaal.petri.Transition;
 
 import java.util.Objects;

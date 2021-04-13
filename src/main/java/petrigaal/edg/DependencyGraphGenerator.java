@@ -1,6 +1,5 @@
 package petrigaal.edg;
 
-import petrigaal.Configuration;
 import petrigaal.atl.language.ATLFormula;
 import petrigaal.atl.language.nodes.Expression;
 import petrigaal.atl.language.nodes.expression.BinaryExpression;
@@ -117,11 +116,16 @@ public class DependencyGraphGenerator {
         ));
 
         if (!c.getMode()) {
-            nextMarkingsWithTransitions(c)
+            nextMarkingsWithTransitions(c, Player.Controller)
                     .stream()
                     .map(m -> new Target(createOrGet(formula, m.getGame(), c.getMode()), m.getTransition()))
                     .map(Edge::new)
                     .forEach(c.getSuccessors()::add);
+
+            nextMarkingsWithTransitions(c, Player.Environment)
+                    .stream()
+                    .map(m -> new Target(createOrGet(formula, m.getGame(), c.getMode()), m.getTransition()))
+                    .forEach(t -> c.getSuccessors().forEach(e -> e.add(t)));
             c.getSuccessors().add(new Edge(now));
         } else {
             if (formula.getPath() == E) {

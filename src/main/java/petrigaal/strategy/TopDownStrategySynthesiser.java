@@ -1,6 +1,6 @@
 package petrigaal.strategy;
 
-import petrigaal.Configuration;
+import petrigaal.edg.Configuration;
 import petrigaal.edg.Edge;
 import petrigaal.edg.Target;
 import petrigaal.petri.PetriGame;
@@ -111,8 +111,8 @@ public class TopDownStrategySynthesiser implements StrategySynthesiser {
                     }
                     strategy.addTransition(
                             pair.getState(),
-                            closures.iterator().next().getSource().getGame(),
-                            closures.iterator().next().getTarget().getTransition(),
+                            controllable.iterator().next().getSource().getGame(),
+                            controllable.iterator().next().getTarget().getTransition(),
                             newPair.getState()
                     );
                 }

@@ -1,7 +1,5 @@
 package petrigaal.edg;
 
-import petrigaal.Configuration;
-
 import java.util.*;
 import java.util.stream.Collectors;
 

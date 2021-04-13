@@ -4,6 +4,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import petrigaal.atl.language.ATLFormula;
 import petrigaal.atl.language.nodes.predicate.BooleanLiteral;
+import petrigaal.edg.Configuration;
 import petrigaal.petri.PetriGame;
 
 import static org.junit.jupiter.api.Assertions.*;

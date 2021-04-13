@@ -9,6 +9,7 @@ import petrigaal.atl.language.ATLFormula;
 import petrigaal.atl.language.ATLNode;
 import petrigaal.draw.AutomataStrategyToGraphViz;
 import petrigaal.draw.EDGToGraphViz;
+import petrigaal.edg.Configuration;
 import petrigaal.edg.DependencyGraphGenerator;
 import petrigaal.loader.PNMLLoader;
 import petrigaal.loader.TAPNLoader;

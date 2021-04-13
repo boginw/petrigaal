@@ -1,7 +1,7 @@
 package petrigaal.draw;
 
 import org.antlr.v4.runtime.misc.Pair;
-import petrigaal.Configuration;
+import petrigaal.edg.Configuration;
 import petrigaal.edg.Edge;
 import petrigaal.edg.Target;
 

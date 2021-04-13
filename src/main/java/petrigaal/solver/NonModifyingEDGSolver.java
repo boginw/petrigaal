@@ -1,6 +1,6 @@
 package petrigaal.solver;
 
-import petrigaal.Configuration;
+import petrigaal.edg.Configuration;
 import petrigaal.edg.Edge;
 import petrigaal.edg.Target;
 
