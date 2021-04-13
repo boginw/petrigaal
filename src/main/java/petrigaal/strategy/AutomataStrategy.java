@@ -4,10 +4,7 @@ import org.antlr.v4.runtime.misc.Pair;
 import petrigaal.petri.PetriGame;
 import petrigaal.petri.Transition;
 
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -51,6 +48,20 @@ public class AutomataStrategy {
         return Stream.concat(a.stream(), b.stream()).collect(Collectors.toSet());
     }
 
+    public void removeState(AutomataState state) {
+        Set<Pair<AutomataState, PetriGame>> foundKey = stateTransitions.entrySet()
+                .stream()
+                .filter(e -> e.getValue().stream().anyMatch(p -> p.b.equals(state)))
+                .map(Map.Entry::getKey)
+                .collect(Collectors.toSet());
+        foundKey.forEach(key -> stateTransitions.computeIfPresent(key, (k, v) -> {
+            v.removeIf(s -> s.b.equals(state));
+            return v;
+        }));
+
+        stateTransitions.entrySet().removeIf(e -> e.getKey().a.equals(state));
+    }
+
     public static class AutomataState {
         private final String name;
 
@@ -60,6 +71,24 @@ public class AutomataStrategy {
 
         public String getName() {
             return name;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+            AutomataState state = (AutomataState) o;
+            return Objects.equals(name, state.name);
+        }
+
+        @Override
+        public String toString() {
+            return "AutomataState{name='" + name + "'}";
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(name);
         }
     }
 }

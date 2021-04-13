@@ -24,7 +24,7 @@ public class AutomataStrategyToGraphViz {
                 sb.append(k.a.getName())
                         .append(" -> ")
                         .append(transitionAutomataStatePair.b.getName())
-                        .append(" [label=\"")
+                        .append(" [xlabel=\"")
                         .append(k.b)
                         .append(" / ")
                         .append(transitionAutomataStatePair.a)
