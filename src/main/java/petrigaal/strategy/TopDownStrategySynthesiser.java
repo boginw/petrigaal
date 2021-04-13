@@ -15,7 +15,7 @@ import java.util.stream.Collectors;
 
 public class TopDownStrategySynthesiser implements StrategySynthesiser {
     private final Set<ConfigurationSetStatePair> visited = new HashSet<>();
-    private final Queue<ConfigurationSetStatePair> waiting = new LinkedList<>();
+    private final Deque<ConfigurationSetStatePair> waiting = new LinkedList<>();
     private final Set<ConfigurationSetStatePair> deadPairs = new HashSet<>();
     private Map<Configuration, Boolean> propagationByConfiguration;
     private Consumer<AutomataStrategy> consumer;
@@ -44,7 +44,7 @@ public class TopDownStrategySynthesiser implements StrategySynthesiser {
 
         System.out.println();
         while (!waiting.isEmpty()) {
-            ConfigurationSetStatePair pair = waiting.poll();
+            ConfigurationSetStatePair pair = waiting.pollLast();
             Set<Set<Closure>> successors = close(pair.getConfigurations());
             boolean dead = true;
             for (Set<Closure> closures : successors) {
@@ -107,7 +107,6 @@ public class TopDownStrategySynthesiser implements StrategySynthesiser {
                     if (!visited.contains(newPair)) {
                         waiting.add(newPair);
                         visited.add(newPair);
-                        dead = false;
                     }
                     strategy.addTransition(
                             pair.getState(),
