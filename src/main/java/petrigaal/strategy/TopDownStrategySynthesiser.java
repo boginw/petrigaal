@@ -11,7 +11,9 @@ import petrigaal.strategy.AutomataStrategy.AutomataState;
 import java.util.*;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
-import java.util.stream.Collectors;
+
+import static java.util.stream.Collectors.groupingBy;
+import static java.util.stream.Collectors.toSet;
 
 public class TopDownStrategySynthesiser implements StrategySynthesiser {
     private final Set<ConfigurationSetStatePair> visited = new HashSet<>();
@@ -33,22 +35,33 @@ public class TopDownStrategySynthesiser implements StrategySynthesiser {
         this.game = game;
         this.propagationByConfiguration = propagationByConfiguration;
         this.consumer = consumer;
-        this.strategy = new AutomataStrategy(game);
+        this.strategy = new AutomataStrategy();
 
         visited.clear();
         waiting.clear();
         deadPairs.clear();
 
-        ConfigurationSetStatePair initialPair = ConfigurationSetStatePair.of(null, Set.of(root), strategy.getInitialState());
+        ConfigurationSetStatePair initialPair = ConfigurationSetStatePair.of(
+                Collections.emptySet(),
+                Set.of(root),
+                strategy.getInitialState()
+        );
         waiting.add(initialPair);
 
         System.out.println();
         while (!waiting.isEmpty()) {
             ConfigurationSetStatePair pair = waiting.pollLast();
+            if (pair == null) continue;
             Set<Set<Closure>> successors = close(pair.getConfigurations());
             boolean dead = true;
             for (Set<Closure> closures : successors) {
                 if (closures.isEmpty()) {
+                    strategy.addTransition(
+                            pair.getState(),
+                            null,
+                            null,
+                            pair.getState()
+                    );
                     dead = false;
                     continue;
                 }
@@ -68,7 +81,7 @@ public class TopDownStrategySynthesiser implements StrategySynthesiser {
                 Set<Transition> transitions = controllable.stream()
                         .map(Closure::getTarget)
                         .map(Target::getTransition)
-                        .collect(Collectors.toSet());
+                        .collect(toSet());
 
                 if (transitions.size() > 1) {
                     continue;
@@ -77,39 +90,27 @@ public class TopDownStrategySynthesiser implements StrategySynthesiser {
                 if (controllable.isEmpty() && closures.stream().allMatch(this::controllableHasNotEnabledTransitions)) {
                     for (Closure closure : uncontrollable) {
                         ConfigurationSetStatePair newPair = getOrCreatePair(pair, Set.of(closure));
-                        if (!deadPairs.contains(newPair)) {
-                            dead = false;
-                        }
-                        if (!visited.contains(newPair)) {
-                            visited.add(newPair);
-                            waiting.add(newPair);
-                        }
-
-                        strategy.addTransition(pair.getState(), closure.getSource().getGame(), null, newPair.getState());
+                        dead = enqueuePair(newPair);
+                        strategy.addTransition(
+                                pair.getState(),
+                                closure.getSource().getGame(),
+                                null,
+                                newPair.getState()
+                        );
                     }
                 } else {
-                    for (Closure closure : uncontrollable) {
-                        ConfigurationSetStatePair newPair = getOrCreatePair(pair, Set.of(closure), pair::getState);
-
-                        if (!deadPairs.contains(newPair)) {
-                            dead = false;
-                        }
-                        if (!visited.contains(newPair)) {
-                            waiting.add(newPair);
-                            visited.add(newPair);
-                        }
+                    Set<Set<Closure>> uncontrollableClosureByTransition = new HashSet<>(
+                            uncontrollable.stream()
+                                    .collect(groupingBy(c -> c.getTarget().getTransition(), toSet()))
+                                    .values()
+                    );
+                    for (Set<Closure> uncontrollableClosures : uncontrollableClosureByTransition) {
+                        dead = enqueuePair(getOrCreatePair(pair, uncontrollableClosures, pair::getState));
                     }
 
                     if (!controllable.isEmpty()) {
                         ConfigurationSetStatePair newPair = getOrCreatePair(pair, controllable);
-
-                        if (!deadPairs.contains(newPair)) {
-                            dead = false;
-                        }
-                        if (!visited.contains(newPair)) {
-                            waiting.add(newPair);
-                            visited.add(newPair);
-                        }
+                        dead = enqueuePair(newPair);
                         strategy.addTransition(
                                 pair.getState(),
                                 controllable.iterator().next().getSource().getGame(),
@@ -121,8 +122,16 @@ public class TopDownStrategySynthesiser implements StrategySynthesiser {
             }
             if (dead) {
                 System.out.println("DEAD: " + pair);
+                if (pair.equals(initialPair)) {
+                    strategy = new AutomataStrategy();
+                    waiting.clear();
+                    break;
+                }
                 deadPairs.add(pair);
-                waiting.add(pair.getParent());
+                for (ConfigurationSetStatePair parent : pair.getParents()) {
+                    visited.remove(parent);
+                    waiting.add(parent);
+                }
             }
         }
 
@@ -130,54 +139,19 @@ public class TopDownStrategySynthesiser implements StrategySynthesiser {
             strategy.removeState(deadPair.getState());
         }
 
+        strategy.removeEverythingThatIsNotConnectedTo(initialPair.getState());
+
         consumer.accept(strategy);
     }
 
-    private boolean controllableHasNotEnabledTransitions(Closure c) {
-        return c.getSource().getGame().getEnabledTransitions(Player.Controller).isEmpty();
-    }
-
-    private boolean propagatesZero(Set<Closure> closures) {
-        for (Closure closure : closures) {
-            if (!propagationByConfiguration.get(closure.getTarget().getConfiguration())) {
-                return true;
+    private boolean enqueuePair(ConfigurationSetStatePair newPair) {
+        if (!visited.contains(newPair)) {
+            if (!waiting.contains(newPair)) {
+                waiting.add(newPair);
             }
+            visited.add(newPair);
         }
-        return false;
-    }
-
-    private ConfigurationSetStatePair getOrCreatePair(
-            ConfigurationSetStatePair previous,
-            Set<Closure> closures
-    ) {
-        return getOrCreatePair(previous, closures, () -> new AutomataState("state" + counter++));
-    }
-
-    private ConfigurationSetStatePair getOrCreatePair(
-            ConfigurationSetStatePair previous,
-            Set<Closure> closures,
-            Supplier<AutomataState> supplier
-    ) {
-        Set<Configuration> configurations = getConfigurations(closures);
-        return visited.stream()
-                .filter(c -> c.getConfigurations().equals(configurations))
-                .findAny()
-                .orElseGet(() -> ConfigurationSetStatePair.of(
-                        previous,
-                        getConfigurations(closures),
-                        supplier.get()
-                ));
-    }
-
-    private Set<Configuration> getConfigurations(Set<Closure> closures) {
-        return closures.stream()
-                .map(Closure::getTarget)
-                .map(Target::getConfiguration)
-                .collect(Collectors.toSet());
-    }
-
-    private boolean isControllable(Closure closure) {
-        return game.getTransitions(Player.Controller).contains(closure.getTarget().getTransition());
+        return deadPairs.contains(newPair);
     }
 
     private Set<Set<Closure>> close(Set<Configuration> configurations) {
@@ -208,12 +182,65 @@ public class TopDownStrategySynthesiser implements StrategySynthesiser {
         return successors;
     }
 
+    private boolean controllableHasNotEnabledTransitions(Closure c) {
+        return c.getSource().getGame().getEnabledTransitions(Player.Controller).isEmpty();
+    }
+
+    private boolean propagatesZero(Set<Closure> closures) {
+        for (Closure closure : closures) {
+            if (!propagationByConfiguration.get(closure.getTarget().getConfiguration())) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private ConfigurationSetStatePair getOrCreatePair(
+            ConfigurationSetStatePair previous,
+            Set<Closure> closures
+    ) {
+        return getOrCreatePair(previous, closures, () -> new AutomataState("state" + counter++));
+    }
+
+    private ConfigurationSetStatePair getOrCreatePair(
+            ConfigurationSetStatePair previous,
+            Set<Closure> closures,
+            Supplier<AutomataState> supplier
+    ) {
+        Set<Configuration> configurations = getConfigurations(closures);
+        ConfigurationSetStatePair configurationSetStatePair = visited.stream()
+                .filter(c -> c.getConfigurations().equals(configurations))
+                .findAny()
+                .orElseGet(() -> ConfigurationSetStatePair.of(
+                        Set.of(previous),
+                        configurations,
+                        supplier.get()
+                ));
+        configurationSetStatePair.getParents().add(previous);
+        return configurationSetStatePair;
+    }
+
+    private Set<Configuration> getConfigurations(Set<Closure> closures) {
+        return closures.stream()
+                .map(Closure::getTarget)
+                .map(Target::getConfiguration)
+                .collect(toSet());
+    }
+
+    private boolean isControllable(Closure closure) {
+        return isControllable(closure.getTarget().getTransition());
+    }
+
+    private boolean isControllable(Transition transition) {
+        return game.getTransitions(Player.Controller).contains(transition);
+    }
+
     private Set<Set<Closure>> combine(Set<Set<Closure>> s1, Set<Set<Closure>> s2) {
         if (s1.isEmpty()) {
             return s2;
-        } /*else if (s2.isEmpty()) {
+        } else if (s2.isEmpty()) {
             return s1;
-        }*/
+        }
         Set<Set<Closure>> combined = new HashSet<>();
         for (Set<Closure> t : s2) {
             for (Set<Closure> k : s1) {
@@ -227,26 +254,26 @@ public class TopDownStrategySynthesiser implements StrategySynthesiser {
     }
 
     private static class ConfigurationSetStatePair {
-        private final ConfigurationSetStatePair parent;
+        private final Set<ConfigurationSetStatePair> parents;
         private final Set<Configuration> configuration;
         private final AutomataState state;
 
         private ConfigurationSetStatePair(
-                ConfigurationSetStatePair parent,
+                Set<ConfigurationSetStatePair> parents,
                 Set<Configuration> configuration,
                 AutomataState state
         ) {
-            this.parent = parent;
+            this.parents = new HashSet<>(parents);
             this.configuration = configuration;
             this.state = state;
         }
 
         public static ConfigurationSetStatePair of(
-                ConfigurationSetStatePair parent,
+                Set<ConfigurationSetStatePair> parents,
                 Set<Configuration> configuration,
                 AutomataState automataStrategy
         ) {
-            return new ConfigurationSetStatePair(parent, configuration, automataStrategy);
+            return new ConfigurationSetStatePair(parents, configuration, automataStrategy);
         }
 
         public Set<Configuration> getConfigurations() {
@@ -279,8 +306,8 @@ public class TopDownStrategySynthesiser implements StrategySynthesiser {
                     + '}';
         }
 
-        public ConfigurationSetStatePair getParent() {
-            return parent;
+        public Set<ConfigurationSetStatePair> getParents() {
+            return parents;
         }
     }
 
