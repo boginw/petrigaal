@@ -74,7 +74,7 @@ public class TopDownStrategySynthesiser implements StrategySynthesiser {
                     continue;
                 }
 
-                if (controllable.isEmpty()) {
+                if (controllable.isEmpty() && closures.stream().allMatch(this::controllableHasNotEnabledTransitions)) {
                     for (Closure closure : uncontrollable) {
                         ConfigurationSetStatePair newPair = getOrCreatePair(pair, Set.of(closure));
                         if (!deadPairs.contains(newPair)) {
@@ -96,24 +96,27 @@ public class TopDownStrategySynthesiser implements StrategySynthesiser {
                         }
                         if (!visited.contains(newPair)) {
                             waiting.add(newPair);
+                            visited.add(newPair);
                         }
                     }
 
-                    ConfigurationSetStatePair newPair = getOrCreatePair(pair, controllable);
+                    if (!controllable.isEmpty()) {
+                        ConfigurationSetStatePair newPair = getOrCreatePair(pair, controllable);
 
-                    if (!deadPairs.contains(newPair)) {
-                        dead = false;
+                        if (!deadPairs.contains(newPair)) {
+                            dead = false;
+                        }
+                        if (!visited.contains(newPair)) {
+                            waiting.add(newPair);
+                            visited.add(newPair);
+                        }
+                        strategy.addTransition(
+                                pair.getState(),
+                                controllable.iterator().next().getSource().getGame(),
+                                controllable.iterator().next().getTarget().getTransition(),
+                                newPair.getState()
+                        );
                     }
-                    if (!visited.contains(newPair)) {
-                        waiting.add(newPair);
-                        visited.add(newPair);
-                    }
-                    strategy.addTransition(
-                            pair.getState(),
-                            controllable.iterator().next().getSource().getGame(),
-                            controllable.iterator().next().getTarget().getTransition(),
-                            newPair.getState()
-                    );
                 }
             }
             if (dead) {
@@ -128,6 +131,10 @@ public class TopDownStrategySynthesiser implements StrategySynthesiser {
         }
 
         consumer.accept(strategy);
+    }
+
+    private boolean controllableHasNotEnabledTransitions(Closure c) {
+        return c.getSource().getGame().getEnabledTransitions(Player.Controller).isEmpty();
     }
 
     private boolean propagatesZero(Set<Closure> closures) {
