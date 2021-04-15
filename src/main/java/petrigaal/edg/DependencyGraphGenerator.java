@@ -133,8 +133,8 @@ public class DependencyGraphGenerator {
                         .stream()
                         .map(m -> new Target(createOrGet(formula, m.getGame(), c.getMode()), m.getTransition()))
                         .forEach(t -> c.getSuccessors().forEach(e -> e.add(t)));
-                c.getSuccessors().add(new Edge(now));
             }
+            c.getSuccessors().add(new Edge(now));
         } else {
             List<Target> targets;
             if (formula.getPath() == E) {
