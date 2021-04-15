@@ -26,10 +26,6 @@ public class Configuration {
         this.mode = mode;
     }
 
-    public Configuration(ATLFormula formula, PetriGame game, boolean mode) {
-        this(formula, game, new ArrayList<>(), mode);
-    }
-
     public Configuration(ATLFormula formula, PetriGame game) {
         this(formula, game, new ArrayList<>(), false);
     }
