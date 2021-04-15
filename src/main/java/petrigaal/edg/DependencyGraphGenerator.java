@@ -116,20 +116,29 @@ public class DependencyGraphGenerator {
         ));
 
         if (!c.getMode()) {
-            nextMarkingsWithTransitions(c, Player.Controller)
-                    .stream()
-                    .map(m -> new Target(createOrGet(formula, m.getGame(), c.getMode()), m.getTransition()))
-                    .map(Edge::new)
-                    .forEach(c.getSuccessors()::add);
-
-            nextMarkingsWithTransitions(c, Player.Environment)
-                    .stream()
-                    .map(m -> new Target(createOrGet(formula, m.getGame(), c.getMode()), m.getTransition()))
-                    .forEach(t -> c.getSuccessors().forEach(e -> e.add(t)));
-            c.getSuccessors().add(new Edge(now));
-        } else {
             if (formula.getPath() == E) {
-                List<Target> targets = nextMarkingsWithTransitions(c, Player.Controller)
+                nextMarkingsWithTransitions(c)
+                        .stream()
+                        .map(m -> new Target(createOrGet(formula, m.getGame(), c.getMode()), m.getTransition()))
+                        .map(Edge::new)
+                        .forEach(c.getSuccessors()::add);
+            } else {
+                nextMarkingsWithTransitions(c, Player.Controller)
+                        .stream()
+                        .map(m -> new Target(createOrGet(formula, m.getGame(), c.getMode()), m.getTransition()))
+                        .map(Edge::new)
+                        .forEach(c.getSuccessors()::add);
+
+                nextMarkingsWithTransitions(c, Player.Environment)
+                        .stream()
+                        .map(m -> new Target(createOrGet(formula, m.getGame(), c.getMode()), m.getTransition()))
+                        .forEach(t -> c.getSuccessors().forEach(e -> e.add(t)));
+                c.getSuccessors().add(new Edge(now));
+            }
+        } else {
+            List<Target> targets;
+            if (formula.getPath() == E) {
+                targets = nextMarkingsWithTransitions(c, Player.Controller)
                         .stream()
                         .map(m -> new Target(createOrGet(formula, m.getGame(), c.getMode()), m.getTransition()))
                         .collect(Collectors.toList());
@@ -140,15 +149,14 @@ public class DependencyGraphGenerator {
                         .map(m -> new Target(createOrGet(formula, m.getGame(), c.getMode()), m.getTransition()))
                         .map(Edge::new)
                         .forEach(c.getSuccessors()::add);
-                c.getSuccessors().add(new Edge(now));
             } else {
-                List<Target> targets = nextMarkingsWithTransitions(c)
+                targets = nextMarkingsWithTransitions(c)
                         .stream()
                         .map(m -> new Target(createOrGet(formula, m.getGame(), c.getMode()), m.getTransition()))
                         .collect(Collectors.toList());
                 if (!targets.isEmpty()) c.getSuccessors().add(new Edge(targets));
-                c.getSuccessors().add(new Edge(now));
             }
+            c.getSuccessors().add(new Edge(now));
         }
     }
 
