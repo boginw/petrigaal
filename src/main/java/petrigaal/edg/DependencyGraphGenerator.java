@@ -108,12 +108,8 @@ public class DependencyGraphGenerator {
 
     public void visitFinally(Target target, UnaryQuantifierTemporal formula) {
         Configuration c = target.getConfiguration();
-
-        Configuration now = createOrGet(new Configuration(
-                formula.getFirstOperand(),
-                c.getGame(),
-                c.getMode()
-        ));
+        Configuration now = createOrGet(new Configuration(formula.getFirstOperand(), c.getGame(), c.getMode()));
+        c.getSuccessors().add(new Edge(now));
 
         if (!c.getMode()) {
             if (formula.getPath() == E) {
@@ -134,7 +130,6 @@ public class DependencyGraphGenerator {
                         .map(m -> new Target(createOrGet(formula, m.getGame(), c.getMode()), m.getTransition()))
                         .forEach(t -> c.getSuccessors().forEach(e -> e.add(t)));
             }
-            c.getSuccessors().add(new Edge(now));
         } else {
             List<Target> targets;
             if (formula.getPath() == E) {
@@ -156,7 +151,6 @@ public class DependencyGraphGenerator {
                         .collect(Collectors.toList());
                 if (!targets.isEmpty()) c.getSuccessors().add(new Edge(targets));
             }
-            c.getSuccessors().add(new Edge(now));
         }
     }
 
