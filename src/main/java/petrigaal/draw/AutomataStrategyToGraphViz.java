@@ -21,15 +21,39 @@ public class AutomataStrategyToGraphViz {
 
         strategy.getStateTransitions().forEach((k, v) -> {
             for (Pair<Transition, AutomataState> transitionAutomataStatePair : v) {
-                sb.append(k.a.getName())
-                        .append(" -> ")
-                        .append(transitionAutomataStatePair.b.getName())
-                        .append(" [xlabel=\"")
-                        .append(k.b)
-                        .append(" / ")
-                        .append(transitionAutomataStatePair.a)
-                        .append("\"]")
-                        .append("\n");
+                System.out.println(transitionAutomataStatePair.b.getName());
+                if(transitionAutomataStatePair.a == null && k.b != null  ) {
+                    sb.append(k.a.getName())
+                            .append(" -> ")
+                            .append(transitionAutomataStatePair.b.getName())
+                            .append(" [xlabel=\"")
+                            .append(k.b)
+                            .append(" / ")
+                            .append(" ⊥ ")
+                            .append("\"]")
+                            .append("\n");
+                }
+                else if(transitionAutomataStatePair.a == null && k.b == null  ) {
+                    sb.append(k.a.getName())
+                            .append(" -> ")
+                            .append(transitionAutomataStatePair.b.getName())
+                            .append(" [xlabel=\"")
+                            .append("*")
+                            .append(" / ")
+                            .append("*")
+                            .append("\"]")
+                            .append("\n");
+                }else {
+                    sb.append(k.a.getName())
+                            .append(" -> ")
+                            .append(transitionAutomataStatePair.b.getName())
+                            .append(" [xlabel=\"")
+                            .append(k.b)
+                            .append(" / ")
+                            .append(transitionAutomataStatePair.a)
+                            .append("\"]")
+                            .append("\n");
+                }
             }
         });
 
