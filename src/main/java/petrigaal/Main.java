@@ -42,6 +42,8 @@ public class Main implements Callable<Integer> {
     public Boolean openDependencyGraph = false;
     @Option(names = {"-ds", "--disable-synthesis"}, description = "Disable strategy automata synthesis")
     public Boolean disableSynthesis = false;
+    @Option(names = {"-ps"}, description = "Generate PostScript file instead of SVG")
+    public Boolean postScript = false;
     @Parameters(description = "Model (Either TAPN or PNML)")
     public File file;
     private int counter = 0;
@@ -53,7 +55,7 @@ public class Main implements Callable<Integer> {
     }
 
     @Override
-    public Integer call() throws FileNotFoundException {
+    public Integer call() throws FileNotFoundException, IllegalAccessException {
         PetriGame game = loadGame(file);
         ATLNode tree = new Parser().parse(query);
         ATLNode optimizedTree = new Optimizer().optimize(tree);
@@ -92,14 +94,16 @@ public class Main implements Callable<Integer> {
         }
     }
 
-    private void clearResults() {
+    private void clearResults() throws IllegalAccessException {
         File outFolder = new File("./out");
         if (outFolder.exists()) {
             for (File f : Objects.requireNonNull(outFolder.listFiles())) {
                 assert f.delete();
             }
+        } else if (file.canWrite()) {
+            assert outFolder.mkdir() && outFolder.exists();
         } else {
-            assert outFolder.mkdir();
+            throw new IllegalAccessException("Cannot create ./out folder");
         }
     }
 
@@ -125,17 +129,17 @@ public class Main implements Callable<Integer> {
     }
 
     private void openGraph(String graph) {
+        Format format = postScript ? Format.PS2 : Format.SVG;
         try {
-            //File svgFile = File.createTempFile("graph",".svg");
             File vizFile = new File("./out/" + (counter++) + ".gv");
-            File svgFile = new File("./out/" + (counter++) + ".svg");
+            File svgFile = new File("./out/" + (counter++) + "." + format.fileExtension);
 
             BufferedWriter writer = new BufferedWriter(new FileWriter(vizFile));
             writer.write(graph);
             writer.close();
 
             MutableGraph g = new guru.nidi.graphviz.parse.Parser().read(graph);
-            Graphviz.fromGraph(g).totalMemory(480000000).render(Format.SVG).toFile(svgFile);
+            Graphviz.fromGraph(g).totalMemory(480000000).render(format).toFile(svgFile);
 
             Runtime.getRuntime().exec(getOpenCmd() + " " + svgFile.getAbsolutePath());
         } catch (IOException e) {
