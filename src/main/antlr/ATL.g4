@@ -46,8 +46,8 @@ temporalUnary
 
 temporalBinary
   : temporalUnary
-  | temporalUnary '&' temporalUnary
-  | temporalUnary '|' temporalUnary
+  | temporalUnary '&' temporalBinary
+  | temporalUnary '|' temporalBinary
   ;
 
 /* Literals */

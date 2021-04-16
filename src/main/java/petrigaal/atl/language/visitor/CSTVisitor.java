@@ -3,16 +3,19 @@ package petrigaal.atl.language.visitor;
 import petrigaal.antlr.ATLBaseVisitor;
 import petrigaal.antlr.ATLParser.*;
 import petrigaal.atl.language.ATLNode;
+import petrigaal.atl.language.Path;
 import petrigaal.atl.language.nodes.Expression;
 import petrigaal.atl.language.nodes.Temporal;
-import petrigaal.atl.language.nodes.expression.*;
+import petrigaal.atl.language.nodes.expression.BinaryExpression;
+import petrigaal.atl.language.nodes.expression.IntegerLiteralExpression;
+import petrigaal.atl.language.nodes.expression.UnaryExpression;
+import petrigaal.atl.language.nodes.expression.VariableExpression;
 import petrigaal.atl.language.nodes.predicate.BooleanLiteral;
 import petrigaal.atl.language.nodes.predicate.RelationalPredicate;
 import petrigaal.atl.language.nodes.temporal.BinaryQuantifierTemporal;
 import petrigaal.atl.language.nodes.temporal.BinaryTemporal;
 import petrigaal.atl.language.nodes.temporal.UnaryQuantifierTemporal;
 import petrigaal.atl.language.nodes.temporal.UnaryTemporal;
-import petrigaal.atl.language.Path;
 
 public class CSTVisitor extends ATLBaseVisitor<ATLNode> {
     @Override
@@ -137,12 +140,12 @@ public class CSTVisitor extends ATLBaseVisitor<ATLNode> {
     @Override
     public Temporal visitTemporalBinary(TemporalBinaryContext ctx) {
         if (ctx.children.size() == 1) {
-            return visitTemporalUnary(ctx.temporalUnary(0));
+            return visitTemporalUnary(ctx.temporalUnary());
         } else {
             BinaryTemporal bt = new BinaryTemporal();
-            bt.setFirstOperand(visitTemporalUnary(ctx.temporalUnary(0)));
+            bt.setFirstOperand(visitTemporalUnary(ctx.temporalUnary()));
             bt.setOperator(ctx.getChild(1).getText());
-            bt.setSecondOperand(visitTemporalUnary(ctx.temporalUnary(1)));
+            bt.setSecondOperand(visitTemporalBinary(ctx.temporalBinary()));
             return bt;
         }
     }
