@@ -90,7 +90,9 @@ public class TopDownStrategySynthesiser implements StrategySynthesiser {
                 if (controllable.isEmpty() && closures.stream().allMatch(this::controllableHasNotEnabledTransitions)) {
                     for (Closure closure : uncontrollable) {
                         ConfigurationSetStatePair newPair = getOrCreatePair(pair, Set.of(closure));
-                        dead = enqueuePair(newPair);
+                        if (!enqueuePair(newPair)) {
+                            dead = false;
+                        }
                         strategy.addTransition(
                                 pair.getState(),
                                 closure.getSource().getGame(),
@@ -105,12 +107,16 @@ public class TopDownStrategySynthesiser implements StrategySynthesiser {
                                     .values()
                     );
                     for (Set<Closure> uncontrollableClosures : uncontrollableClosureByTransition) {
-                        dead = enqueuePair(getOrCreatePair(pair, uncontrollableClosures, pair::getState));
+                        if (!enqueuePair(getOrCreatePair(pair, uncontrollableClosures, pair::getState))) {
+                            dead = false;
+                        }
                     }
 
                     if (!controllable.isEmpty()) {
                         ConfigurationSetStatePair newPair = getOrCreatePair(pair, controllable);
-                        dead = enqueuePair(newPair);
+                        if (!enqueuePair(newPair)) {
+                            dead = false;
+                        }
                         strategy.addTransition(
                                 pair.getState(),
                                 controllable.iterator().next().getSource().getGame(),
