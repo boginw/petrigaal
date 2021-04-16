@@ -95,13 +95,14 @@ public class Main implements Callable<Integer> {
     }
 
     private void clearResults() throws IllegalAccessException {
-        File outFolder = new File("./out");
+        File outFolder = new File("./out/");
         if (outFolder.exists()) {
             for (File f : Objects.requireNonNull(outFolder.listFiles())) {
                 assert f.delete();
             }
-        } else if (file.canWrite()) {
-            assert outFolder.mkdir() && outFolder.exists();
+        } else if (outFolder.getParentFile().canWrite()) {
+            boolean folderCreated = outFolder.mkdir() && outFolder.exists();
+            assert folderCreated;
         } else {
             throw new IllegalAccessException("Cannot create ./out folder");
         }
