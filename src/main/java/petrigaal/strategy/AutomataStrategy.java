@@ -11,6 +11,7 @@ import java.util.stream.Stream;
 public class AutomataStrategy {
     private final Map<Pair<AutomataState, PetriGame>, Set<Pair<Transition, AutomataState>>> stateTransitions = new HashMap<>();
     private final AutomataState initialState = new AutomataState("init");
+    private final Set<AutomataState> finalStates = new HashSet<>();
 
     public AutomataState getInitialState() {
         return initialState;
