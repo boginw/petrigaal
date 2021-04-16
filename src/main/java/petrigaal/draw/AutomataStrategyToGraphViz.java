@@ -22,7 +22,7 @@ public class AutomataStrategyToGraphViz {
         strategy.getStateTransitions().forEach((k, v) -> {
             for (Pair<Transition, AutomataState> transitionAutomataStatePair : v) {
                 System.out.println(transitionAutomataStatePair.b.getName());
-                if(transitionAutomataStatePair.a == null && k.b != null  ) {
+                if (transitionAutomataStatePair.a == null && k.b != null) {
                     sb.append(k.a.getName())
                             .append(" -> ")
                             .append(transitionAutomataStatePair.b.getName())
@@ -32,8 +32,7 @@ public class AutomataStrategyToGraphViz {
                             .append(" ⊥ ")
                             .append("\"]")
                             .append("\n");
-                }
-                else if(transitionAutomataStatePair.a == null && k.b == null  ) {
+                } else if (transitionAutomataStatePair.a == null) {
                     sb.append(k.a.getName())
                             .append(" -> ")
                             .append(transitionAutomataStatePair.b.getName())
@@ -43,7 +42,7 @@ public class AutomataStrategyToGraphViz {
                             .append("*")
                             .append("\"]")
                             .append("\n");
-                }else {
+                } else {
                     sb.append(k.a.getName())
                             .append(" -> ")
                             .append(transitionAutomataStatePair.b.getName())
