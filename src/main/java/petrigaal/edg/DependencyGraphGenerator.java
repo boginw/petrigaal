@@ -124,10 +124,14 @@ public class DependencyGraphGenerator {
                         .map(Edge::new)
                         .forEach(c.getSuccessors()::add);
 
-                nextMarkingsWithTransitions(c, Player.Environment)
-                        .stream()
-                        .map(m -> new Target(createOrGet(formula, m.getGame(), c.getMode()), m.getTransition()))
-                        .forEach(t -> c.getSuccessors().forEach(e -> e.add(t)));
+                Set<Target> uncontrollableTargets = nextMarkingsWithTransitions(c, Player.Environment)
+                    .stream()
+                    .map(m -> new Target(createOrGet(formula, m.getGame(), c.getMode()), m.getTransition()))
+                    .collect(Collectors.toSet());
+                if (!uncontrollableTargets.isEmpty() && c.getSuccessors().isEmpty()) {
+                    c.getSuccessors().add(new Edge());
+                }
+                uncontrollableTargets.forEach(t -> c.getSuccessors().forEach(e -> e.add(t)));
             }
         } else {
             List<Target> targets;
