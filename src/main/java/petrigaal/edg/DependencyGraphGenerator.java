@@ -109,7 +109,6 @@ public class DependencyGraphGenerator {
     public void visitFinally(Target target, UnaryQuantifierTemporal formula) {
         Configuration c = target.getConfiguration();
         Configuration now = createOrGet(new Configuration(formula.getFirstOperand(), c.getGame(), c.getMode()));
-        c.getSuccessors().add(new Edge(now));
 
         if (!c.getMode()) {
             if (formula.getPath() == E) {
@@ -152,6 +151,7 @@ public class DependencyGraphGenerator {
                 if (!targets.isEmpty()) c.getSuccessors().add(new Edge(targets));
             }
         }
+        c.getSuccessors().add(new Edge(now));
     }
 
     public void visitAlways(Target target, UnaryQuantifierTemporal formula) {
@@ -304,7 +304,7 @@ public class DependencyGraphGenerator {
             this.value = game;
         }
 
-        public static <A, B> TransitionMarkingPair of(Transition transition, PetriGame game) {
+        public static TransitionMarkingPair of(Transition transition, PetriGame game) {
             return new TransitionMarkingPair(transition, game);
         }
 

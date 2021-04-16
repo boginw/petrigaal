@@ -37,7 +37,7 @@ public class UnaryQuantifierTemporal extends UnaryTemporal implements Quantifier
     @Override
     public String toString() {
         return String.format(
-                "%s %s (%s)",
+                "%s%s (%s)",
                 path.toString(),
                 getOperator(),
                 getFirstOperand().getLiteral()
