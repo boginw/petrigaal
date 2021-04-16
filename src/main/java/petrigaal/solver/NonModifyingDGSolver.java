@@ -8,7 +8,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.function.BiConsumer;
 
-public class NonModifyingEDGSolver {
+public class NonModifyingDGSolver {
     private Map<Configuration, Boolean> propagationByConfiguration = new HashMap<>();
     private BiConsumer<Integer, Integer> consumer;
 

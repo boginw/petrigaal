@@ -4,35 +4,41 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 public class Edge extends ArrayList<Target> {
-    boolean isNegated;
+    private final Configuration source;
+    private boolean isNegated;
 
-    public Edge() {
-        this(Collections.emptyList());
+    public Edge(Configuration source) {
+        this(source, Collections.emptyList());
     }
 
-    public Edge(boolean isNegated) {
-        this(Collections.emptyList(), isNegated);
+    public Edge(Configuration source, boolean isNegated) {
+        this(source, Collections.emptyList(), isNegated);
     }
 
-    public Edge(Collection<Target> outgoing) {
-        this(outgoing, false);
+    public Edge(Configuration source, Collection<Target> outgoing) {
+        this(source, outgoing, false);
     }
 
-    public Edge(Configuration... elements) {
-        this(false, elements);
+    public Edge(Configuration source, Configuration... elements) {
+        this(source, false, elements);
     }
 
-    public Edge(Target... elements) {
-        this(Arrays.asList(elements));
+    public Edge(Configuration source, Target... elements) {
+        this(source, Arrays.asList(elements));
     }
 
-    public Edge(boolean isNegated, Configuration... elements) {
-        this(Arrays.stream(elements).map(Target::new).collect(Collectors.toList()), isNegated);
+    public Edge(Configuration source, boolean isNegated, Configuration... elements) {
+        this(source, Arrays.stream(elements).map(Target::new).collect(Collectors.toList()), isNegated);
     }
 
-    public Edge(Collection<Target> outgoing, boolean isNegated) {
+    public Edge(Configuration source, Collection<Target> outgoing, boolean isNegated) {
         super(outgoing);
+        this.source = source;
         this.isNegated = isNegated;
+    }
+
+    public Configuration getSource() {
+        return source;
     }
 
     public boolean isNegated() {
@@ -46,6 +52,6 @@ public class Edge extends ArrayList<Target> {
 
     public Edge copy() {
         List<Target> copy = this.stream().map(Target::copy).collect(Collectors.toList());
-        return new Edge(new ArrayList<>(copy), isNegated);
+        return new Edge(source, new ArrayList<>(copy), isNegated);
     }
 }
