@@ -87,6 +87,14 @@ public class AutomataStrategy {
                 .collect(Collectors.toSet());
     }
 
+    public void addFinalState(AutomataState state) {
+        finalStates.add(state);
+    }
+
+    public Set<AutomataState> getFinalStates() {
+        return finalStates;
+    }
+
     public static class AutomataState {
         private final String name;
 
