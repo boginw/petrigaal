@@ -17,25 +17,45 @@ import petrigaal.petri.PetriGame;
 import petrigaal.solver.NonModifyingEDGSolver;
 import petrigaal.strategy.AutomataStrategy;
 import petrigaal.strategy.TopDownStrategySynthesiser;
+import picocli.CommandLine;
+import picocli.CommandLine.Command;
+import picocli.CommandLine.Option;
+import picocli.CommandLine.Parameters;
 
 import java.io.*;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
+import java.util.concurrent.Callable;
 
-public class Main {
-    public static int counter = 0;
-    private static int size = 0;
+@Command(
+        name = "PetriGAAL",
+        mixinStandardHelpOptions = true,
+        version = "1.0",
+        description = "Discrete Strategy Synthesis for CTL on Petri Net Games",
+        helpCommand = true
+)
+public class Main implements Callable<Integer> {
+    @Option(names = {"-q", "--query"}, required = true, description = "CTL Query (Note space between f.x. A and F is required)")
+    public String query = "";
+    @Option(names = {"-od", "--open-dg"}, description = "Open dependency graph after construction")
+    public Boolean openDependencyGraph = false;
+    @Option(names = {"-ds", "--disable-synthesis"}, description = "Disable strategy automata synthesis")
+    public Boolean disableSynthesis = false;
+    @Parameters(description = "Model (Either TAPN or PNML)")
+    public File file;
+    private int counter = 0;
+    private int size = 0;
 
-    public static void main(String[] args) throws IOException {
-        if (args.length != 2 && args.length != 3) {
-            System.err.println("Usage: java -jar petrigaal.jar QUERY PATH_TO_PNML [-s for solve]");
-            return;
-        }
+    public static void main(String[] args) {
+        int exitCode = new CommandLine(new Main()).execute(args);
+        System.exit(exitCode);
+    }
 
-        File pnml = new File(args[1]);
-        PetriGame game = loadGame(pnml);
-        ATLNode tree = new Parser().parse(args[0]);
+    @Override
+    public Integer call() throws FileNotFoundException {
+        PetriGame game = loadGame(file);
+        ATLNode tree = new Parser().parse(query);
         ATLNode optimizedTree = new Optimizer().optimize(tree);
 
         Configuration c = new Configuration((ATLFormula) optimizedTree, game);
@@ -45,22 +65,24 @@ public class Main {
 
         System.out.printf("Configurations: %d\n", size);
 
-        if (args.length == 3) {
-            long startTime = System.nanoTime();
-            long endTime = System.nanoTime();
-            Map<Configuration, Boolean> propagationByConfiguration = new NonModifyingEDGSolver().solve(c, Main::nop);
-            long milliseconds = (endTime - startTime) / 1000000;
+        long startTime = System.nanoTime();
+        long endTime = System.nanoTime();
+        Map<Configuration, Boolean> propagationByConfiguration = new NonModifyingEDGSolver().solve(c, this::nop);
+        long milliseconds = (endTime - startTime) / 1000000;
+        System.out.printf("Total ms: %d", milliseconds);
 
+        if (openDependencyGraph) {
             openGraph(c, propagationByConfiguration);
-            System.out.printf("Total ms: %d", milliseconds);
-            new TopDownStrategySynthesiser().synthesize(game, c, propagationByConfiguration, Main::openGraph);
-        } else {
-            openGraph(c);
         }
 
+        if (!disableSynthesis) {
+            new TopDownStrategySynthesiser().synthesize(game, c, propagationByConfiguration, this::openGraph);
+        }
+
+        return 0;
     }
 
-    private static PetriGame loadGame(File file) throws FileNotFoundException {
+    private PetriGame loadGame(File file) throws FileNotFoundException {
         if (file.getName().endsWith(".pnml")) {
             return new PNMLLoader().load(new FileInputStream(file));
         } else if (file.getName().endsWith(".tapn")) {
@@ -70,7 +92,7 @@ public class Main {
         }
     }
 
-    private static void clearResults() {
+    private void clearResults() {
         File outFolder = new File("./out");
         if (outFolder.exists()) {
             for (File f : Objects.requireNonNull(outFolder.listFiles())) {
@@ -81,7 +103,7 @@ public class Main {
         }
     }
 
-    private static void nop(int initial, int configurationsRemoved) {
+    private void nop(int initial, int configurationsRemoved) {
         System.out.printf(
                 "Queue Size: %d, Configurations Visited: %d (%.2f%%)\n",
                 initial,
@@ -90,19 +112,19 @@ public class Main {
         );
     }
 
-    private static void openGraph(Configuration c) {
+    private void openGraph(Configuration c) {
         openGraph(c, new HashMap<>());
     }
 
-    private static void openGraph(AutomataStrategy strategy) {
+    private void openGraph(AutomataStrategy strategy) {
         openGraph(new AutomataStrategyToGraphViz().draw(strategy));
     }
 
-    private static void openGraph(Configuration c, Map<Configuration, Boolean> propagationByConfiguration) {
+    private void openGraph(Configuration c, Map<Configuration, Boolean> propagationByConfiguration) {
         openGraph(new EDGToGraphViz().draw(c, propagationByConfiguration));
     }
 
-    private static void openGraph(String graph) {
+    private void openGraph(String graph) {
         try {
             //File svgFile = File.createTempFile("graph",".svg");
             File vizFile = new File("./out/" + (counter++) + ".gv");
