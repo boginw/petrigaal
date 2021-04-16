@@ -15,6 +15,7 @@ import petrigaal.loader.PNMLLoader;
 import petrigaal.loader.TAPNLoader;
 import petrigaal.petri.PetriGame;
 import petrigaal.solver.EDGSolver;
+import petrigaal.solver.NonModifyingDGSolver;
 import petrigaal.strategy.AutomataStrategy;
 import petrigaal.strategy.TopDownStrategySynthesiser;
 import picocli.CommandLine;
@@ -44,6 +45,8 @@ public class Main implements Callable<Integer> {
     public Boolean disableSynthesis = false;
     @Option(names = {"-ps"}, description = "Generate PostScript file instead of SVG")
     public Boolean postScript = false;
+    @Option(names = {"-dn"}, description = "Disable negation and use normal solver instead")
+    public Boolean dg = false;
     @Parameters(description = "Model (Either TAPN or PNML)")
     public File file;
     private int counter = 0;
@@ -69,7 +72,9 @@ public class Main implements Callable<Integer> {
 
         long startTime = System.nanoTime();
         long endTime = System.nanoTime();
-        Map<Configuration, Boolean> propagationByConfiguration = new EDGSolver().solve(c, this::nop);
+        Map<Configuration, Boolean> propagationByConfiguration;
+        if (dg) propagationByConfiguration = new NonModifyingDGSolver().solve(c, this::nop);
+        else propagationByConfiguration = new EDGSolver().solve(c, this::nop);
         long milliseconds = (endTime - startTime) / 1000000;
         System.out.printf("Total ms: %d", milliseconds);
 
