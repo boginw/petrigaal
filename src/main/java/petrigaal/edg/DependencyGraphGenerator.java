@@ -1,5 +1,6 @@
 package petrigaal.edg;
 
+import java.util.stream.Stream;
 import petrigaal.atl.language.ATLFormula;
 import petrigaal.atl.language.nodes.Expression;
 import petrigaal.atl.language.nodes.expression.BinaryExpression;
@@ -71,19 +72,29 @@ public class DependencyGraphGenerator {
     public void visitNext(Target target, UnaryQuantifierTemporal formula) {
         Configuration c = target.getConfiguration();
 
-        List<Target> primaryAfterTrans = fireAllEnabled(formula, c.getGame(), Player.Controller, c.getMode());
-        List<Target> secondaryAfterTrans = fireAllEnabled(formula, c.getGame(), Player.Environment, c.getMode());
+        List<Edge> primaryAfterTransEdges = new ArrayList<>();
+        if (!c.getMode()) {
+            if (formula.getPath() == E) {
+                List<Target> primaryAfterTrans = fireAllEnabled(formula, c.getGame(), Player.Controller, c.getMode());
+                List<Target> secondaryAfterTrans = fireAllEnabled(formula, c.getGame(), Player.Environment, c.getMode());
+                primaryAfterTransEdges = Stream.concat(primaryAfterTrans.stream(), secondaryAfterTrans.stream())
+                    .map(Edge::new)
+                    .collect(Collectors.toList());
+            }
+        } else {
+            List<Target> primaryAfterTrans = fireAllEnabled(formula, c.getGame(), Player.Controller, c.getMode());
+            List<Target> secondaryAfterTrans = fireAllEnabled(formula, c.getGame(), Player.Environment, c.getMode());
 
-        List<Edge> primaryAfterTransEdges;
-        if (!primaryAfterTrans.isEmpty() && secondaryAfterTrans.isEmpty()) {
-            primaryAfterTransEdges = primaryAfterTrans.stream()
+            if (!primaryAfterTrans.isEmpty() && secondaryAfterTrans.isEmpty()) {
+                primaryAfterTransEdges = primaryAfterTrans.stream()
                     .map(t -> new Edge(c, t))
                     .collect(Collectors.toList());
-        } else {
-            primaryAfterTransEdges = secondaryAfterTrans.stream()
+            } else {
+                primaryAfterTransEdges = secondaryAfterTrans.stream()
                     .map(cont -> addToList(c, primaryAfterTrans, cont))
                     .map(t -> new Edge(c, t))
                     .collect(Collectors.toList());
+            }
         }
         c.getSuccessors().addAll(primaryAfterTransEdges);
     }
