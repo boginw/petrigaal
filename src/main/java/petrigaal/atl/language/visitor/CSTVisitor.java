@@ -17,20 +17,20 @@ import petrigaal.atl.language.Path;
 public class CSTVisitor extends ATLBaseVisitor<ATLNode> {
     @Override
     public ATLNode visitStart(StartContext ctx) {
-        return visitTemporalQuantifier(ctx.temporalQuantifier());
+        return visitTemporalBinary(ctx.temporalBinary());
     }
 
     @Override
     public Temporal visitTemporalQuantifier(TemporalQuantifierContext ctx) {
         if (ctx.children.size() == 1) {
-            return visitTemporalBinary(ctx.temporalBinary());
+            return visitPredicate(ctx.predicate());
         } else if (ctx.children.size() < 6) {
             UnaryQuantifierTemporal uqt = new UnaryQuantifierTemporal();
             String playerString = ctx.Path().toString();
 
             uqt.setPath(playerString.contains("E") ? Path.E : Path.A);
             uqt.setOperator(ctx.getChild(1).getText());
-            uqt.setFirstOperand(visitTemporalQuantifier(ctx.temporalQuantifier(0)));
+            uqt.setFirstOperand(visitTemporalBinary(ctx.temporalBinary(0)));
 
             return uqt;
         } else {
@@ -38,9 +38,9 @@ public class CSTVisitor extends ATLBaseVisitor<ATLNode> {
             String playerString = ctx.Path().toString();
 
             bqt.setPath(playerString.contains("E") ? Path.E : Path.A);
-            bqt.setFirstOperand(visitTemporalQuantifier(ctx.temporalQuantifier(0)));
+            bqt.setFirstOperand(visitTemporalBinary(ctx.temporalBinary(0)));
             bqt.setOperator(ctx.getChild(3).getText());
-            bqt.setSecondOperand(visitTemporalQuantifier(ctx.temporalQuantifier(1)));
+            bqt.setSecondOperand(visitTemporalBinary(ctx.temporalBinary(1)));
 
             return bqt;
         }
@@ -118,14 +118,14 @@ public class CSTVisitor extends ATLBaseVisitor<ATLNode> {
             rp.setOperator(ctx.Bowtie().getText());
             return rp;
         } else {
-            return visitTemporalQuantifier(ctx.temporalQuantifier());
+            return visitTemporalBinary(ctx.temporalBinary());
         }
     }
 
     @Override
     public Temporal visitTemporalUnary(TemporalUnaryContext ctx) {
-        if (ctx.predicate() != null) {
-            return visitPredicate(ctx.predicate());
+        if (ctx.children.size() == 1) {
+            return visitTemporalQuantifier(ctx.temporalQuantifier());
         } else {
             UnaryTemporal ut = new UnaryTemporal();
             ut.setOperator(ctx.getChild(0).getText());

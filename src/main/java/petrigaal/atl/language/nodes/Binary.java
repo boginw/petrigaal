@@ -1,6 +1,7 @@
 package petrigaal.atl.language.nodes;
 
 import petrigaal.atl.language.ATLNode;
+import petrigaal.atl.language.nodes.temporal.BinaryTemporal;
 
 import java.util.Objects;
 
@@ -17,9 +18,9 @@ public abstract class Binary<T extends ATLNode> extends Unary<T> {
 
     @Override
     public String getLiteral() {
-        return getFirstOperand().getLiteral() + " " +
-                getOperator() + " " +
-                getSecondOperand().getLiteral();
+        return parenthesizeIfBinary(getFirstOperand())
+                + ' ' + getOperator() + ' '
+                + parenthesizeIfBinary(getSecondOperand());
     }
 
     @Override
@@ -29,5 +30,13 @@ public abstract class Binary<T extends ATLNode> extends Unary<T> {
         if (!super.equals(o)) return false;
         Binary<?> binary = (Binary<?>) o;
         return Objects.equals(secondOperand, binary.secondOperand);
+    }
+
+    private String parenthesizeIfBinary(T node) {
+        if (node instanceof BinaryTemporal && !((BinaryTemporal) node).getOperator().equals(getOperator())) {
+            return "(" + node.getLiteral() + ")";
+        } else {
+            return node.getLiteral();
+        }
     }
 }

@@ -1,6 +1,6 @@
 grammar ATL;
 
-start : temporalQuantifier? EOF;
+start : temporalBinary? EOF;
 
 expressionPrimary
   : IntLiteral
@@ -28,11 +28,19 @@ expressionAdditive
 predicate
   : BoolLiteral
   | expressionAdditive Bowtie expressionAdditive
-  | '(' temporalQuantifier ')'
+  | '(' temporalBinary ')'
+  ;
+
+temporalQuantifier
+  : Path 'X' '(' temporalBinary ')'
+  | Path 'G' '(' temporalBinary ')'
+  | Path 'F' '(' temporalBinary ')'
+  | Path '(' temporalBinary 'U' temporalBinary ')'
+  | predicate
   ;
 
 temporalUnary
-  : predicate
+  : temporalQuantifier
   | '!' temporalQuantifier
   ;
 
@@ -42,16 +50,8 @@ temporalBinary
   | temporalUnary '|' temporalUnary
   ;
 
-temporalQuantifier
-  : temporalBinary
-  | Path 'X' '(' temporalQuantifier ')'
-  | Path 'G' '(' temporalQuantifier ')'
-  | Path 'F' '(' temporalQuantifier ')'
-  | Path '(' temporalQuantifier 'U' temporalQuantifier ')'
-  ;
-
 /* Literals */
-Path: 'E' | 'A';
+Path: 'E' ' '? | 'A' ' '?;
 BoolLiteral : 'true' | 'false';
 Bowtie: '<' | '<=' | '=' | '!=' | '>=' | '>';
 Identifier              : (Letter | '_') (AlphaNum | '_')*;
@@ -63,14 +63,11 @@ IntLiteral              : Number;
 Number                  : Digit+;
 
 fragment Letter         : [a-zA-Z];
-fragment Word           : Letter+;
 fragment AlphaNum       : Digit | Letter;
-fragment AlphaNumSeq    : AlphaNum+;
 fragment EscapeSeq      : '\\' ['"?abfnrtv\\];
 fragment SChar          : ~["\\\r\n]
                         | EscapeSeq
                         | '\\\n'
                         | '\\\r\n'
                         ;
-fragment SCharSeq       : SChar+;
 fragment Digit          : [0-9];

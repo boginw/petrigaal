@@ -9,13 +9,8 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class AutomataStrategy {
-    private final PetriGame game;
     private final Map<Pair<AutomataState, PetriGame>, Set<Pair<Transition, AutomataState>>> stateTransitions = new HashMap<>();
     private final AutomataState initialState = new AutomataState("init");
-
-    public AutomataStrategy(PetriGame game) {
-        this.game = game;
-    }
 
     public AutomataState getInitialState() {
         return initialState;
@@ -49,17 +44,55 @@ public class AutomataStrategy {
     }
 
     public void removeState(AutomataState state) {
-        Set<Pair<AutomataState, PetriGame>> foundKey = stateTransitions.entrySet()
+        Set<Pair<AutomataState, PetriGame>> keys = stateTransitions.entrySet()
                 .stream()
                 .filter(e -> e.getValue().stream().anyMatch(p -> p.b.equals(state)))
                 .map(Map.Entry::getKey)
                 .collect(Collectors.toSet());
-        foundKey.forEach(key -> stateTransitions.computeIfPresent(key, (k, v) -> {
+        keys.forEach(key -> stateTransitions.computeIfPresent(key, (k, v) -> {
             v.removeIf(s -> s.b.equals(state));
             return v;
         }));
 
         stateTransitions.entrySet().removeIf(e -> e.getKey().a.equals(state));
+    }
+
+    public void removeEverythingThatIsNotConnectedTo(AutomataState state) {
+        Set<AutomataState> visited = new HashSet<>();
+        Queue<AutomataState> queue = new LinkedList<>();
+        visited.add(state);
+        queue.add(state);
+
+        while (!queue.isEmpty()) {
+            AutomataState nextState = queue.poll();
+
+            Set<AutomataState> adjacentStates = stateTransitions.entrySet()
+                    .stream()
+                    .filter(e -> e.getKey().a.equals(nextState))
+                    .map(Map.Entry::getValue)
+                    .flatMap(Collection::stream)
+                    .map(p -> p.b)
+                    .collect(Collectors.toSet());
+            for (AutomataState adjacentState : adjacentStates) {
+                if (!visited.contains(adjacentState)) {
+                    visited.add(adjacentState);
+                    queue.add(adjacentState);
+                }
+            }
+        }
+
+        Set<AutomataState> statesToRemove = getAllStates();
+        statesToRemove.removeAll(visited);
+
+        for (AutomataState automataState : statesToRemove) {
+            removeState(automataState);
+        }
+    }
+
+    private Set<AutomataState> getAllStates() {
+        return stateTransitions.entrySet().stream()
+                .flatMap(e -> Stream.concat(Stream.of(e.getKey().a), e.getValue().stream().map(p -> p.b)))
+                .collect(Collectors.toSet());
     }
 
     public static class AutomataState {
@@ -83,7 +116,7 @@ public class AutomataStrategy {
 
         @Override
         public String toString() {
-            return "AutomataState{name='" + name + "'}";
+            return "{name='" + name + "'}";
         }
 
         @Override
