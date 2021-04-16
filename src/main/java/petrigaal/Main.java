@@ -149,10 +149,15 @@ public class Main implements Callable<Integer> {
     }
 
     private static String getOpenCmd() {
-        String openCmd = "xdg-open";
-        if (System.getProperty("os.name").equals("Mac OS X")) {
-            openCmd = "open";
+        String os = System.getProperty("os.name").toLowerCase();
+        if (os.contains("win")) {
+            return "";
+        } else if (os.contains("nix") || os.contains("nux") || os.contains("aix")) {
+            return "xdg-open";
+        } else if (os.contains("mac")) {
+            return "open";
+        } else {
+            throw new UnsupportedOperationException("Unsupported Operating system");
         }
-        return openCmd;
     }
 }
