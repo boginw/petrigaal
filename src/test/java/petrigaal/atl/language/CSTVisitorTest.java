@@ -309,17 +309,6 @@ class CSTVisitorTest {
         assertEquals("U", bt.getOperator());
     }
 
-    //@Test
-    void visitTemporalQuantifierGoesToTemporalBinary() {
-        String binary = "true & true";
-        TemporalQuantifierContext sc = parser(binary).temporalQuantifier();
-        TemporalBinaryContext tbc = parser(binary).temporalBinary();
-        assertEquals(
-                new CSTVisitor().visitTemporalQuantifier(sc),
-                new CSTVisitor().visitTemporalBinary(tbc)
-        );
-    }
-
     @Test
     void visitStartGoesToTemporalQuantifier() {
         String tq = "E(true U false)";
