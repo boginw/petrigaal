@@ -21,15 +21,6 @@ public class AutomataStrategy {
     }
 
     public void addTransition(
-            String source,
-            PetriGame game,
-            Transition transition,
-            String target
-    ) {
-        addTransition(new AutomataState(source), game, transition, new AutomataState(target));
-    }
-
-    public void addTransition(
             AutomataState source,
             PetriGame game,
             Transition transition,
