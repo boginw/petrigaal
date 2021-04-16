@@ -63,6 +63,7 @@ public class TopDownStrategySynthesiser implements StrategySynthesiser {
                             pair.getState()
                     );
                     dead = false;
+                    strategy.addFinalState(pair.getState());
                     continue;
                 }
                 if (propagatesZero(closures)) continue;

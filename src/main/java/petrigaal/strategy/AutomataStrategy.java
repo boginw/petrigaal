@@ -11,6 +11,7 @@ import java.util.stream.Stream;
 public class AutomataStrategy {
     private final Map<Pair<AutomataState, PetriGame>, Set<Pair<Transition, AutomataState>>> stateTransitions = new HashMap<>();
     private final AutomataState initialState = new AutomataState("init");
+    private final Set<AutomataState> finalStates = new HashSet<>();
 
     public AutomataState getInitialState() {
         return initialState;
@@ -84,6 +85,14 @@ public class AutomataStrategy {
         return stateTransitions.entrySet().stream()
                 .flatMap(e -> Stream.concat(Stream.of(e.getKey().a), e.getValue().stream().map(p -> p.b)))
                 .collect(Collectors.toSet());
+    }
+
+    public void addFinalState(AutomataState state) {
+        finalStates.add(state);
+    }
+
+    public Set<AutomataState> getFinalStates() {
+        return finalStates;
     }
 
     public static class AutomataState {

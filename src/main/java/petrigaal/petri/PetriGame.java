@@ -81,7 +81,8 @@ public class PetriGame {
     }
 
     public boolean isEnabled(Transition t) {
-        return t.getInputsArcs().stream().allMatch(
+        Set<Transition.Arc> penis = t.getInputsArcs();
+        return penis.stream().allMatch(
                 a -> getMarking(a.getPlace()) >= a.getWeight()
         );
     }
