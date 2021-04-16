@@ -21,26 +21,18 @@ public class AutomataStrategyToGraphViz {
 
         strategy.getStateTransitions().forEach((k, v) -> {
             for (Pair<Transition, AutomataState> transitionAutomataStatePair : v) {
-                System.out.println(transitionAutomataStatePair.b.getName());
                 if (transitionAutomataStatePair.a == null && k.b != null) {
                     sb.append(k.a.getName())
                             .append(" -> ")
                             .append(transitionAutomataStatePair.b.getName())
                             .append(" [xlabel=\"")
                             .append(k.b)
-                            .append(" / ")
-                            .append(" ⊥ ")
-                            .append("\"]")
-                            .append("\n");
+                            .append(" /  ⊥ \"]\n");
                 } else if (transitionAutomataStatePair.a == null) {
                     sb.append(k.a.getName())
                             .append(" -> ")
                             .append(transitionAutomataStatePair.b.getName())
-                            .append(" [xlabel=\"")
-                            .append("*")
-                            .append(" / ")
-                            .append("*")
-                            .append("\"]")
+                            .append(" [xlabel=\"* / *\"]")
                             .append("\n");
                 } else {
                     sb.append(k.a.getName())
@@ -55,6 +47,11 @@ public class AutomataStrategyToGraphViz {
                 }
             }
         });
+
+        for (AutomataState finalState : strategy.getFinalStates()) {
+            sb.append(finalState.getName())
+                .append(" [color=green, fillcolor=black]\n");
+        }
 
         return "digraph G {\n" +
                 "graph [pad=\"2\", nodesep=\"2\", ranksep=\"1\", rankdir=\"TB\"];\n" +
