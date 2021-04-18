@@ -53,6 +53,10 @@ public class AutomataStrategyToGraphViz {
                 .append(" [color=green, fillcolor=black]\n");
         }
 
+        if (sb.isEmpty()) {
+            sb.append("label=\" There does not exist a strategy. \"");
+        }
+
         return "digraph G {\n" +
                 "graph [pad=\"2\", nodesep=\"2\", ranksep=\"1\", rankdir=\"TB\"];\n" +
                 "node [shape=oval]\n" +
