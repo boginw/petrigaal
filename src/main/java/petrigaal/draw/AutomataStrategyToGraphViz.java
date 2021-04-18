@@ -21,21 +21,20 @@ public class AutomataStrategyToGraphViz {
 
         strategy.getStateTransitions().forEach((k, v) -> {
             for (Pair<Transition, AutomataState> transitionAutomataStatePair : v) {
-                if(transitionAutomataStatePair.a == null && k.b != null  ) {
+                if (transitionAutomataStatePair.a == null && k.b != null) {
                     sb.append(k.a.getName())
                             .append(" -> ")
                             .append(transitionAutomataStatePair.b.getName())
                             .append(" [xlabel=\"")
                             .append(k.b)
                             .append(" /  ⊥ \"]\n");
-                }
-                else if(transitionAutomataStatePair.a == null) {
+                } else if (transitionAutomataStatePair.a == null) {
                     sb.append(k.a.getName())
                             .append(" -> ")
                             .append(transitionAutomataStatePair.b.getName())
                             .append(" [xlabel=\"* / *\"]")
                             .append("\n");
-                }else {
+                } else {
                     sb.append(k.a.getName())
                             .append(" -> ")
                             .append(transitionAutomataStatePair.b.getName())

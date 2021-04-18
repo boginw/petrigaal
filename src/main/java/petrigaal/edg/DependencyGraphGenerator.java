@@ -44,7 +44,7 @@ public class DependencyGraphGenerator {
         Configuration c2 = createOrGet(formula.getSecondOperand(), c.getGame(), c.getMode());
 
         List<Configuration> configurations = List.of(c1, c2);
-        c.getSuccessors().add(new Edge(configurations.stream().map(Target::new).collect(Collectors.toList())));
+        c.getSuccessors().add(new Edge(c, configurations.stream().map(Target::new).collect(Collectors.toList())));
     }
 
     public void visitDisjunction(Target target, BinaryTemporal formula) {
@@ -52,8 +52,8 @@ public class DependencyGraphGenerator {
         Configuration c1 = createOrGet(formula.getFirstOperand(), c.getGame(), c.getMode());
         Configuration c2 = createOrGet(formula.getSecondOperand(), c.getGame(), c.getMode());
 
-        c.getSuccessors().add(new Edge(c1));
-        c.getSuccessors().add(new Edge(c2));
+        c.getSuccessors().add(new Edge(c, c1));
+        c.getSuccessors().add(new Edge(c, c2));
     }
 
     public void visitNegation(Target target, UnaryTemporal formula) {
@@ -61,30 +61,56 @@ public class DependencyGraphGenerator {
         Configuration c1 = createOrGet(new Configuration(
                 formula.getFirstOperand(),
                 c.getGame(),
-                !c.getMode()
+                c.getMode()
         ));
 
-        c.getSuccessors().add(new Edge(true, c1));
+        c1.setNegationDistance(Math.min(c.getNegationDistance() - 1, c1.getNegationDistance()));
+        c.getSuccessors().add(new Edge(c, true, c1));
     }
 
     public void visitNext(Target target, UnaryQuantifierTemporal formula) {
         Configuration c = target.getConfiguration();
 
-        List<Target> primaryAfterTrans = fireAllEnabled(formula, c.getGame(), Player.Controller, c.getMode());
-        List<Target> secondaryAfterTrans = fireAllEnabled(formula, c.getGame(), Player.Environment, c.getMode());
+        if (!c.getMode()) {
+            if (formula.getPath() == E) {
+                nextMarkingsWithTransitions(c)
+                        .stream()
+                        .map(m -> new Target(createOrGet(formula.getFirstOperand(), m.getGame(), c.getMode()), m.getTransition()))
+                        .map(t -> new Edge(c, t))
+                        .forEach(c.getSuccessors()::add);
+            } else {
+                nextMarkingsWithTransitions(c, Player.Controller)
+                        .stream()
+                        .map(m -> new Target(createOrGet(formula.getFirstOperand(), m.getGame(), c.getMode()), m.getTransition()))
+                        .map(t -> new Edge(c, t))
+                        .forEach(c.getSuccessors()::add);
 
-        List<Edge> primaryAfterTransEdges;
-        if (!primaryAfterTrans.isEmpty() && secondaryAfterTrans.isEmpty()) {
-            primaryAfterTransEdges = primaryAfterTrans.stream()
-                    .map(Edge::new)
-                    .collect(Collectors.toList());
+                Set<Target> uncontrollableTargets = nextMarkingsWithTransitions(c, Player.Environment)
+                        .stream()
+                        .map(m -> new Target(createOrGet(formula.getFirstOperand(), m.getGame(), c.getMode()), m.getTransition()))
+                        .collect(Collectors.toSet());
+                if (!uncontrollableTargets.isEmpty() && c.getSuccessors().isEmpty()) {
+                    c.getSuccessors().add(new Edge(c));
+                }
+                uncontrollableTargets.forEach(t -> c.getSuccessors().forEach(e -> e.add(t)));
+            }
         } else {
-            primaryAfterTransEdges = secondaryAfterTrans.stream()
-                    .map(cont -> addToList(primaryAfterTrans, cont))
-                    .map(Edge::new)
-                    .collect(Collectors.toList());
+            List<Edge> primaryAfterTransEdges;
+            List<Target> primaryAfterTrans = fireAllEnabled(formula, c.getGame(), Player.Controller, c.getMode());
+            List<Target> secondaryAfterTrans = fireAllEnabled(formula, c.getGame(), Player.Environment, c.getMode());
+
+            if (!primaryAfterTrans.isEmpty() && secondaryAfterTrans.isEmpty()) {
+                primaryAfterTransEdges = primaryAfterTrans.stream()
+                        .map(t -> new Edge(c, t))
+                        .collect(Collectors.toList());
+            } else {
+                primaryAfterTransEdges = secondaryAfterTrans.stream()
+                        .map(cont -> addToList(c, primaryAfterTrans, cont))
+                        .map(t -> new Edge(c, t))
+                        .collect(Collectors.toList());
+            }
+            c.getSuccessors().addAll(primaryAfterTransEdges);
         }
-        c.getSuccessors().addAll(primaryAfterTransEdges);
     }
 
     public void visitUntil(Target target, BinaryQuantifierTemporal formula) {
@@ -100,10 +126,10 @@ public class DependencyGraphGenerator {
             Configuration now = createOrGet(
                     new Configuration(formula.getFirstOperand(), c.getGame(), c.getMode())
             );
-            c.getSuccessors().add(new Edge(new Target(conf, transition), new Target(now)));
+            c.getSuccessors().add(new Edge(c, new Target(conf, transition), new Target(now)));
         }
 
-        c.getSuccessors().add(new Edge(end));
+        c.getSuccessors().add(new Edge(c, end));
     }
 
     public void visitFinally(Target target, UnaryQuantifierTemporal formula) {
@@ -115,21 +141,21 @@ public class DependencyGraphGenerator {
                 nextMarkingsWithTransitions(c)
                         .stream()
                         .map(m -> new Target(createOrGet(formula, m.getGame(), c.getMode()), m.getTransition()))
-                        .map(Edge::new)
+                        .map(t -> new Edge(c, t))
                         .forEach(c.getSuccessors()::add);
             } else {
                 nextMarkingsWithTransitions(c, Player.Controller)
                         .stream()
                         .map(m -> new Target(createOrGet(formula, m.getGame(), c.getMode()), m.getTransition()))
-                        .map(Edge::new)
+                        .map(t -> new Edge(c, t))
                         .forEach(c.getSuccessors()::add);
 
                 Set<Target> uncontrollableTargets = nextMarkingsWithTransitions(c, Player.Environment)
-                    .stream()
-                    .map(m -> new Target(createOrGet(formula, m.getGame(), c.getMode()), m.getTransition()))
-                    .collect(Collectors.toSet());
+                        .stream()
+                        .map(m -> new Target(createOrGet(formula, m.getGame(), c.getMode()), m.getTransition()))
+                        .collect(Collectors.toSet());
                 if (!uncontrollableTargets.isEmpty() && c.getSuccessors().isEmpty()) {
-                    c.getSuccessors().add(new Edge());
+                    c.getSuccessors().add(new Edge(c));
                 }
                 uncontrollableTargets.forEach(t -> c.getSuccessors().forEach(e -> e.add(t)));
             }
@@ -140,22 +166,22 @@ public class DependencyGraphGenerator {
                         .stream()
                         .map(m -> new Target(createOrGet(formula, m.getGame(), c.getMode()), m.getTransition()))
                         .collect(Collectors.toList());
-                if (!targets.isEmpty()) c.getSuccessors().add(new Edge(targets));
+                if (!targets.isEmpty()) c.getSuccessors().add(new Edge(c, targets));
 
                 nextMarkingsWithTransitions(c, Player.Environment)
                         .stream()
                         .map(m -> new Target(createOrGet(formula, m.getGame(), c.getMode()), m.getTransition()))
-                        .map(Edge::new)
+                        .map(t -> new Edge(c, t))
                         .forEach(c.getSuccessors()::add);
             } else {
                 targets = nextMarkingsWithTransitions(c)
                         .stream()
                         .map(m -> new Target(createOrGet(formula, m.getGame(), c.getMode()), m.getTransition()))
                         .collect(Collectors.toList());
-                if (!targets.isEmpty()) c.getSuccessors().add(new Edge(targets));
+                if (!targets.isEmpty()) c.getSuccessors().add(new Edge(c, targets));
             }
         }
-        c.getSuccessors().add(new Edge(now));
+        c.getSuccessors().add(new Edge(c, now));
     }
 
     public void visitAlways(Target target, UnaryQuantifierTemporal formula) {
@@ -206,7 +232,7 @@ public class DependencyGraphGenerator {
         Configuration c = target.getConfiguration();
 
         if (booleanLiteral.getValue()) {
-            c.getSuccessors().add(new Edge());
+            c.getSuccessors().add(new Edge(null));
         }
     }
 
@@ -214,7 +240,7 @@ public class DependencyGraphGenerator {
         Configuration c = target.getConfiguration();
 
         if (evaluatePredicate(relationalPredicate, c.getGame())) {
-            c.getSuccessors().add(new Edge());
+            c.getSuccessors().add(new Edge(c));
         }
     }
 
@@ -235,8 +261,8 @@ public class DependencyGraphGenerator {
         }
     }
 
-    private Edge addToList(List<Target> environmentAfterTrans, Target cont) {
-        Edge e = new Edge(environmentAfterTrans);
+    private Edge addToList(Configuration c, List<Target> environmentAfterTrans, Target cont) {
+        Edge e = new Edge(c, environmentAfterTrans);
         e.add(cont);
         return e;
     }

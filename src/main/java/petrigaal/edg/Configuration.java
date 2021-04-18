@@ -13,6 +13,7 @@ public class Configuration {
     private final PetriGame game;
     private final boolean mode;
     private final List<Edge> successors;
+    private int negationDistance = Integer.MAX_VALUE;
 
     public Configuration(
             ATLFormula formula,
@@ -32,6 +33,14 @@ public class Configuration {
 
     public Configuration(ATLFormula formula, PetriGame game) {
         this(formula, game, new ArrayList<>(), false);
+    }
+
+    public int getNegationDistance() {
+        return negationDistance;
+    }
+
+    public void setNegationDistance(int negationDistance) {
+        this.negationDistance = negationDistance;
     }
 
     public ATLFormula getFormula() {
