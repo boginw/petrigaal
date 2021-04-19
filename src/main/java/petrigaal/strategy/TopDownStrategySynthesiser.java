@@ -88,7 +88,7 @@ public class TopDownStrategySynthesiser implements StrategySynthesiser {
                     continue;
                 }
 
-                if (controllable.isEmpty() && closures.stream().allMatch(this::controllableHasNotEnabledTransitions)) {
+                if (closures.stream().allMatch(this::controllableHasNotEnabledTransitions)) {
                     for (Closure closure : uncontrollable) {
                         ConfigurationSetStatePair newPair = getOrCreatePair(pair, Set.of(closure));
                         if (!enqueuePair(newPair)) {
