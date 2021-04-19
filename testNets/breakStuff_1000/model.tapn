@@ -1,0 +1,136 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<pnml xmlns="http://www.informatik.hu-berlin.de/top/pnml/ptNetb">
+  <net active="true" id="TAPN1" type="P/T net">
+    <place displayName="true" id="P0" initialMarking="1" invariant="&lt; inf" name="P0" nameOffsetX="0" nameOffsetY="0" positionX="285" positionY="90"/>
+    <place displayName="true" id="P2" initialMarking="0" invariant="&lt; inf" name="P2" nameOffsetX="1" nameOffsetY="0" positionX="345" positionY="240"/>
+    <place displayName="true" id="P3" initialMarking="0" invariant="&lt; inf" name="P3" nameOffsetX="0" nameOffsetY="0" positionX="225" positionY="630"/>
+    <place displayName="true" id="P4" initialMarking="0" invariant="&lt; inf" name="P4" nameOffsetX="0" nameOffsetY="0" positionX="300" positionY="630"/>
+    <place displayName="true" id="P1" initialMarking="0" invariant="&lt; inf" name="P1" nameOffsetX="0" nameOffsetY="-1" positionX="225" positionY="240"/>
+    <place displayName="true" id="P6" initialMarking="0" invariant="&lt; inf" name="P6" nameOffsetX="0" nameOffsetY="0" positionX="225" positionY="495"/>
+    <place displayName="true" id="P7" initialMarking="0" invariant="&lt; inf" name="P7" nameOffsetX="0" nameOffsetY="0" positionX="225" positionY="360"/>
+    <place displayName="true" id="P8" initialMarking="0" invariant="&lt; inf" name="P8" nameOffsetX="0" nameOffsetY="0" positionX="165" positionY="360"/>
+    <place displayName="true" id="P9" initialMarking="0" invariant="&lt; inf" name="P9" nameOffsetX="0" nameOffsetY="0" positionX="345" positionY="360"/>
+    <place displayName="true" id="P10" initialMarking="0" invariant="&lt; inf" name="P10" nameOffsetX="0" nameOffsetY="0" positionX="405" positionY="360"/>
+    <place displayName="true" id="P11" initialMarking="0" invariant="&lt; inf" name="P11" nameOffsetX="0" nameOffsetY="0" positionX="375" positionY="495"/>
+    <place displayName="true" id="P12" initialMarking="0" invariant="&lt; inf" name="P12" nameOffsetX="0" nameOffsetY="0" positionX="375" positionY="630"/>
+    <transition angle="0" displayName="true" id="T0" infiniteServer="false" name="T0" nameOffsetX="0" nameOffsetY="0" player="0" positionX="225" positionY="180" priority="0" urgent="false"/>
+    <transition angle="0" displayName="true" id="T4" infiniteServer="false" name="T4" nameOffsetX="0" nameOffsetY="0" player="0" positionX="225" positionY="555" priority="0" urgent="false"/>
+    <transition angle="0" displayName="true" id="T5" infiniteServer="false" name="T5" nameOffsetX="0" nameOffsetY="0" player="0" positionX="300" positionY="555" priority="0" urgent="false"/>
+    <transition angle="0" displayName="true" id="T2" infiniteServer="false" name="T2" nameOffsetX="-1" nameOffsetY="-1" player="0" positionX="225" positionY="300" priority="0" urgent="false"/>
+    <transition angle="0" displayName="true" id="T6" infiniteServer="false" name="T6" nameOffsetX="0" nameOffsetY="-1" player="0" positionX="225" positionY="420" priority="0" urgent="false"/>
+    <transition angle="0" displayName="true" id="T27" infiniteServer="false" name="T27" nameOffsetX="0" nameOffsetY="0" player="0" positionX="165" positionY="300" priority="0" urgent="false"/>
+    <transition angle="0" displayName="true" id="T28" infiniteServer="false" name="T28" nameOffsetX="0" nameOffsetY="0" player="0" positionX="165" positionY="420" priority="0" urgent="false"/>
+    <transition angle="0" displayName="true" id="T29" infiniteServer="false" name="T29" nameOffsetX="0" nameOffsetY="0" player="1" positionX="345" positionY="300" priority="0" urgent="false"/>
+    <transition angle="0" displayName="true" id="T30" infiniteServer="false" name="T30" nameOffsetX="0" nameOffsetY="0" player="1" positionX="405" positionY="300" priority="0" urgent="false"/>
+    <transition angle="0" displayName="true" id="T31" infiniteServer="false" name="T31" nameOffsetX="0" nameOffsetY="0" player="0" positionX="345" positionY="420" priority="0" urgent="false"/>
+    <transition angle="0" displayName="true" id="T32" infiniteServer="false" name="T32" nameOffsetX="0" nameOffsetY="0" player="0" positionX="405" positionY="420" priority="0" urgent="false"/>
+    <transition angle="0" displayName="true" id="T33" infiniteServer="false" name="T33" nameOffsetX="0" nameOffsetY="0" player="1" positionX="345" positionY="180" priority="0" urgent="false"/>
+    <transition angle="0" displayName="true" id="T34" infiniteServer="false" name="T34" nameOffsetX="0" nameOffsetY="0" player="0" positionX="375" positionY="555" priority="0" urgent="false"/>
+    <arc id="A6" inscription="[0,inf)" nameOffsetX="0" nameOffsetY="0" source="P0" target="T0" type="timed" weight="1">
+      <arcpath arcPointType="false" id="0" xCoord="292" yCoord="117"/>
+      <arcpath arcPointType="false" id="1" xCoord="244" yCoord="195"/>
+    </arc>
+    <arc id="A7" inscription="1" nameOffsetX="0" nameOffsetY="0" source="T0" target="P1" type="normal" weight="1">
+      <arcpath arcPointType="false" id="0" xCoord="240" yCoord="210"/>
+      <arcpath arcPointType="false" id="1" xCoord="240" yCoord="240"/>
+    </arc>
+    <arc id="A10" inscription="1" nameOffsetX="0" nameOffsetY="0" source="T4" target="P3" type="normal" weight="1">
+      <arcpath arcPointType="false" id="0" xCoord="240" yCoord="585"/>
+      <arcpath arcPointType="false" id="1" xCoord="240" yCoord="630"/>
+    </arc>
+    <arc id="A11" inscription="1" nameOffsetX="0" nameOffsetY="0" source="T5" target="P4" type="normal" weight="1">
+      <arcpath arcPointType="false" id="0" xCoord="315" yCoord="585"/>
+      <arcpath arcPointType="false" id="1" xCoord="315" yCoord="630"/>
+    </arc>
+    <arc id="A14" inscription="[0,inf)" nameOffsetX="0" nameOffsetY="0" source="P6" target="T4" type="timed" weight="1">
+      <arcpath arcPointType="false" id="0" xCoord="240" yCoord="525"/>
+      <arcpath arcPointType="false" id="1" xCoord="240" yCoord="555"/>
+    </arc>
+    <arc id="A15" inscription="[0,inf)" nameOffsetX="0" nameOffsetY="0" source="P6" target="T5" type="timed" weight="1">
+      <arcpath arcPointType="false" id="0" xCoord="251" yCoord="519"/>
+      <arcpath arcPointType="false" id="1" xCoord="309" yCoord="570"/>
+    </arc>
+    <arc id="A17" inscription="1" nameOffsetX="0" nameOffsetY="0" source="T2" target="P7" type="normal" weight="1">
+      <arcpath arcPointType="false" id="0" xCoord="240" yCoord="330"/>
+      <arcpath arcPointType="false" id="1" xCoord="240" yCoord="360"/>
+    </arc>
+    <arc id="A18" inscription="[0,inf)" nameOffsetX="0" nameOffsetY="0" source="P7" target="T6" type="timed" weight="1">
+      <arcpath arcPointType="false" id="0" xCoord="240" yCoord="390"/>
+      <arcpath arcPointType="false" id="1" xCoord="240" yCoord="420"/>
+    </arc>
+    <arc id="A19" inscription="1" nameOffsetX="0" nameOffsetY="0" source="T6" target="P6" type="normal" weight="1">
+      <arcpath arcPointType="false" id="0" xCoord="240" yCoord="450"/>
+      <arcpath arcPointType="false" id="1" xCoord="240" yCoord="495"/>
+    </arc>
+    <arc id="A16" inscription="[0,inf)" nameOffsetX="0" nameOffsetY="0" source="P1" target="T2" type="timed" weight="1">
+      <arcpath arcPointType="false" id="0" xCoord="240" yCoord="270"/>
+      <arcpath arcPointType="false" id="1" xCoord="240" yCoord="300"/>
+    </arc>
+    <arc id="A17" inscription="[0,inf)" nameOffsetX="0" nameOffsetY="0" source="P1" target="T27" type="timed" weight="1">
+      <arcpath arcPointType="false" id="0" xCoord="229" yCoord="265"/>
+      <arcpath arcPointType="false" id="1" xCoord="185" yCoord="310"/>
+    </arc>
+    <arc id="A20" inscription="1" nameOffsetX="0" nameOffsetY="0" source="T27" target="P8" type="normal" weight="1">
+      <arcpath arcPointType="false" id="0" xCoord="180" yCoord="330"/>
+      <arcpath arcPointType="false" id="1" xCoord="180" yCoord="360"/>
+    </arc>
+    <arc id="A18" inscription="[0,inf)" nameOffsetX="0" nameOffsetY="0" source="P8" target="T28" type="timed" weight="1">
+      <arcpath arcPointType="false" id="0" xCoord="180" yCoord="390"/>
+      <arcpath arcPointType="false" id="1" xCoord="180" yCoord="420"/>
+    </arc>
+    <arc id="A21" inscription="1" nameOffsetX="0" nameOffsetY="0" source="T28" target="P6" type="normal" weight="1">
+      <arcpath arcPointType="false" id="0" xCoord="184" yCoord="435"/>
+      <arcpath arcPointType="false" id="1" xCoord="231" yCoord="497"/>
+    </arc>
+    <arc id="A19" inscription="[0,inf)" nameOffsetX="0" nameOffsetY="0" source="P2" target="T29" type="timed" weight="1">
+      <arcpath arcPointType="false" id="0" xCoord="360" yCoord="270"/>
+      <arcpath arcPointType="false" id="1" xCoord="360" yCoord="300"/>
+    </arc>
+    <arc id="A22" inscription="[0,inf)" nameOffsetX="0" nameOffsetY="0" source="P2" target="T30" type="timed" weight="1">
+      <arcpath arcPointType="false" id="0" xCoord="369" yCoord="266"/>
+      <arcpath arcPointType="false" id="1" xCoord="414" yCoord="320"/>
+    </arc>
+    <arc id="A23" inscription="1" nameOffsetX="0" nameOffsetY="0" source="T29" target="P9" type="normal" weight="1">
+      <arcpath arcPointType="false" id="0" xCoord="360" yCoord="330"/>
+      <arcpath arcPointType="false" id="1" xCoord="360" yCoord="360"/>
+    </arc>
+    <arc id="A24" inscription="1" nameOffsetX="0" nameOffsetY="0" source="T30" target="P10" type="normal" weight="1">
+      <arcpath arcPointType="false" id="0" xCoord="420" yCoord="330"/>
+      <arcpath arcPointType="false" id="1" xCoord="420" yCoord="360"/>
+    </arc>
+    <arc id="A25" inscription="[0,inf)" nameOffsetX="0" nameOffsetY="0" source="P9" target="T31" type="timed" weight="1">
+      <arcpath arcPointType="false" id="0" xCoord="360" yCoord="390"/>
+      <arcpath arcPointType="false" id="1" xCoord="360" yCoord="420"/>
+    </arc>
+    <arc id="A26" inscription="[0,inf)" nameOffsetX="0" nameOffsetY="0" source="P10" target="T32" type="timed" weight="1">
+      <arcpath arcPointType="false" id="0" xCoord="420" yCoord="390"/>
+      <arcpath arcPointType="false" id="1" xCoord="420" yCoord="420"/>
+    </arc>
+    <arc id="A27" inscription="1" nameOffsetX="0" nameOffsetY="0" source="T31" target="P11" type="normal" weight="1">
+      <arcpath arcPointType="false" id="0" xCoord="360" yCoord="450"/>
+      <arcpath arcPointType="false" id="1" xCoord="383" yCoord="496"/>
+    </arc>
+    <arc id="A28" inscription="1" nameOffsetX="0" nameOffsetY="0" source="T32" target="P11" type="normal" weight="1">
+      <arcpath arcPointType="false" id="0" xCoord="420" yCoord="450"/>
+      <arcpath arcPointType="false" id="1" xCoord="396" yCoord="496"/>
+    </arc>
+    <arc id="A29" inscription="[0,inf)" nameOffsetX="0" nameOffsetY="0" source="P0" target="T33" type="timed" weight="1">
+      <arcpath arcPointType="false" id="0" xCoord="308" yCoord="117"/>
+      <arcpath arcPointType="false" id="1" xCoord="355" yCoord="190"/>
+    </arc>
+    <arc id="A30" inscription="1" nameOffsetX="0" nameOffsetY="0" source="T33" target="P2" type="normal" weight="1">
+      <arcpath arcPointType="false" id="0" xCoord="360" yCoord="210"/>
+      <arcpath arcPointType="false" id="1" xCoord="360" yCoord="240"/>
+    </arc>
+    <arc id="A31" inscription="[0,inf)" nameOffsetX="0" nameOffsetY="0" source="P11" target="T34" type="timed" weight="1">
+      <arcpath arcPointType="false" id="0" xCoord="390" yCoord="525"/>
+      <arcpath arcPointType="false" id="1" xCoord="390" yCoord="555"/>
+    </arc>
+    <arc id="A32" inscription="1" nameOffsetX="0" nameOffsetY="0" source="T34" target="P12" type="normal" weight="1">
+      <arcpath arcPointType="false" id="0" xCoord="390" yCoord="585"/>
+      <arcpath arcPointType="false" id="1" xCoord="390" yCoord="630"/>
+    </arc>
+  </net>
+  <k-bound bound="3"/>
+  <feature isGame="true" isTimed="false"/>
+</pnml>
