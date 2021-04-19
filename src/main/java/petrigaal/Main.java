@@ -47,6 +47,8 @@ public class Main implements Callable<Integer> {
     public Boolean postScript = false;
     @Option(names = {"-dn"}, description = "Disable negation and use normal solver instead")
     public Boolean dg = false;
+    @Option(names = {"-o1"}, description = "Display only those configurations that propagate one")
+    public Boolean d1 = false;
     @Parameters(description = "Model (Either TAPN or PNML)")
     public File file;
     private int counter = 0;
@@ -131,7 +133,9 @@ public class Main implements Callable<Integer> {
     }
 
     private void openGraph(Configuration c, Map<Configuration, Boolean> propagationByConfiguration) {
-        openGraph(new EDGToGraphViz().draw(c, propagationByConfiguration));
+        EDGToGraphViz edgToGraphViz = new EDGToGraphViz();
+        edgToGraphViz.setDisplayOnlyConfigurationsWhichPropagateOne(d1);
+        openGraph(edgToGraphViz.draw(c, propagationByConfiguration));
     }
 
     private void openGraph(String graph) {

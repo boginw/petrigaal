@@ -15,6 +15,11 @@ public class EDGToGraphViz {
     private Map<Configuration, Boolean> propagationByConfiguration;
     private int empties = 0;
     private int joints = 0;
+    private boolean displayOnlyConfigurationsWhichPropagateOne = false;
+
+    public void setDisplayOnlyConfigurationsWhichPropagateOne(boolean displayOnlyConfigurationsWhichPropagateOne) {
+        this.displayOnlyConfigurationsWhichPropagateOne = displayOnlyConfigurationsWhichPropagateOne;
+    }
 
     public String draw(Configuration configuration) {
         return draw(configuration, new HashMap<>());
@@ -70,6 +75,9 @@ public class EDGToGraphViz {
     }
 
     private void visit(Configuration c, int rank) {
+        if (shouldSkipConfiguration(c)) {
+            return;
+        }
         String name = nameOf(c);
 
         String suffix = "";
@@ -92,6 +100,10 @@ public class EDGToGraphViz {
     }
 
     private void visitJoint(String parent, Edge edge, int rank) {
+        if (shouldSkipJoint(edge)) {
+            return;
+        }
+
         int joint = ++joints;
         String name = "joint" + joint;
         String nameWithoutArrow = name + " [arrowhead=\"none\"]";
@@ -122,6 +134,15 @@ public class EDGToGraphViz {
             children.add(nameOf(target.getConfiguration()) + " [xlabel=\"" + label + "\"" + suffix + "]");
             queue.add(new Pair<>(target.getConfiguration(), rank + 1));
         }
+    }
+
+    private boolean shouldSkipConfiguration(Configuration c) {
+        return displayOnlyConfigurationsWhichPropagateOne
+                && !propagationByConfiguration.getOrDefault(c, false);
+    }
+
+    private boolean shouldSkipJoint(Edge edge) {
+        return edge.stream().anyMatch(t -> shouldSkipConfiguration(t.getConfiguration()));
     }
 
     private String nameOf(Configuration c) {
