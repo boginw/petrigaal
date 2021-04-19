@@ -54,7 +54,7 @@ public class AutomataStrategyToGraphViz {
         }
 
         if (sb.isEmpty()) {
-            sb.append("label=\" There does not exist a strategy. \"");
+            sb.append("label=\" There does not exist a strategy\"");
         }
 
         return "digraph G {\n" +
