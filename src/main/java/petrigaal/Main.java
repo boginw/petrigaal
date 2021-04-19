@@ -135,7 +135,7 @@ public class Main implements Callable<Integer> {
     }
 
     private void openGraph(String graph) {
-        Format format = postScript ? Format.PS2 : Format.SVG;
+        Format format = postScript ? Format.PS2 : Format.PNG;
         try {
             File vizFile = new File("./out/" + (counter++) + ".gv");
             File svgFile = new File("./out/" + (counter++) + "." + format.fileExtension);
