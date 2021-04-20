@@ -46,6 +46,7 @@ public class AutomataStrategy {
             return v;
         }));
 
+        finalStates.remove(state);
         stateTransitions.entrySet().removeIf(e -> e.getKey().a.equals(state));
     }
 
