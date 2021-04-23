@@ -6,7 +6,8 @@ import petrigaal.edg.Target;
 import petrigaal.petri.PetriGame;
 import petrigaal.petri.Player;
 import petrigaal.petri.Transition;
-import petrigaal.strategy.AutomataStrategy.AutomataState;
+import petrigaal.strategy.automata.AutomataStrategy;
+import petrigaal.strategy.automata.AutomataStrategy.AutomataState;
 
 import java.util.*;
 import java.util.function.Consumer;
@@ -26,13 +27,12 @@ public class TopDownStrategySynthesiser implements StrategySynthesiser {
     private AutomataStrategy strategy;
 
     @Override
-    public void synthesize(
-            PetriGame game,
+    public AutomataStrategy synthesize(
             Configuration root,
             Map<Configuration, Boolean> propagationByConfiguration,
             Consumer<AutomataStrategy> consumer
     ) {
-        this.game = game;
+        this.game = root.getGame();
         this.propagationByConfiguration = propagationByConfiguration;
         this.consumer = consumer;
         this.strategy = new AutomataStrategy();
@@ -140,6 +140,7 @@ public class TopDownStrategySynthesiser implements StrategySynthesiser {
         strategy.removeEverythingThatIsNotConnectedTo(initialPair.getState());
 
         consumer.accept(strategy);
+        return strategy;
     }
 
     private void enqueuePair(ConfigurationSetStateLink newPair) {

@@ -1,9 +1,9 @@
 package petrigaal.draw;
 
-import org.antlr.v4.runtime.misc.Pair;
-import petrigaal.petri.Transition;
-import petrigaal.strategy.AutomataStrategy;
-import petrigaal.strategy.AutomataStrategy.AutomataState;
+import petrigaal.strategy.automata.AutomataInput;
+import petrigaal.strategy.automata.AutomataOutput;
+import petrigaal.strategy.automata.AutomataStrategy;
+import petrigaal.strategy.automata.AutomataStrategy.AutomataState;
 
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -13,44 +13,47 @@ public class AutomataStrategyToGraphViz {
         Set<AutomataState> states = strategy.getStateTransitions()
                 .keySet()
                 .stream()
-                .map(p -> p.a)
+                .map(AutomataInput::state)
                 .collect(Collectors.toSet());
         StringBuilder sb = new StringBuilder();
 
-        states.forEach(s -> sb.append(s.getName()).append("\n"));
+        states.forEach(s -> sb.append(s.name()).append("\n"));
 
-        strategy.getStateTransitions().forEach((k, v) -> {
-            for (Pair<Transition, AutomataState> transitionAutomataStatePair : v) {
-                if (transitionAutomataStatePair.a == null && k.b != null) {
-                    sb.append(k.a.getName())
-                            .append(" -> ")
-                            .append(transitionAutomataStatePair.b.getName())
-                            .append(" [xlabel=\"")
-                            .append(k.b)
-                            .append(" /  ⊥ \"]\n");
-                } else if (transitionAutomataStatePair.a == null) {
-                    sb.append(k.a.getName())
-                            .append(" -> ")
-                            .append(transitionAutomataStatePair.b.getName())
-                            .append(" [xlabel=\"* / *\"]")
-                            .append("\n");
+        strategy.getStateTransitions().forEach((input, v) -> {
+            for (AutomataOutput output : v) {
+                if (input.game() != null && output.transition() == null) {
+                    addTransition(
+                            sb,
+                            input.state().name(),
+                            input.game(),
+                            "⊥",
+                            output.state().name()
+                    );
+                } else if (input.game() == null && output.transition() == null) {
+                    addTransition(
+                            sb,
+                            input.state().name(),
+                            "*",
+                            "*",
+                            output.state().name()
+                    );
+                } else if (input.game() != null) {
+                    addTransition(
+                            sb,
+                            input.state().name(),
+                            input.game(),
+                            output.transition(),
+                            output.state().name()
+                    );
                 } else {
-                    sb.append(k.a.getName())
-                            .append(" -> ")
-                            .append(transitionAutomataStatePair.b.getName())
-                            .append(" [xlabel=\"")
-                            .append(k.b)
-                            .append(" / ")
-                            .append(transitionAutomataStatePair.a)
-                            .append("\"]")
-                            .append("\n");
+                    throw new IllegalArgumentException("Game is null");
                 }
             }
         });
 
         for (AutomataState finalState : strategy.getFinalStates()) {
-            sb.append(finalState.getName())
-                .append(" [color=green, fillcolor=black]\n");
+            sb.append(finalState.name())
+                    .append(" [color=green, fillcolor=black]\n");
         }
 
         if (sb.isEmpty()) {
@@ -62,5 +65,23 @@ public class AutomataStrategyToGraphViz {
                 "node [shape=oval]\n" +
                 sb +
                 "}";
+    }
+
+    private void addTransition(
+            StringBuilder sb,
+            Object start,
+            Object game,
+            Object transition,
+            Object end
+    ) {
+        sb.append(start)
+                .append(" -> ")
+                .append(end)
+                .append(" [xlabel=\"")
+                .append(game)
+                .append(" / ")
+                .append(transition)
+                .append("\"]")
+                .append("\n");
     }
 }

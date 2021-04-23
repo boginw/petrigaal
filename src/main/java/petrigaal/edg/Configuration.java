@@ -80,7 +80,7 @@ public class Configuration {
     }
 
     public Configuration copy() {
-        List<Edge> copiedEdges = successors.stream().map(Edge::copy).collect(Collectors.toList());
+        List<Edge> copiedEdges = successors.stream().map(Edge::copy).toList();
         return new Configuration(formula, game, copiedEdges, mode);
     }
 }

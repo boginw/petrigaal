@@ -28,7 +28,7 @@ public class Edge extends ArrayList<Target> {
     }
 
     public Edge(Configuration source, boolean isNegated, Configuration... elements) {
-        this(source, Arrays.stream(elements).map(Target::new).collect(Collectors.toList()), isNegated);
+        this(source, Arrays.stream(elements).map(Target::new).toList(), isNegated);
     }
 
     public Edge(Configuration source, Collection<Target> outgoing, boolean isNegated) {
@@ -51,7 +51,7 @@ public class Edge extends ArrayList<Target> {
     }
 
     public Edge copy() {
-        List<Target> copy = this.stream().map(Target::copy).collect(Collectors.toList());
+        List<Target> copy = this.stream().map(Target::copy).toList();
         return new Edge(source, new ArrayList<>(copy), isNegated);
     }
 }
