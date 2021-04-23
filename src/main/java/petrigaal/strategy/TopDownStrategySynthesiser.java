@@ -6,7 +6,8 @@ import petrigaal.edg.Target;
 import petrigaal.petri.PetriGame;
 import petrigaal.petri.Player;
 import petrigaal.petri.Transition;
-import petrigaal.strategy.AutomataStrategy.AutomataState;
+import petrigaal.strategy.automata.AutomataStrategy;
+import petrigaal.strategy.automata.AutomataStrategy.AutomataState;
 
 import java.util.*;
 import java.util.function.Consumer;

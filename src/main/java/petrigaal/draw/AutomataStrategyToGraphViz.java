@@ -1,9 +1,9 @@
 package petrigaal.draw;
 
-import petrigaal.strategy.AutomataInput;
-import petrigaal.strategy.AutomataOutput;
-import petrigaal.strategy.AutomataStrategy;
-import petrigaal.strategy.AutomataStrategy.AutomataState;
+import petrigaal.strategy.automata.AutomataInput;
+import petrigaal.strategy.automata.AutomataOutput;
+import petrigaal.strategy.automata.AutomataStrategy;
+import petrigaal.strategy.automata.AutomataStrategy.AutomataState;
 
 import java.util.Set;
 import java.util.stream.Collectors;

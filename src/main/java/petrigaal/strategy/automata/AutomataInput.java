@@ -1,7 +1,7 @@
-package petrigaal.strategy;
+package petrigaal.strategy.automata;
 
 import petrigaal.petri.PetriGame;
-import petrigaal.strategy.AutomataStrategy.AutomataState;
+import petrigaal.strategy.automata.AutomataStrategy.AutomataState;
 
 public record AutomataInput(AutomataState state, PetriGame game) {
 }

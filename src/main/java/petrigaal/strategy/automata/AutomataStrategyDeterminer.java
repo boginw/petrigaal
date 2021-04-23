@@ -1,6 +1,6 @@
-package petrigaal.strategy;
+package petrigaal.strategy.automata;
 
-import petrigaal.strategy.AutomataStrategy.AutomataState;
+import petrigaal.strategy.automata.AutomataStrategy.AutomataState;
 
 import java.util.PriorityQueue;
 import java.util.Queue;

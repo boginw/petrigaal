@@ -1,4 +1,4 @@
-package petrigaal.strategy;
+package petrigaal.strategy.automata;
 
 import petrigaal.petri.PetriGame;
 import petrigaal.petri.Transition;
