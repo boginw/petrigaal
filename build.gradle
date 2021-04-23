@@ -8,7 +8,7 @@ plugins {
 
 version '1.0'
 
-sourceCompatibility = 15
+sourceCompatibility = 16
 
 application {
     mainClassName = 'petrigaal.Main'
@@ -25,11 +25,11 @@ sourceSets {
 dependencies {
     implementation "guru.nidi:graphviz-java:0.12.1"
     implementation group: 'fr.lip6.pnml', name: 'framework.releng', version: '2.2.12', ext: 'pom'
-    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.3.1'
-    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.3.1'
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.7.1'
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.7.1'
     implementation 'info.picocli:picocli:4.6.1'
 
-    antlr "org.antlr:antlr4:4.7.2"
+    antlr "org.antlr:antlr4:4.9.2"
 }
 
 test {

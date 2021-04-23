@@ -1,6 +1,5 @@
 package petrigaal.strategy;
 
-import org.antlr.v4.runtime.misc.Pair;
 import petrigaal.petri.PetriGame;
 import petrigaal.petri.Transition;
 
@@ -9,7 +8,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class AutomataStrategy {
-    private final Map<Pair<AutomataState, PetriGame>, Set<Pair<Transition, AutomataState>>> stateTransitions = new HashMap<>();
+    private final Map<AutomataInput, Set<AutomataOutput>> stateTransitions = new HashMap<>();
     private final AutomataState initialState = new AutomataState("init");
     private final Set<AutomataState> finalStates = new HashSet<>();
 
@@ -17,7 +16,7 @@ public class AutomataStrategy {
         return initialState;
     }
 
-    public Map<Pair<AutomataState, PetriGame>, Set<Pair<Transition, AutomataState>>> getStateTransitions() {
+    public Map<AutomataInput, Set<AutomataOutput>> getStateTransitions() {
         return stateTransitions;
     }
 
@@ -27,27 +26,26 @@ public class AutomataStrategy {
             Transition transition,
             AutomataState target
     ) {
-        stateTransitions.computeIfAbsent(new Pair<>(source, game), k -> new HashSet<>());
-        stateTransitions.merge(new Pair<>(source, game), Set.of(new Pair<>(transition, target)), this::union);
-    }
-
-    private <A> Set<A> union(Set<A> a, Set<A> b) {
-        return Stream.concat(a.stream(), b.stream()).collect(Collectors.toSet());
+        stateTransitions.computeIfAbsent(new AutomataInput(source, game), k -> new HashSet<>());
+        stateTransitions.merge(
+                new AutomataInput(source, game), Set.of(new AutomataOutput(transition, target)),
+                this::union
+        );
     }
 
     public void removeState(AutomataState state) {
-        Set<Pair<AutomataState, PetriGame>> keys = stateTransitions.entrySet()
+        Set<AutomataInput> keys = stateTransitions.entrySet()
                 .stream()
-                .filter(e -> e.getValue().stream().anyMatch(p -> p.b.equals(state)))
+                .filter(e -> e.getValue().stream().anyMatch(p -> p.state().equals(state)))
                 .map(Map.Entry::getKey)
                 .collect(Collectors.toSet());
         keys.forEach(key -> stateTransitions.computeIfPresent(key, (k, v) -> {
-            v.removeIf(s -> s.b.equals(state));
+            v.removeIf(s -> s.state().equals(state));
             return v;
         }));
 
         finalStates.remove(state);
-        stateTransitions.entrySet().removeIf(e -> e.getKey().a.equals(state));
+        stateTransitions.entrySet().removeIf(e -> e.getKey().state().equals(state));
     }
 
     public void removeEverythingThatIsNotConnectedTo(AutomataState state) {
@@ -61,10 +59,10 @@ public class AutomataStrategy {
 
             Set<AutomataState> adjacentStates = stateTransitions.entrySet()
                     .stream()
-                    .filter(e -> e.getKey().a.equals(nextState))
+                    .filter(e -> e.getKey().state().equals(nextState))
                     .map(Map.Entry::getValue)
                     .flatMap(Collection::stream)
-                    .map(p -> p.b)
+                    .map(AutomataOutput::state)
                     .collect(Collectors.toSet());
             for (AutomataState adjacentState : adjacentStates) {
                 if (!visited.contains(adjacentState)) {
@@ -84,7 +82,7 @@ public class AutomataStrategy {
 
     private Set<AutomataState> getAllStates() {
         return stateTransitions.entrySet().stream()
-                .flatMap(e -> Stream.concat(Stream.of(e.getKey().a), e.getValue().stream().map(p -> p.b)))
+                .flatMap(e -> Stream.concat(Stream.of(e.getKey().state()), e.getValue().stream().map(p -> p.state())))
                 .collect(Collectors.toSet());
     }
 
@@ -96,33 +94,15 @@ public class AutomataStrategy {
         return finalStates;
     }
 
-    public static class AutomataState {
-        private final String name;
+    private <A> Set<A> union(Set<A> a, Set<A> b) {
+        return Stream.concat(a.stream(), b.stream()).collect(Collectors.toSet());
+    }
 
-        public AutomataState(String name) {
-            this.name = name;
-        }
-
-        public String getName() {
-            return name;
-        }
-
-        @Override
-        public boolean equals(Object o) {
-            if (this == o) return true;
-            if (o == null || getClass() != o.getClass()) return false;
-            AutomataState state = (AutomataState) o;
-            return Objects.equals(name, state.name);
-        }
+    public record AutomataState(String name) {
 
         @Override
         public String toString() {
             return "{name='" + name + "'}";
-        }
-
-        @Override
-        public int hashCode() {
-            return Objects.hash(name);
         }
     }
 }
