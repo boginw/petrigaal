@@ -2,6 +2,7 @@ package petrigaal.strategy.automata;
 
 import petrigaal.petri.PetriGame;
 import petrigaal.petri.Transition;
+import petrigaal.strategy.Strategy;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -9,10 +10,18 @@ import java.util.stream.Stream;
 
 import static java.util.stream.Stream.concat;
 
-public class AutomataStrategy {
+public class AutomataStrategy implements Strategy {
     private final Map<AutomataInput, Set<AutomataOutput>> stateTransitions = new HashMap<>();
-    private final AutomataState initialState = new AutomataState("init");
+    private final AutomataState initialState;
     private final Set<AutomataState> finalStates = new HashSet<>();
+
+    public AutomataStrategy() {
+        initialState = new AutomataState("init");
+    }
+
+    private AutomataStrategy(AutomataState initialState) {
+        this.initialState = initialState;
+    }
 
     public AutomataState getInitialState() {
         return initialState;
@@ -29,6 +38,33 @@ public class AutomataStrategy {
     public void addTransition(AutomataInput input, AutomataOutput output) {
         stateTransitions.computeIfAbsent(input, k -> new HashSet<>());
         stateTransitions.merge(input, Set.of(output), this::union);
+    }
+
+    @Override
+    public Set<Transition> out(final List<PetriGame> gameList) {
+        if (gameList.isEmpty()) {
+            throw new IllegalArgumentException("Unknown state");
+        }
+
+        Queue<PetriGame> games = new LinkedList<>(gameList);
+
+        Set<AutomataState> currentStates = new HashSet<>();
+        currentStates.add(initialState);
+        Set<Transition> transitions = new HashSet<>();
+
+        while (!games.isEmpty()) {
+            PetriGame game = games.poll();
+            Set<AutomataOutput> outputs = stateTransitions.entrySet().stream()
+                    .filter(e -> currentStates.contains(e.getKey().state()))
+                    .filter(e -> e.getKey().game().equals(game))
+                    .flatMap(e -> e.getValue().stream())
+                    .collect(Collectors.toSet());
+            transitions = outputs.stream().map(AutomataOutput::transition).collect(Collectors.toSet());
+            currentStates.clear();
+            currentStates.addAll(outputs.stream().map(AutomataOutput::state).collect(Collectors.toSet()));
+        }
+
+        return transitions;
     }
 
     public void removeState(AutomataState state) {

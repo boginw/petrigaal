@@ -9,7 +9,6 @@ import java.util.function.Consumer;
 
 public interface StrategySynthesiser {
     AutomataStrategy synthesize(
-            PetriGame game,
             Configuration root,
             Map<Configuration, Boolean> propagationByConfiguration,
             Consumer<AutomataStrategy> consumer

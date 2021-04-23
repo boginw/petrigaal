@@ -28,12 +28,11 @@ public class TopDownStrategySynthesiser implements StrategySynthesiser {
 
     @Override
     public AutomataStrategy synthesize(
-            PetriGame game,
             Configuration root,
             Map<Configuration, Boolean> propagationByConfiguration,
             Consumer<AutomataStrategy> consumer
     ) {
-        this.game = game;
+        this.game = root.getGame();
         this.propagationByConfiguration = propagationByConfiguration;
         this.consumer = consumer;
         this.strategy = new AutomataStrategy();
