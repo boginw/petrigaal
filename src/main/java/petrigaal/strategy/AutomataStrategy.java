@@ -7,6 +7,8 @@ import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import static java.util.stream.Stream.concat;
+
 public class AutomataStrategy {
     private final Map<AutomataInput, Set<AutomataOutput>> stateTransitions = new HashMap<>();
     private final AutomataState initialState = new AutomataState("init");
@@ -82,7 +84,7 @@ public class AutomataStrategy {
 
     private Set<AutomataState> getAllStates() {
         return stateTransitions.entrySet().stream()
-                .flatMap(e -> Stream.concat(Stream.of(e.getKey().state()), e.getValue().stream().map(p -> p.state())))
+                .flatMap(e -> concat(Stream.of(e.getKey().state()), e.getValue().stream().map(AutomataOutput::state)))
                 .collect(Collectors.toSet());
     }
 
@@ -95,7 +97,7 @@ public class AutomataStrategy {
     }
 
     private <A> Set<A> union(Set<A> a, Set<A> b) {
-        return Stream.concat(a.stream(), b.stream()).collect(Collectors.toSet());
+        return concat(a.stream(), b.stream()).collect(Collectors.toSet());
     }
 
     public record AutomataState(String name) {

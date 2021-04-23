@@ -44,7 +44,7 @@ public class DependencyGraphGenerator {
         Configuration c2 = createOrGet(formula.getSecondOperand(), c.getGame(), c.getMode());
 
         List<Configuration> configurations = List.of(c1, c2);
-        c.getSuccessors().add(new Edge(c, configurations.stream().map(Target::new).collect(Collectors.toList())));
+        c.getSuccessors().add(new Edge(c, configurations.stream().map(Target::new).toList()));
     }
 
     public void visitDisjunction(Target target, BinaryTemporal formula) {
@@ -102,12 +102,12 @@ public class DependencyGraphGenerator {
             if (!primaryAfterTrans.isEmpty() && secondaryAfterTrans.isEmpty()) {
                 primaryAfterTransEdges = primaryAfterTrans.stream()
                         .map(t -> new Edge(c, t))
-                        .collect(Collectors.toList());
+                        .toList();
             } else {
                 primaryAfterTransEdges = secondaryAfterTrans.stream()
                         .map(cont -> addToList(c, primaryAfterTrans, cont))
                         .map(t -> new Edge(c, t))
-                        .collect(Collectors.toList());
+                        .toList();
             }
             c.getSuccessors().addAll(primaryAfterTransEdges);
         }
@@ -165,7 +165,7 @@ public class DependencyGraphGenerator {
                 targets = nextMarkingsWithTransitions(c, Player.Controller)
                         .stream()
                         .map(m -> new Target(createOrGet(formula, m.getGame(), c.getMode()), m.getTransition()))
-                        .collect(Collectors.toList());
+                        .toList();
                 if (!targets.isEmpty()) c.getSuccessors().add(new Edge(c, targets));
 
                 nextMarkingsWithTransitions(c, Player.Environment)
@@ -177,7 +177,7 @@ public class DependencyGraphGenerator {
                 targets = nextMarkingsWithTransitions(c)
                         .stream()
                         .map(m -> new Target(createOrGet(formula, m.getGame(), c.getMode()), m.getTransition()))
-                        .collect(Collectors.toList());
+                        .toList();
                 if (!targets.isEmpty()) c.getSuccessors().add(new Edge(c, targets));
             }
         }
@@ -270,22 +270,22 @@ public class DependencyGraphGenerator {
     private List<Target> fireAllEnabled(UnaryTemporal formula, PetriGame game, Player player, boolean mode) {
         return nextMarkingsWithTransitions(game, player).stream()
                 .map(g -> new Target(createOrGet(formula.getFirstOperand(), g.getGame(), mode), g.getTransition()))
-                .collect(Collectors.toList());
+                .toList();
     }
 
     private List<TransitionMarkingPair> nextMarkingsWithTransitions(Configuration c) {
         List<Transition> transitions = c.getGame().getEnabledTransitions();
-        return transitions.stream().map(t -> TransitionMarkingPair.of(t, c.getGame().fire(t))).collect(Collectors.toList());
+        return transitions.stream().map(t -> TransitionMarkingPair.of(t, c.getGame().fire(t))).toList();
     }
 
     private List<TransitionMarkingPair> nextMarkingsWithTransitions(Configuration c, Player player) {
         List<Transition> transitions = c.getGame().getEnabledTransitions(player);
-        return transitions.stream().map(t -> TransitionMarkingPair.of(t, c.getGame().fire(t))).collect(Collectors.toList());
+        return transitions.stream().map(t -> TransitionMarkingPair.of(t, c.getGame().fire(t))).toList();
     }
 
     private List<TransitionMarkingPair> nextMarkingsWithTransitions(PetriGame game, Player player) {
         List<Transition> transitions = game.getEnabledTransitions(player);
-        return transitions.stream().map(t -> TransitionMarkingPair.of(t, game.fire(t))).collect(Collectors.toList());
+        return transitions.stream().map(t -> TransitionMarkingPair.of(t, game.fire(t))).toList();
     }
 
     private boolean evaluatePredicate(RelationalPredicate predicate, PetriGame game) {
