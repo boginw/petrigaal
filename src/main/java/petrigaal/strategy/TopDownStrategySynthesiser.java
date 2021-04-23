@@ -26,7 +26,7 @@ public class TopDownStrategySynthesiser implements StrategySynthesiser {
     private AutomataStrategy strategy;
 
     @Override
-    public void synthesize(
+    public AutomataStrategy synthesize(
             PetriGame game,
             Configuration root,
             Map<Configuration, Boolean> propagationByConfiguration,
@@ -140,6 +140,7 @@ public class TopDownStrategySynthesiser implements StrategySynthesiser {
         strategy.removeEverythingThatIsNotConnectedTo(initialPair.getState());
 
         consumer.accept(strategy);
+        return strategy;
     }
 
     private void enqueuePair(ConfigurationSetStateLink newPair) {

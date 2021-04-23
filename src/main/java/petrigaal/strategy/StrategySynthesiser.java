@@ -7,7 +7,7 @@ import java.util.Map;
 import java.util.function.Consumer;
 
 public interface StrategySynthesiser {
-    void synthesize(
+    AutomataStrategy synthesize(
             PetriGame game,
             Configuration root,
             Map<Configuration, Boolean> propagationByConfiguration,

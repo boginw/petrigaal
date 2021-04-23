@@ -22,17 +22,13 @@ public class AutomataStrategy {
         return stateTransitions;
     }
 
-    public void addTransition(
-            AutomataState source,
-            PetriGame game,
-            Transition transition,
-            AutomataState target
-    ) {
-        stateTransitions.computeIfAbsent(new AutomataInput(source, game), k -> new HashSet<>());
-        stateTransitions.merge(
-                new AutomataInput(source, game), Set.of(new AutomataOutput(transition, target)),
-                this::union
-        );
+    public void addTransition(AutomataState source, PetriGame game, Transition transition, AutomataState target) {
+        addTransition(new AutomataInput(source, game), new AutomataOutput(transition, target));
+    }
+
+    public void addTransition(AutomataInput input, AutomataOutput output) {
+        stateTransitions.computeIfAbsent(input, k -> new HashSet<>());
+        stateTransitions.merge(input, Set.of(output), this::union);
     }
 
     public void removeState(AutomataState state) {
@@ -59,14 +55,7 @@ public class AutomataStrategy {
         while (!queue.isEmpty()) {
             AutomataState nextState = queue.poll();
 
-            Set<AutomataState> adjacentStates = stateTransitions.entrySet()
-                    .stream()
-                    .filter(e -> e.getKey().state().equals(nextState))
-                    .map(Map.Entry::getValue)
-                    .flatMap(Collection::stream)
-                    .map(AutomataOutput::state)
-                    .collect(Collectors.toSet());
-            for (AutomataState adjacentState : adjacentStates) {
+            for (AutomataState adjacentState : getAdjacentStates(nextState)) {
                 if (!visited.contains(adjacentState)) {
                     visited.add(adjacentState);
                     queue.add(adjacentState);
@@ -82,18 +71,28 @@ public class AutomataStrategy {
         }
     }
 
-    private Set<AutomataState> getAllStates() {
-        return stateTransitions.entrySet().stream()
-                .flatMap(e -> concat(Stream.of(e.getKey().state()), e.getValue().stream().map(AutomataOutput::state)))
-                .collect(Collectors.toSet());
+    public Set<AutomataState> getFinalStates() {
+        return finalStates;
     }
 
     public void addFinalState(AutomataState state) {
         finalStates.add(state);
     }
 
-    public Set<AutomataState> getFinalStates() {
-        return finalStates;
+    private Set<AutomataState> getAdjacentStates(AutomataState nextState) {
+        return stateTransitions.entrySet()
+                .stream()
+                .filter(e -> e.getKey().state().equals(nextState))
+                .map(Map.Entry::getValue)
+                .flatMap(Collection::stream)
+                .map(AutomataOutput::state)
+                .collect(Collectors.toSet());
+    }
+
+    private Set<AutomataState> getAllStates() {
+        return stateTransitions.entrySet().stream()
+                .flatMap(e -> concat(Stream.of(e.getKey().state()), e.getValue().stream().map(AutomataOutput::state)))
+                .collect(Collectors.toSet());
     }
 
     private <A> Set<A> union(Set<A> a, Set<A> b) {
