@@ -27,13 +27,13 @@ public class PetriGame {
     public List<Transition> getEnabledTransitions() {
         return Stream.concat(controllerTransitions.stream(), environmentTransitions.stream())
                 .filter(this::isEnabled)
-                .collect(Collectors.toList());
+                .toList();
     }
 
     public List<Transition> getEnabledTransitions(Player player) {
         return getSetForPlayer(player).stream()
                 .filter(this::isEnabled)
-                .collect(Collectors.toList());
+                .toList();
     }
 
     public void setMarking(String place, int marking) {

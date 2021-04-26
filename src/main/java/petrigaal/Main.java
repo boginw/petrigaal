@@ -16,8 +16,9 @@ import petrigaal.loader.TAPNLoader;
 import petrigaal.petri.PetriGame;
 import petrigaal.solver.EDGSolver;
 import petrigaal.solver.NonModifyingDGSolver;
-import petrigaal.strategy.AutomataStrategy;
 import petrigaal.strategy.TopDownStrategySynthesiser;
+import petrigaal.strategy.automata.AutomataStrategy;
+import petrigaal.strategy.automata.AutomataStrategyDeterminer;
 import picocli.CommandLine;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
@@ -85,7 +86,10 @@ public class Main implements Callable<Integer> {
         }
 
         if (!disableSynthesis) {
-            new TopDownStrategySynthesiser().synthesize(game, c, propagationByConfiguration, this::openGraph);
+            AutomataStrategy synthesize = new TopDownStrategySynthesiser()
+                    .synthesize(c, propagationByConfiguration, this::openGraph);
+            AutomataStrategy deterministic = new AutomataStrategyDeterminer(synthesize).determine();
+            openGraph(deterministic);
         }
 
         return 0;
