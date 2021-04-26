@@ -115,18 +115,30 @@ public class DependencyGraphGenerator {
 
     public void visitUntil(Target target, BinaryQuantifierTemporal formula) {
         Configuration c = target.getConfiguration();
-
+        Configuration now = createOrGet(formula.getFirstOperand(), c.getGame(), c.getMode());
         Configuration end = createOrGet(formula.getSecondOperand(), c.getGame(), c.getMode());
 
-        List<Transition> transitions = c.getGame().getEnabledTransitions();
+        if (formula.getPath() == E) {
+            nextMarkingsWithTransitions(c)
+                    .stream()
+                    .map(m -> new Target(createOrGet(formula, m.getGame(), c.getMode()), m.getTransition()))
+                    .map(t -> new Edge(c, t, new Target(now)))
+                    .forEach(c.getSuccessors()::add);
+        } else {
+            nextMarkingsWithTransitions(c, Player.Controller)
+                    .stream()
+                    .map(m -> new Target(createOrGet(formula, m.getGame(), c.getMode()), m.getTransition()))
+                    .map(t -> new Edge(c, t, new Target(now)))
+                    .forEach(c.getSuccessors()::add);
 
-        for (Transition transition : transitions) {
-            PetriGame nextState = c.getGame().fire(transition);
-            Configuration conf = createOrGet(formula, nextState, c.getMode());
-            Configuration now = createOrGet(
-                    new Configuration(formula.getFirstOperand(), c.getGame(), c.getMode())
-            );
-            c.getSuccessors().add(new Edge(c, new Target(conf, transition), new Target(now)));
+            Set<Target> uncontrollableTargets = nextMarkingsWithTransitions(c, Player.Environment)
+                    .stream()
+                    .map(m -> new Target(createOrGet(formula, m.getGame(), c.getMode()), m.getTransition()))
+                    .collect(Collectors.toSet());
+            if (!uncontrollableTargets.isEmpty() && c.getSuccessors().isEmpty()) {
+                c.getSuccessors().add(new Edge(c, new Target(now)));
+            }
+            uncontrollableTargets.forEach(t -> c.getSuccessors().forEach(e -> e.add(t)));
         }
 
         c.getSuccessors().add(new Edge(c, end));

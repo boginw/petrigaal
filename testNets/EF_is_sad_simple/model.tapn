@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<pnml xmlns="http://www.informatik.hu-berlin.de/top/pnml/ptNetb">
+  <net active="true" id="TAPN1" type="P/T net">
+    <place displayName="true" id="P0" initialMarking="1" invariant="&lt; inf" name="P0" nameOffsetX="0" nameOffsetY="0" positionX="180" positionY="45"/>
+    <place displayName="true" id="L" initialMarking="0" invariant="&lt; inf" name="L" nameOffsetX="0" nameOffsetY="0" positionX="105" positionY="150"/>
+    <place displayName="true" id="R" initialMarking="0" invariant="&lt; inf" name="R" nameOffsetX="0" nameOffsetY="0" positionX="255" positionY="150"/>
+    <transition angle="0" displayName="true" id="T0" infiniteServer="false" name="T0" nameOffsetX="0" nameOffsetY="0" player="0" positionX="135" positionY="90" priority="0" urgent="false"/>
+    <transition angle="0" displayName="true" id="T1" infiniteServer="false" name="T1" nameOffsetX="0" nameOffsetY="0" player="0" positionX="225" positionY="90" priority="0" urgent="false"/>
+    <transition angle="0" displayName="true" id="T2" infiniteServer="false" name="T2" nameOffsetX="0" nameOffsetY="0" player="1" positionX="180" positionY="0" priority="0" urgent="false"/>
+    <arc id="A0" inscription="[0,inf)" nameOffsetX="0" nameOffsetY="0" source="P0" target="T0" type="timed" weight="1">
+      <arcpath arcPointType="false" id="0" xCoord="184" yCoord="71"/>
+      <arcpath arcPointType="false" id="1" xCoord="154" yCoord="105"/>
+    </arc>
+    <arc id="A1" inscription="1" nameOffsetX="0" nameOffsetY="0" source="T0" target="L" type="normal" weight="1">
+      <arcpath arcPointType="false" id="0" xCoord="150" yCoord="120"/>
+      <arcpath arcPointType="false" id="1" xCoord="128" yCoord="152"/>
+    </arc>
+    <arc id="A2" inscription="[0,inf)" nameOffsetX="0" nameOffsetY="0" source="P0" target="T1" type="timed" weight="1">
+      <arcpath arcPointType="false" id="0" xCoord="204" yCoord="71"/>
+      <arcpath arcPointType="false" id="1" xCoord="234" yCoord="105"/>
+    </arc>
+    <arc id="A3" inscription="1" nameOffsetX="0" nameOffsetY="0" source="T1" target="R" type="normal" weight="1">
+      <arcpath arcPointType="false" id="0" xCoord="240" yCoord="120"/>
+      <arcpath arcPointType="false" id="1" xCoord="261" yCoord="152"/>
+    </arc>
+    <arc id="A4" inscription="[0,inf)" nameOffsetX="0" nameOffsetY="0" source="P0" target="T2" type="timed" weight="1">
+      <arcpath arcPointType="false" id="0" xCoord="180" yCoord="60"/>
+      <arcpath arcPointType="false" id="1" xCoord="124" yCoord="61"/>
+      <arcpath arcPointType="false" id="2" xCoord="129" yCoord="15"/>
+      <arcpath arcPointType="false" id="3" xCoord="190" yCoord="10"/>
+    </arc>
+    <arc id="A5" inscription="1" nameOffsetX="0" nameOffsetY="0" source="T2" target="P0" type="normal" weight="1">
+      <arcpath arcPointType="false" id="0" xCoord="199" yCoord="15"/>
+      <arcpath arcPointType="false" id="1" xCoord="258" yCoord="16"/>
+      <arcpath arcPointType="false" id="2" xCoord="254" yCoord="59"/>
+      <arcpath arcPointType="false" id="3" xCoord="209" yCoord="59"/>
+    </arc>
+  </net>
+  <k-bound bound="3"/>
+  <feature isGame="true" isTimed="false"/>
+</pnml>
