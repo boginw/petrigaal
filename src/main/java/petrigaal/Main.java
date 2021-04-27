@@ -32,7 +32,6 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Objects;
 import java.util.concurrent.Callable;
 
 @Command(
@@ -130,9 +129,8 @@ public class Main implements Callable<Integer> {
     private void clearResults() throws IllegalAccessException {
         File outFolder = new File("./out/");
         if (outFolder.exists()) {
-            for (File f : Objects.requireNonNull(outFolder.listFiles())) {
-                assert f.delete();
-            }
+            deleteDirectory(outFolder);
+            clearResults();
         } else if (outFolder.getParentFile().canWrite()) {
             boolean folderCreated = outFolder.mkdir() && outFolder.exists();
             assert folderCreated;
@@ -190,5 +188,15 @@ public class Main implements Callable<Integer> {
         } else {
             throw new UnsupportedOperationException("Unsupported Operating system");
         }
+    }
+
+    boolean deleteDirectory(File directoryToBeDeleted) {
+        File[] allContents = directoryToBeDeleted.listFiles();
+        if (allContents != null) {
+            for (File file : allContents) {
+                deleteDirectory(file);
+            }
+        }
+        return directoryToBeDeleted.delete();
     }
 }

@@ -7,6 +7,7 @@ import guru.nidi.graphviz.parse.Parser;
 import javafx.application.Application;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.geometry.Orientation;
 import javafx.scene.Scene;
 import javafx.scene.control.ListView;
 import javafx.scene.control.SplitPane;
@@ -28,59 +29,89 @@ import java.util.stream.Collectors;
 
 public class PetriGAALApplication extends Application {
     public static final Format FORMAT = Format.SVG;
+    public static final String DEFAULT_IMAGE = "start.png";
     public static Consumer<SynthesisState> onNewState;
     private final ObservableList<SynthesisState> stateList = FXCollections.observableArrayList();
+    private final ObservableList<File> closeFiles = FXCollections.observableArrayList();
     private StateView view;
-    private Tab strategyTab;
-    private Tab dependencyGraphTab;
-    private TabPane tabPane;
 
     @Override
     public void start(Stage primaryStage) throws Exception {
         onNewState = this::newState;
 
         view = new StateView(
-                new SvgViewer("../../../../out/1.svg"),
-                new SvgViewer("../../../../out/1.svg")
+                new SvgViewer(DEFAULT_IMAGE),
+                new SvgViewer(DEFAULT_IMAGE),
+                new SvgViewer(DEFAULT_IMAGE)
         );
 
-        ListView<SynthesisState> listView = new ListView<>(stateList);
-        listView.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
-            renderState(newValue);
-        });
-        tabPane = new TabPane();
-        tabPane.setTabClosingPolicy(TabPane.TabClosingPolicy.UNAVAILABLE);
-        strategyTab = new Tab("Strategy", view.strategy().getWebView());
-        dependencyGraphTab = new Tab("Dependency Graph", view.dg().getWebView());
-        tabPane.getTabs().add(strategyTab);
-        tabPane.getTabs().add(dependencyGraphTab);
+        SplitPane horizontal = new SplitPane();
+        horizontal.setOrientation(Orientation.VERTICAL);
+        horizontal.getItems().addAll(getSynthesisStateListView(), getFileListView());
 
         SplitPane splitView = new SplitPane();
-        splitView.getItems().add(listView);
-        splitView.getItems().add(tabPane);
+        splitView.getItems().add(horizontal);
+        splitView.getItems().add(getTabPane());
         splitView.setDividerPositions(0.2f, 0.8f);
 
         BorderPane root = new BorderPane();
         root.setCenter(splitView);
 
-        Scene scene = new Scene(root);
+        Scene scene = new Scene(root, 1920, 1080);
 
         primaryStage.setTitle("IntelliGaal");
         primaryStage.setScene(scene);
         primaryStage.show();
     }
 
+    private TabPane getTabPane() {
+        TabPane tabPane = new TabPane();
+        tabPane.setTabClosingPolicy(TabPane.TabClosingPolicy.UNAVAILABLE);
+        Tab strategyTab = new Tab("Strategy", view.strategy().getWebView());
+        Tab dependencyGraphTab = new Tab("Dependency Graph", view.dg().getWebView());
+        Tab closeTab = new Tab("Close", view.close().getWebView());
+        tabPane.getTabs().addAll(strategyTab, dependencyGraphTab, closeTab);
+        return tabPane;
+    }
+
+    private ListView<File> getFileListView() {
+        ListView<File> closeList = new ListView<>(closeFiles);
+        closeList.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
+            renderClose(newValue);
+        });
+        return closeList;
+    }
+
+    private ListView<SynthesisState> getSynthesisStateListView() {
+        ListView<SynthesisState> listView = new ListView<>(stateList);
+        listView.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
+            renderState(newValue);
+        });
+        return listView;
+    }
+
     private void newState(SynthesisState synthesisState) {
         stateList.add(synthesisState);
+    }
+
+    private void renderClose(File newValue) {
+        if (newValue != null) {
+            view.close().loadImage(newValue.getAbsolutePath());
+        } else {
+            view.close().loadImage(DEFAULT_IMAGE);
+        }
     }
 
     private void renderState(SynthesisState synthesisState) {
         int index = stateList.indexOf(synthesisState);
 
-        File dgFile;
-        File strategyFile;
-        List<File> closeFiles = new ArrayList<>();
-        if (true/*!getDir(index).exists()*/) {
+        File dgFile = getFile(index, "dg");
+        File strategyFile = getFile(index, "strategy");
+        List<File> closeFiles = Arrays.stream(
+                Objects.requireNonNull(getDir(index).listFiles((f, n) -> n.startsWith("close")))
+        ).sorted().toList();
+
+        if (!dgFile.exists() || !strategyFile.exists()) {
             String strategy = new AutomataStrategyToGraphViz().draw(synthesisState.strategy());
             EDGToGraphViz edgToGraphViz = new EDGToGraphViz();
             edgToGraphViz.setDisplayOnlyConfigurationsWhichPropagateOne(true);
@@ -89,6 +120,7 @@ public class PetriGAALApplication extends Application {
             strategyFile = renderViz(strategy, index, "strategy");
             int closes = 0;
 
+            closeFiles = new ArrayList<>();
             for (Set<Configuration> configurations : synthesisState.close()) {
                 Map<Configuration, Boolean> collect = configurations.stream().collect(Collectors.toMap(k -> k, v -> true));
                 String close = new EDGToGraphViz().draw(synthesisState.root(), collect);
@@ -96,18 +128,10 @@ public class PetriGAALApplication extends Application {
                 File closeFile = renderViz(close, index, name);
                 closeFiles.add(closeFile);
             }
-        } else {
-            dgFile = getFile(index, "dg");
-            strategyFile = getFile(index, "strategy");
-            File[] closes = Objects.requireNonNull(getDir(index).listFiles((f, n) -> n.startsWith("close")));
-            closeFiles = Arrays.stream(closes).sorted().toList();
         }
 
-        tabPane.getTabs().retainAll(strategyTab, dependencyGraphTab);
-        for (File closeFile : closeFiles) {
-            SvgViewer viewer = new SvgViewer(closeFile.getAbsolutePath());
-            tabPane.getTabs().add(new Tab(closeFile.getName(), viewer.getWebView()));
-        }
+        this.closeFiles.clear();
+        this.closeFiles.addAll(closeFiles);
 
         view.dg().loadImage(dgFile.getAbsolutePath());
         view.strategy().loadImage(strategyFile.getAbsolutePath());
@@ -140,7 +164,8 @@ public class PetriGAALApplication extends Application {
 
     private static record StateView(
             SvgViewer dg,
-            SvgViewer strategy
+            SvgViewer strategy,
+            SvgViewer close
     ) {
     }
 }
