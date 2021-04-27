@@ -20,6 +20,7 @@ import petrigaal.solver.EDGSolver;
 import petrigaal.solver.NonModifyingDGSolver;
 import petrigaal.strategy.TopDownStrategySynthesiser;
 import petrigaal.strategy.automata.AutomataStrategy;
+import petrigaal.strategy.automata.AutomataStrategyDeterminer;
 import picocli.CommandLine;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
@@ -103,8 +104,8 @@ public class Main implements Callable<Integer> {
         if (!disableSynthesis) {
             AutomataStrategy synthesize = new TopDownStrategySynthesiser()
                     .synthesize(c, propagationByConfiguration, PetriGAALApplication.onNewState);
-            // AutomataStrategy deterministic = new AutomataStrategyDeterminer(synthesize).determine();
-            // openGraph(deterministic);
+            AutomataStrategy deterministic = new AutomataStrategyDeterminer(synthesize).determine();
+            openGraph(deterministic);
         }
 
         try {

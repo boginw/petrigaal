@@ -36,6 +36,8 @@ public class PetriGAALApplication extends Application {
     private final ObservableList<Map<Configuration, Boolean>> closeFiles = FXCollections.observableArrayList();
     private SynthesisState current;
     private StateView view;
+    private TabPane tabPane;
+    private Tab closeTab;
 
     @Override
     public void start(Stage primaryStage) throws Exception {
@@ -67,11 +69,11 @@ public class PetriGAALApplication extends Application {
     }
 
     private TabPane getTabPane() {
-        TabPane tabPane = new TabPane();
+        tabPane = new TabPane();
         tabPane.setTabClosingPolicy(TabPane.TabClosingPolicy.UNAVAILABLE);
         Tab strategyTab = new Tab("Strategy", view.strategy().getWebView());
         Tab dependencyGraphTab = new Tab("Dependency Graph", view.dg().getWebView());
-        Tab closeTab = new Tab("Close", view.close().getWebView());
+        closeTab = new Tab("Close", view.close().getWebView());
         tabPane.getTabs().addAll(strategyTab, dependencyGraphTab, closeTab);
         return tabPane;
     }
@@ -108,6 +110,7 @@ public class PetriGAALApplication extends Application {
                 outFile = renderViz(closeGraph, index, name);
             }
 
+            tabPane.getSelectionModel().select(closeTab);
             view.close().loadImage(outFile.getAbsolutePath());
         } else {
             view.close().loadImage(DEFAULT_IMAGE);
