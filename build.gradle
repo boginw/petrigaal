@@ -4,6 +4,7 @@ plugins {
     id 'antlr'
     id 'application'
     id "com.github.johnrengelman.shadow" version "6.1.0"
+    id 'org.openjfx.javafxplugin' version '0.0.9'
 }
 
 version '1.0'
@@ -20,6 +21,11 @@ repositories {
 
 sourceSets {
     main.java.srcDirs += "${project.buildDir}/generated-src/antlr/main"
+}
+
+javafx {
+    version = "16"
+    modules = [ 'javafx.controls', 'javafx.web' ]
 }
 
 dependencies {
