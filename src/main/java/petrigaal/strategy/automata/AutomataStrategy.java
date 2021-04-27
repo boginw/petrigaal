@@ -23,6 +23,15 @@ public class AutomataStrategy implements Strategy {
         this.initialState = initialState;
     }
 
+    public AutomataStrategy copy() {
+        AutomataStrategy strategy = new AutomataStrategy(initialState);
+        for (Map.Entry<AutomataInput, Set<AutomataOutput>> entry : stateTransitions.entrySet()) {
+            strategy.stateTransitions.put(entry.getKey(), new HashSet<>(entry.getValue()));
+        }
+        strategy.finalStates.addAll(finalStates);
+        return strategy;
+    }
+
     public AutomataState getInitialState() {
         return initialState;
     }

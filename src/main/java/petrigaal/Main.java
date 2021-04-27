@@ -3,6 +3,8 @@ package petrigaal;
 import guru.nidi.graphviz.engine.Format;
 import guru.nidi.graphviz.engine.Graphviz;
 import guru.nidi.graphviz.model.MutableGraph;
+import javafx.application.Application;
+import petrigaal.app.PetriGAALApplication;
 import petrigaal.atl.Optimizer;
 import petrigaal.atl.Parser;
 import petrigaal.atl.language.ATLFormula;
@@ -24,10 +26,13 @@ import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
 import picocli.CommandLine.Parameters;
 
-import java.io.*;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Objects;
 import java.util.concurrent.Callable;
 
 @Command(
@@ -52,6 +57,8 @@ public class Main implements Callable<Integer> {
     public Boolean d1 = false;
     @Parameters(description = "Model (Either TAPN or PNML)")
     public File file;
+    @Option(names = {"-w"}, description = "Windowed")
+    public Boolean windowed = false;
     private int counter = 0;
     private int size = 0;
 
@@ -85,11 +92,26 @@ public class Main implements Callable<Integer> {
             openGraph(c, propagationByConfiguration);
         }
 
+        Thread thread = new Thread(() -> Application.launch(PetriGAALApplication.class));
+        if (windowed) {
+            thread.start();
+            try {
+                Thread.sleep(2000);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
         if (!disableSynthesis) {
             AutomataStrategy synthesize = new TopDownStrategySynthesiser()
-                    .synthesize(c, propagationByConfiguration, this::openGraph);
+                    .synthesize(c, propagationByConfiguration, PetriGAALApplication.onNewState);
             AutomataStrategy deterministic = new AutomataStrategyDeterminer(synthesize).determine();
             openGraph(deterministic);
+        }
+
+        try {
+            thread.join();
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
         }
 
         return 0;
@@ -108,9 +130,8 @@ public class Main implements Callable<Integer> {
     private void clearResults() throws IllegalAccessException {
         File outFolder = new File("./out/");
         if (outFolder.exists()) {
-            for (File f : Objects.requireNonNull(outFolder.listFiles())) {
-                assert f.delete();
-            }
+            deleteDirectory(outFolder);
+            clearResults();
         } else if (outFolder.getParentFile().canWrite()) {
             boolean folderCreated = outFolder.mkdir() && outFolder.exists();
             assert folderCreated;
@@ -133,29 +154,25 @@ public class Main implements Callable<Integer> {
     }
 
     private void openGraph(AutomataStrategy strategy) {
-        openGraph(new AutomataStrategyToGraphViz().draw(strategy));
+        openGraph(new AutomataStrategyToGraphViz().draw(strategy), String.valueOf(counter++));
     }
 
     private void openGraph(Configuration c, Map<Configuration, Boolean> propagationByConfiguration) {
         EDGToGraphViz edgToGraphViz = new EDGToGraphViz();
         edgToGraphViz.setDisplayOnlyConfigurationsWhichPropagateOne(d1);
-        openGraph(edgToGraphViz.draw(c, propagationByConfiguration));
+        openGraph(edgToGraphViz.draw(c, propagationByConfiguration), String.valueOf(counter++));
     }
 
-    private void openGraph(String graph) {
-        Format format = postScript ? Format.PS2 : Format.PNG;
+    private void openGraph(String graph, String name) {
+        Format format = postScript ? Format.PS2 : Format.SVG;
         try {
-            File vizFile = new File("./out/" + (counter++) + ".gv");
-            File svgFile = new File("./out/" + (counter++) + "." + format.fileExtension);
-
-            BufferedWriter writer = new BufferedWriter(new FileWriter(vizFile));
-            writer.write(graph);
-            writer.close();
+            File outFile = Path.of(".", "out", name + "." + format.fileExtension).toFile();
 
             MutableGraph g = new guru.nidi.graphviz.parse.Parser().read(graph);
-            Graphviz.fromGraph(g).totalMemory(480000000).render(format).toFile(svgFile);
-
-            Runtime.getRuntime().exec(getOpenCmd() + " " + svgFile.getAbsolutePath());
+            Graphviz.fromGraph(g).totalMemory(480000000).render(format).toFile(outFile);
+            if (!windowed) {
+                Runtime.getRuntime().exec(getOpenCmd() + " " + outFile.getAbsolutePath());
+            }
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -172,5 +189,15 @@ public class Main implements Callable<Integer> {
         } else {
             throw new UnsupportedOperationException("Unsupported Operating system");
         }
+    }
+
+    boolean deleteDirectory(File directoryToBeDeleted) {
+        File[] allContents = directoryToBeDeleted.listFiles();
+        if (allContents != null) {
+            for (File file : allContents) {
+                deleteDirectory(file);
+            }
+        }
+        return directoryToBeDeleted.delete();
     }
 }
