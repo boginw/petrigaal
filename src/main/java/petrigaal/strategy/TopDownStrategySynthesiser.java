@@ -78,21 +78,31 @@ public class TopDownStrategySynthesiser implements StrategySynthesiser {
                     }
                 }
 
-                Set<Transition> transitions = controllable.stream()
-                        .map(Closure::getTarget)
-                        .map(Target::getTransition)
+                Set<Set<Transition>> transitions = controllable.stream()
+                        .collect(groupingBy(c -> c.getSource().getGame(), toSet()))
+                        .values()
+                        .stream()
+                        .map(c -> c.stream().map(s -> s.getTarget().getTransition()).collect(toSet()))
                         .collect(toSet());
 
-                if (transitions.size() > 1) continue;
+                if (transitions.stream().anyMatch(t -> t.size() > 1))
+                    continue;
 
-                if (closures.stream().allMatch(this::controllableHasNotEnabledTransitions)) {
-                    for (Closure closure : uncontrollable) {
-                        ConfigurationSetStateLink newPair = getOrCreatePair(pair, Set.of(closure), pair::getState);
+
+                if (controllable.isEmpty() && closures.stream().allMatch(this::controllableHasNotEnabledTransitions)) {
+                    Set<Set<Closure>> uncontrollableClosureByTransition = new HashSet<>(
+                            uncontrollable.stream()
+                                    .collect(groupingBy(c -> c.getTarget().getTransition(), toSet()))
+                                    .values()
+                    );
+                    for (Set<Closure> uncontrollableClosures : uncontrollableClosureByTransition) {
+                        ConfigurationSetStateLink newPair = getOrCreatePair(pair, uncontrollableClosures);
+
                         enqueuePair(newPair);
                         if (!deadPairs.contains(newPair)) dead = false;
                         strategy.addTransition(
                                 pair.getState(),
-                                closure.getSource().getGame(),
+                                uncontrollableClosures.iterator().next().getSource().getGame(),
                                 null,
                                 newPair.getState()
                         );
@@ -110,15 +120,21 @@ public class TopDownStrategySynthesiser implements StrategySynthesiser {
                     }
 
                     if (!controllable.isEmpty()) {
-                        ConfigurationSetStateLink newPair = getOrCreatePair(pair, controllable);
-                        enqueuePair(newPair);
-                        if (!deadPairs.contains(newPair)) dead = false;
-                        strategy.addTransition(
-                                pair.getState(),
-                                controllable.iterator().next().getSource().getGame(),
-                                controllable.iterator().next().getTarget().getTransition(),
-                                newPair.getState()
-                        );
+                        Map<PetriGame, Set<Closure>> groups = controllable.stream()
+                                .collect(groupingBy(c -> c.getSource().getGame(), toSet()));
+
+                        for (Map.Entry<PetriGame, Set<Closure>> entry : groups.entrySet()) {
+                            ConfigurationSetStateLink newPair = getOrCreatePair(pair, entry.getValue());
+                            enqueuePair(newPair);
+                            if (!deadPairs.contains(newPair)) dead = false;
+                            strategy.addTransition(
+                                    pair.getState(),
+                                    entry.getKey(),
+                                    entry.getValue().iterator().next().getTarget().getTransition(),
+                                    newPair.getState()
+                            );
+                        }
+
                     }
                 }
             }
