@@ -23,7 +23,8 @@ import petrigaal.strategy.TopDownStrategySynthesiser.SynthesisState;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
-import java.util.*;
+import java.util.Map;
+import java.util.Set;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
@@ -32,7 +33,8 @@ public class PetriGAALApplication extends Application {
     public static final String DEFAULT_IMAGE = "start.png";
     public static Consumer<SynthesisState> onNewState;
     private final ObservableList<SynthesisState> stateList = FXCollections.observableArrayList();
-    private final ObservableList<File> closeFiles = FXCollections.observableArrayList();
+    private final ObservableList<Map<Configuration, Boolean>> closeFiles = FXCollections.observableArrayList();
+    private SynthesisState current;
     private StateView view;
 
     @Override
@@ -74,8 +76,8 @@ public class PetriGAALApplication extends Application {
         return tabPane;
     }
 
-    private ListView<File> getFileListView() {
-        ListView<File> closeList = new ListView<>(closeFiles);
+    private ListView<Map<Configuration, Boolean>> getFileListView() {
+        ListView<Map<Configuration, Boolean>> closeList = new CloseListView(closeFiles);
         closeList.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
             renderClose(newValue);
         });
@@ -83,7 +85,7 @@ public class PetriGAALApplication extends Application {
     }
 
     private ListView<SynthesisState> getSynthesisStateListView() {
-        ListView<SynthesisState> listView = new ListView<>(stateList);
+        ListView<SynthesisState> listView = new SynthesisStateListView(stateList);
         listView.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
             renderState(newValue);
         });
@@ -94,9 +96,19 @@ public class PetriGAALApplication extends Application {
         stateList.add(synthesisState);
     }
 
-    private void renderClose(File newValue) {
-        if (newValue != null) {
-            view.close().loadImage(newValue.getAbsolutePath());
+    private void renderClose(Map<Configuration, Boolean> close) {
+        if (close != null) {
+            int index = closeFiles.indexOf(close);
+
+            String name = "close" + index;
+            File outFile = getFile(index, name);
+
+            if (!outFile.exists()) {
+                String closeGraph = new EDGToGraphViz().draw(current.root(), close);
+                outFile = renderViz(closeGraph, index, name);
+            }
+
+            view.close().loadImage(outFile.getAbsolutePath());
         } else {
             view.close().loadImage(DEFAULT_IMAGE);
         }
@@ -107,9 +119,6 @@ public class PetriGAALApplication extends Application {
 
         File dgFile = getFile(index, "dg");
         File strategyFile = getFile(index, "strategy");
-        List<File> closeFiles = Arrays.stream(
-                Objects.requireNonNull(getDir(index).listFiles((f, n) -> n.startsWith("close")))
-        ).sorted().toList();
 
         if (!dgFile.exists() || !strategyFile.exists()) {
             String strategy = new AutomataStrategyToGraphViz().draw(synthesisState.strategy());
@@ -118,23 +127,16 @@ public class PetriGAALApplication extends Application {
             String dg = edgToGraphViz.draw(synthesisState.root(), synthesisState.propagationByConfiguration());
             dgFile = renderViz(dg, index, "dg");
             strategyFile = renderViz(strategy, index, "strategy");
-            int closes = 0;
-
-            closeFiles = new ArrayList<>();
-            for (Set<Configuration> configurations : synthesisState.close()) {
-                Map<Configuration, Boolean> collect = configurations.stream().collect(Collectors.toMap(k -> k, v -> true));
-                String close = new EDGToGraphViz().draw(synthesisState.root(), collect);
-                String name = "close" + (closes++);
-                File closeFile = renderViz(close, index, name);
-                closeFiles.add(closeFile);
-            }
         }
 
         this.closeFiles.clear();
-        this.closeFiles.addAll(closeFiles);
+        for (Set<Configuration> configurations : synthesisState.close()) {
+            this.closeFiles.add(configurations.stream().collect(Collectors.toMap(k -> k, v -> true)));
+        }
 
         view.dg().loadImage(dgFile.getAbsolutePath());
         view.strategy().loadImage(strategyFile.getAbsolutePath());
+        current = synthesisState;
     }
 
     private File renderViz(String graph, int index, String name) {
