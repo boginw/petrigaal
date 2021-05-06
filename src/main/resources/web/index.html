@@ -1,0 +1,19 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+<img class='zoom' src="start.png"/>
+<script src="script.js"></script>
+<script>
+    wheelzoom(document.querySelector('img.zoom'));
+
+    function loadImage(url) {
+        document.querySelector("img.zoom").src = url;
+    }
+</script>
+</body>
+</html>

@@ -7,10 +7,10 @@ import petrigaal.strategy.automata.AutomataStrategy;
 import java.util.Map;
 import java.util.function.Consumer;
 
-public interface StrategySynthesiser {
+public interface StrategySynthesiser<T> {
     AutomataStrategy synthesize(
             Configuration root,
             Map<Configuration, Boolean> propagationByConfiguration,
-            Consumer<AutomataStrategy> consumer
+            Consumer<T> consumer
     );
 }
