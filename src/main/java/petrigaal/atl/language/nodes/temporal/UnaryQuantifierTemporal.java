@@ -4,7 +4,7 @@ import petrigaal.atl.language.Visitor;
 import petrigaal.atl.language.nodes.QuantifierTemporal;
 import petrigaal.edg.DependencyGraphGenerator;
 import petrigaal.atl.language.Path;
-import petrigaal.edg.Target;
+import petrigaal.edg.DGTarget;
 
 public class UnaryQuantifierTemporal extends UnaryTemporal implements QuantifierTemporal {
     private Path path;
@@ -20,7 +20,7 @@ public class UnaryQuantifierTemporal extends UnaryTemporal implements Quantifier
     }
 
     @Override
-    public void visit(Target parent, DependencyGraphGenerator graph) {
+    public void visit(DGTarget parent, DependencyGraphGenerator graph) {
         graph.visit(parent, this);
     }
 

@@ -1,8 +1,8 @@
 package petrigaal.atl.language;
 
 import petrigaal.edg.DependencyGraphGenerator;
-import petrigaal.edg.Target;
+import petrigaal.edg.DGTarget;
 
 public interface ATLFormula extends ATLNode {
-    void visit(Target parent, DependencyGraphGenerator graph);
+    void visit(DGTarget parent, DependencyGraphGenerator graph);
 }

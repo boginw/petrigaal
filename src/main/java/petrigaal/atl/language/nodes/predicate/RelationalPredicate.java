@@ -5,7 +5,7 @@ import petrigaal.atl.language.nodes.Binary;
 import petrigaal.atl.language.nodes.Expression;
 import petrigaal.atl.language.nodes.Predicate;
 import petrigaal.edg.DependencyGraphGenerator;
-import petrigaal.edg.Target;
+import petrigaal.edg.DGTarget;
 
 public class RelationalPredicate extends Binary<Expression> implements Predicate {
     @Override
@@ -19,7 +19,7 @@ public class RelationalPredicate extends Binary<Expression> implements Predicate
     }
 
     @Override
-    public void visit(Target parent, DependencyGraphGenerator graph) {
+    public void visit(DGTarget parent, DependencyGraphGenerator graph) {
         graph.visit(parent, this);
     }
 }

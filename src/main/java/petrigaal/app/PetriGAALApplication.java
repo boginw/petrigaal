@@ -17,7 +17,7 @@ import javafx.scene.layout.BorderPane;
 import javafx.stage.Stage;
 import petrigaal.draw.AutomataStrategyToGraphViz;
 import petrigaal.draw.EDGToGraphViz;
-import petrigaal.edg.Configuration;
+import petrigaal.edg.DGConfiguration;
 import petrigaal.strategy.TopDownStrategySynthesiser.SynthesisState;
 
 import java.io.File;
@@ -32,8 +32,9 @@ public class PetriGAALApplication extends Application {
     public static final Format FORMAT = Format.SVG;
     public static final String DEFAULT_IMAGE = "start.png";
     public static Consumer<SynthesisState> onNewState;
+    private static Consumer<String> onSynthesisDG;
     private final ObservableList<SynthesisState> stateList = FXCollections.observableArrayList();
-    private final ObservableList<Map<Configuration, Boolean>> closeFiles = FXCollections.observableArrayList();
+    private final ObservableList<Map<DGConfiguration, Boolean>> closeFiles = FXCollections.observableArrayList();
     private SynthesisState current;
     private StateView view;
     private TabPane tabPane;
@@ -42,6 +43,7 @@ public class PetriGAALApplication extends Application {
     @Override
     public void start(Stage primaryStage) throws Exception {
         onNewState = this::newState;
+        onSynthesisDG = this::newSynthesisDG;
 
         view = new StateView(
                 new SvgViewer(DEFAULT_IMAGE),
@@ -68,6 +70,10 @@ public class PetriGAALApplication extends Application {
         primaryStage.show();
     }
 
+    private void newSynthesisDG(String s) {
+
+    }
+
     private TabPane getTabPane() {
         tabPane = new TabPane();
         tabPane.setTabClosingPolicy(TabPane.TabClosingPolicy.UNAVAILABLE);
@@ -78,8 +84,8 @@ public class PetriGAALApplication extends Application {
         return tabPane;
     }
 
-    private ListView<Map<Configuration, Boolean>> getFileListView() {
-        ListView<Map<Configuration, Boolean>> closeList = new CloseListView(closeFiles);
+    private ListView<Map<DGConfiguration, Boolean>> getFileListView() {
+        ListView<Map<DGConfiguration, Boolean>> closeList = new CloseListView(closeFiles);
         closeList.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
             renderClose(newValue);
         });
@@ -98,7 +104,7 @@ public class PetriGAALApplication extends Application {
         stateList.add(synthesisState);
     }
 
-    private void renderClose(Map<Configuration, Boolean> close) {
+    private void renderClose(Map<DGConfiguration, Boolean> close) {
         if (close != null) {
             int index = closeFiles.indexOf(close);
 
@@ -133,7 +139,7 @@ public class PetriGAALApplication extends Application {
         }
 
         this.closeFiles.clear();
-        for (Set<Configuration> configurations : synthesisState.close()) {
+        for (Set<DGConfiguration> configurations : synthesisState.close()) {
             this.closeFiles.add(configurations.stream().collect(Collectors.toMap(k -> k, v -> true)));
         }
 
