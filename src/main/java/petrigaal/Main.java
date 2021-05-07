@@ -10,14 +10,17 @@ import petrigaal.atl.Parser;
 import petrigaal.atl.language.ATLFormula;
 import petrigaal.atl.language.ATLNode;
 import petrigaal.draw.AutomataStrategyToGraphViz;
+import petrigaal.draw.DGToGraphViz;
 import petrigaal.draw.EDGToGraphViz;
-import petrigaal.edg.Configuration;
+import petrigaal.edg.DGConfiguration;
 import petrigaal.edg.DependencyGraphGenerator;
 import petrigaal.loader.PNMLLoader;
 import petrigaal.loader.TAPNLoader;
 import petrigaal.petri.PetriGame;
 import petrigaal.solver.EDGSolver;
 import petrigaal.solver.NonModifyingDGSolver;
+import petrigaal.strategy.DGStrategySynthesiser;
+import petrigaal.strategy.DGStrategySynthesiser.MetaConfiguration;
 import petrigaal.strategy.TopDownStrategySynthesiser;
 import petrigaal.strategy.automata.AutomataStrategy;
 import petrigaal.strategy.automata.AutomataStrategyDeterminer;
@@ -73,7 +76,7 @@ public class Main implements Callable<Integer> {
         ATLNode tree = new Parser().parse(query);
         ATLNode optimizedTree = new Optimizer().optimize(tree);
 
-        Configuration c = new Configuration((ATLFormula) optimizedTree, game);
+        DGConfiguration c = new DGConfiguration((ATLFormula) optimizedTree, game);
         size = new DependencyGraphGenerator().crawl(c);
 
         clearResults();
@@ -82,7 +85,7 @@ public class Main implements Callable<Integer> {
 
         long startTime = System.nanoTime();
         long endTime = System.nanoTime();
-        Map<Configuration, Boolean> propagationByConfiguration;
+        Map<DGConfiguration, Boolean> propagationByConfiguration;
         if (dg) propagationByConfiguration = new NonModifyingDGSolver().solve(c, this::nop);
         else propagationByConfiguration = new EDGSolver().solve(c, this::nop);
         long milliseconds = (endTime - startTime) / 1000000;
@@ -104,6 +107,13 @@ public class Main implements Callable<Integer> {
         if (!disableSynthesis) {
             AutomataStrategy synthesize = new TopDownStrategySynthesiser()
                     .synthesize(c, propagationByConfiguration, PetriGAALApplication.onNewState);
+
+            DGStrategySynthesiser dgStrategySynthesiser = new DGStrategySynthesiser();
+            MetaConfiguration c2 = dgStrategySynthesiser.synthesize(c, propagationByConfiguration);
+
+            String draw = new DGToGraphViz<>(c2, Map.of()).draw(c2);
+            openGraph(draw, "synthesis");
+
             AutomataStrategy deterministic = new AutomataStrategyDeterminer(synthesize).determine();
             openGraph(deterministic);
         }
@@ -149,7 +159,7 @@ public class Main implements Callable<Integer> {
         );
     }
 
-    private void openGraph(Configuration c) {
+    private void openGraph(DGConfiguration c) {
         openGraph(c, new HashMap<>());
     }
 
@@ -157,7 +167,7 @@ public class Main implements Callable<Integer> {
         openGraph(new AutomataStrategyToGraphViz().draw(strategy), String.valueOf(counter++));
     }
 
-    private void openGraph(Configuration c, Map<Configuration, Boolean> propagationByConfiguration) {
+    private void openGraph(DGConfiguration c, Map<DGConfiguration, Boolean> propagationByConfiguration) {
         EDGToGraphViz edgToGraphViz = new EDGToGraphViz();
         edgToGraphViz.setDisplayOnlyConfigurationsWhichPropagateOne(d1);
         openGraph(edgToGraphViz.draw(c, propagationByConfiguration), String.valueOf(counter++));

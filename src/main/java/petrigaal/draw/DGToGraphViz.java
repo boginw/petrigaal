@@ -1,31 +1,37 @@
 package petrigaal.draw;
 
 import org.antlr.v4.runtime.misc.Pair;
-import petrigaal.edg.DGConfiguration;
-import petrigaal.edg.DGEdge;
-import petrigaal.edg.DGTarget;
+import petrigaal.edg.Configuration;
+import petrigaal.edg.Edge;
+import petrigaal.edg.Target;
 
 import java.util.*;
 
-public class EDGToGraphViz {
+public class DGToGraphViz<C extends Configuration<C, E, T>,
+        E extends Edge<C, E, T>,
+        T extends Target<C, E, T>> {
     private final List<String> nodesOrder = new ArrayList<>();
     private final Map<String, List<String>> nodes = new HashMap<>();
     private final Map<Integer, List<String>> ranks = new HashMap<>();
-    private final Queue<Pair<DGConfiguration, Integer>> queue = new LinkedList<>();
-    private Map<DGConfiguration, Boolean> propagationByConfiguration;
+    private final Queue<Pair<C, Integer>> queue = new LinkedList<>();
+    private Map<C, Boolean> propagationByConfiguration;
     private int empties = 0;
     private int joints = 0;
     private boolean displayOnlyConfigurationsWhichPropagateOne = false;
+
+    public DGToGraphViz(C configuration, Map<C, Boolean> propagationByConfiguration) {
+        this.propagationByConfiguration = propagationByConfiguration;
+    }
 
     public void setDisplayOnlyConfigurationsWhichPropagateOne(boolean displayOnlyConfigurationsWhichPropagateOne) {
         this.displayOnlyConfigurationsWhichPropagateOne = displayOnlyConfigurationsWhichPropagateOne;
     }
 
-    public String draw(DGConfiguration configuration) {
+    public String draw(C configuration) {
         return draw(configuration, new HashMap<>());
     }
 
-    public String draw(DGConfiguration configuration, Map<DGConfiguration, Boolean> propagationByConfiguration) {
+    public String draw(C configuration, Map<C, Boolean> propagationByConfiguration) {
         this.propagationByConfiguration = propagationByConfiguration;
         queue.clear();
 
@@ -70,11 +76,11 @@ public class EDGToGraphViz {
                 "}";
     }
 
-    private void visit(Pair<DGConfiguration, Integer> pair) {
+    private void visit(Pair<C, Integer> pair) {
         visit(pair.a, pair.b);
     }
 
-    private void visit(DGConfiguration c, int rank) {
+    private void visit(C c, int rank) {
         if (shouldSkipConfiguration(c)) {
             return;
         }
@@ -94,12 +100,12 @@ public class EDGToGraphViz {
         nodes.computeIfAbsent(name, n -> new ArrayList<>());
         ranks.get(rank).add(name);
 
-        for (DGEdge edge : c.getSuccessors()) {
+        for (E edge : c.getSuccessors()) {
             visitJoint(name, edge, rank + 1);
         }
     }
 
-    private void visitJoint(String parent, DGEdge edge, int rank) {
+    private void visitJoint(String parent, E edge, int rank) {
         if (shouldSkipJoint(edge)) {
             return;
         }
@@ -109,10 +115,10 @@ public class EDGToGraphViz {
         String nameWithoutArrow = name + " [arrowhead=\"none\"]";
         String suffix = "";
 
-        if (edge.isNegated()) {
+        /*if (edge.isNegated()) {
             nameWithoutArrow = name + " [arrowhead=\"none\", style=\"dashed\"]";
             suffix = ", style=\"dashed\"";
-        }
+        }*/
 
         ranks.computeIfAbsent(rank, n -> new ArrayList<>());
         ranks.get(rank).add(name);
@@ -126,7 +132,7 @@ public class EDGToGraphViz {
             return;
         }
 
-        for (DGTarget target : edge) {
+        for (T target : edge) {
             String label = "";
             if (target.getTransition() != null) {
                 label = target.getTransition().toString();
@@ -136,16 +142,16 @@ public class EDGToGraphViz {
         }
     }
 
-    private boolean shouldSkipConfiguration(DGConfiguration c) {
+    private boolean shouldSkipConfiguration(C c) {
         return displayOnlyConfigurationsWhichPropagateOne
                 && !propagationByConfiguration.getOrDefault(c, false);
     }
 
-    private boolean shouldSkipJoint(DGEdge edge) {
+    private boolean shouldSkipJoint(E edge) {
         return edge.stream().anyMatch(t -> shouldSkipConfiguration(t.getConfiguration()));
     }
 
-    private String nameOf(DGConfiguration c) {
+    private String nameOf(C c) {
         return '"' + Objects.toString(c) + '"';
     }
 }

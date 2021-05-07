@@ -1,24 +1,24 @@
 package petrigaal.solver;
 
-import petrigaal.edg.Configuration;
-import petrigaal.edg.Edge;
-import petrigaal.edg.Target;
+import petrigaal.edg.DGConfiguration;
+import petrigaal.edg.DGEdge;
+import petrigaal.edg.DGTarget;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.BiConsumer;
 
 public class NonModifyingDGSolver {
-    private Map<Configuration, Boolean> propagationByConfiguration = new HashMap<>();
+    private Map<DGConfiguration, Boolean> propagationByConfiguration = new HashMap<>();
     private BiConsumer<Integer, Integer> consumer;
 
-    public Map<Configuration, Boolean> solve(Configuration c, BiConsumer<Integer, Integer> consumer) {
+    public Map<DGConfiguration, Boolean> solve(DGConfiguration c, BiConsumer<Integer, Integer> consumer) {
         this.consumer = consumer;
         propagationByConfiguration.clear();
 
         propagationByConfiguration.put(c, false);
         while (true) {
-            Map<Configuration, Boolean> updated = getNextIteration();
+            Map<DGConfiguration, Boolean> updated = getNextIteration();
             if (updated.equals(propagationByConfiguration)) {
                 break;
             }
@@ -29,17 +29,17 @@ public class NonModifyingDGSolver {
         return propagationByConfiguration;
     }
 
-    private Map<Configuration, Boolean> getNextIteration() {
-        Map<Configuration, Boolean> updated = new HashMap<>();
+    private Map<DGConfiguration, Boolean> getNextIteration() {
+        Map<DGConfiguration, Boolean> updated = new HashMap<>();
 
-        for (Configuration configuration : propagationByConfiguration.keySet()) {
+        for (DGConfiguration configuration : propagationByConfiguration.keySet()) {
             boolean configurationPropagation = false;
-            for (Edge successor : configuration.getSuccessors()) {
+            for (DGEdge successor : configuration.getSuccessors()) {
                 if (successor.isEmpty()) {
                     configurationPropagation = true;
                 } else {
                     boolean edgePropagation = true;
-                    for (Target target : successor) {
+                    for (DGTarget target : successor) {
                         if (!propagationByConfiguration.getOrDefault(target.getConfiguration(), false)) {
                             edgePropagation = false;
                         }
@@ -59,7 +59,7 @@ public class NonModifyingDGSolver {
         return updated;
     }
 
-    private static boolean isConfigurationTargetOfEdge(Configuration c, Edge e) {
+    private static boolean isConfigurationTargetOfEdge(DGConfiguration c, DGEdge e) {
         return e.stream().anyMatch(t -> t.getConfiguration().equals(c));
     }
 }
