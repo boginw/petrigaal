@@ -28,7 +28,7 @@ public class DGToGraphViz<C extends Configuration<C, E, T>,
     }
 
     public String draw(C configuration) {
-        return draw(configuration, new HashMap<>());
+        return draw(configuration, propagationByConfiguration);
     }
 
     public String draw(C configuration, Map<C, Boolean> propagationByConfiguration) {
@@ -134,12 +134,15 @@ public class DGToGraphViz<C extends Configuration<C, E, T>,
 
         for (T target : edge) {
             String label = "";
+            if (target.getGame() != null) {
+                label += target.getGame().toString();
+            }
             if (target.getTransition() != null) {
-                label = target.getTransition().toString();
+                label += target.getTransition().toString();
             }
             children.add(nameOf(target.getConfiguration()) + " [xlabel=\"" + label + "\"" + suffix + "]");
             queue.add(new Pair<>(target.getConfiguration(), rank + 1));
-        }
+        }<
     }
 
     private boolean shouldSkipConfiguration(C c) {

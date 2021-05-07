@@ -75,19 +75,19 @@ public class DependencyGraphGenerator {
             if (formula.getPath() == E) {
                 nextMarkingsWithTransitions(c)
                         .stream()
-                        .map(m -> new DGTarget(createOrGet(formula.getFirstOperand(), m.getGame(), c.getMode()), m.getTransition()))
+                        .map(m -> new DGTarget(createOrGet(formula.getFirstOperand(), m.getGame(), c.getMode()), m.getTransition(), c.getGame()))
                         .map(t -> new DGEdge(c, t))
                         .forEach(c.getSuccessors()::add);
             } else {
                 nextMarkingsWithTransitions(c, Player.Controller)
                         .stream()
-                        .map(m -> new DGTarget(createOrGet(formula.getFirstOperand(), m.getGame(), c.getMode()), m.getTransition()))
+                        .map(m -> new DGTarget(createOrGet(formula.getFirstOperand(), m.getGame(), c.getMode()), m.getTransition(), c.getGame()))
                         .map(t -> new DGEdge(c, t))
                         .forEach(c.getSuccessors()::add);
 
                 Set<DGTarget> uncontrollableTargets = nextMarkingsWithTransitions(c, Player.Environment)
                         .stream()
-                        .map(m -> new DGTarget(createOrGet(formula.getFirstOperand(), m.getGame(), c.getMode()), m.getTransition()))
+                        .map(m -> new DGTarget(createOrGet(formula.getFirstOperand(), m.getGame(), c.getMode()), m.getTransition(), c.getGame()))
                         .collect(Collectors.toSet());
                 if (!uncontrollableTargets.isEmpty() && c.getSuccessors().isEmpty()) {
                     c.getSuccessors().add(new DGEdge(c));
@@ -121,19 +121,19 @@ public class DependencyGraphGenerator {
         if (formula.getPath() == E) {
             nextMarkingsWithTransitions(c)
                     .stream()
-                    .map(m -> new DGTarget(createOrGet(formula, m.getGame(), c.getMode()), m.getTransition()))
+                    .map(m -> new DGTarget(createOrGet(formula, m.getGame(), c.getMode()), m.getTransition(), c.getGame()))
                     .map(t -> new DGEdge(c, t, new DGTarget(now)))
                     .forEach(c.getSuccessors()::add);
         } else {
             nextMarkingsWithTransitions(c, Player.Controller)
                     .stream()
-                    .map(m -> new DGTarget(createOrGet(formula, m.getGame(), c.getMode()), m.getTransition()))
+                    .map(m -> new DGTarget(createOrGet(formula, m.getGame(), c.getMode()), m.getTransition(), c.getGame()))
                     .map(t -> new DGEdge(c, t, new DGTarget(now)))
                     .forEach(c.getSuccessors()::add);
 
             Set<DGTarget> uncontrollableTargets = nextMarkingsWithTransitions(c, Player.Environment)
                     .stream()
-                    .map(m -> new DGTarget(createOrGet(formula, m.getGame(), c.getMode()), m.getTransition()))
+                    .map(m -> new DGTarget(createOrGet(formula, m.getGame(), c.getMode()), m.getTransition(), c.getGame()))
                     .collect(Collectors.toSet());
             if (!uncontrollableTargets.isEmpty() && c.getSuccessors().isEmpty()) {
                 c.getSuccessors().add(new DGEdge(c, new DGTarget(now)));
@@ -152,19 +152,19 @@ public class DependencyGraphGenerator {
             if (formula.getPath() == E) {
                 nextMarkingsWithTransitions(c)
                         .stream()
-                        .map(m -> new DGTarget(createOrGet(formula, m.getGame(), c.getMode()), m.getTransition()))
+                        .map(m -> new DGTarget(createOrGet(formula, m.getGame(), c.getMode()), m.getTransition(), c.getGame()))
                         .map(t -> new DGEdge(c, t))
                         .forEach(c.getSuccessors()::add);
             } else {
                 nextMarkingsWithTransitions(c, Player.Controller)
                         .stream()
-                        .map(m -> new DGTarget(createOrGet(formula, m.getGame(), c.getMode()), m.getTransition()))
+                        .map(m -> new DGTarget(createOrGet(formula, m.getGame(), c.getMode()), m.getTransition(), c.getGame()))
                         .map(t -> new DGEdge(c, t))
                         .forEach(c.getSuccessors()::add);
 
                 Set<DGTarget> uncontrollableTargets = nextMarkingsWithTransitions(c, Player.Environment)
                         .stream()
-                        .map(m -> new DGTarget(createOrGet(formula, m.getGame(), c.getMode()), m.getTransition()))
+                        .map(m -> new DGTarget(createOrGet(formula, m.getGame(), c.getMode()), m.getTransition(), c.getGame()))
                         .collect(Collectors.toSet());
                 if (!uncontrollableTargets.isEmpty() && c.getSuccessors().isEmpty()) {
                     c.getSuccessors().add(new DGEdge(c));
@@ -176,19 +176,19 @@ public class DependencyGraphGenerator {
             if (formula.getPath() == E) {
                 targets = nextMarkingsWithTransitions(c, Player.Controller)
                         .stream()
-                        .map(m -> new DGTarget(createOrGet(formula, m.getGame(), c.getMode()), m.getTransition()))
+                        .map(m -> new DGTarget(createOrGet(formula, m.getGame(), c.getMode()), m.getTransition(), c.getGame()))
                         .toList();
                 if (!targets.isEmpty()) c.getSuccessors().add(new DGEdge(c, targets));
 
                 nextMarkingsWithTransitions(c, Player.Environment)
                         .stream()
-                        .map(m -> new DGTarget(createOrGet(formula, m.getGame(), c.getMode()), m.getTransition()))
+                        .map(m -> new DGTarget(createOrGet(formula, m.getGame(), c.getMode()), m.getTransition(), c.getGame()))
                         .map(t -> new DGEdge(c, t))
                         .forEach(c.getSuccessors()::add);
             } else {
                 targets = nextMarkingsWithTransitions(c)
                         .stream()
-                        .map(m -> new DGTarget(createOrGet(formula, m.getGame(), c.getMode()), m.getTransition()))
+                        .map(m -> new DGTarget(createOrGet(formula, m.getGame(), c.getMode()), m.getTransition(), c.getGame()))
                         .toList();
                 if (!targets.isEmpty()) c.getSuccessors().add(new DGEdge(c, targets));
             }
@@ -281,7 +281,7 @@ public class DependencyGraphGenerator {
 
     private List<DGTarget> fireAllEnabled(UnaryTemporal formula, PetriGame game, Player player, boolean mode) {
         return nextMarkingsWithTransitions(game, player).stream()
-                .map(g -> new DGTarget(createOrGet(formula.getFirstOperand(), g.getGame(), mode), g.getTransition()))
+                .map(g -> new DGTarget(createOrGet(formula.getFirstOperand(), g.getGame(), mode), g.getTransition(), game))
                 .toList();
     }
 

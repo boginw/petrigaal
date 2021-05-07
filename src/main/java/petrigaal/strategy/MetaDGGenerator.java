@@ -10,7 +10,7 @@ import java.util.*;
 import static java.util.stream.Collectors.groupingBy;
 import static java.util.stream.Collectors.toSet;
 
-public class DGStrategySynthesiser {
+public class MetaDGGenerator {
     private DGConfiguration root;
     private Map<DGConfiguration, Boolean> propagationByConfiguration;
     private Map<MetaConfiguration, MetaConfiguration> configurations = new HashMap<>();
@@ -30,7 +30,7 @@ public class DGStrategySynthesiser {
 
         do {
             MetaConfiguration configuration = Objects.requireNonNull(queue.poll());
-            visit(new MetaTarget(configuration, null));
+            visit(new MetaTarget(configuration, null, null));
         } while (!queue.isEmpty());
 
         return c;
@@ -77,7 +77,7 @@ public class DGStrategySynthesiser {
                 Set<DGConfiguration> configurations = getConfigurations(uncontrollableClosures);
                 MetaConfiguration conf = getOrCreateConf(new MetaConfiguration(configurations));
                 MetaEdge edge = new MetaEdge(target.configuration);
-                edge.add(new MetaTarget(conf, null));
+                edge.add(new MetaTarget(conf, null, null));
                 target.configuration.successors.add(edge);
             }
 
@@ -89,7 +89,11 @@ public class DGStrategySynthesiser {
                     Set<DGConfiguration> configurations = getConfigurations(entry.getValue());
                     MetaConfiguration conf = getOrCreateConf(new MetaConfiguration(configurations));
                     MetaEdge edge = new MetaEdge(target.configuration);
-                    edge.add(new MetaTarget(conf, entry.getValue().iterator().next().target().getTransition()));
+                    edge.add(new MetaTarget(
+                            conf,
+                            entry.getValue().iterator().next().target().getTransition(),
+                            entry.getKey()
+                    ));
                     target.configuration.successors.add(edge);
                 }
             }
@@ -229,7 +233,8 @@ public class DGStrategySynthesiser {
 
     private record MetaTarget(
             MetaConfiguration configuration,
-            Transition transition
+            Transition transition,
+            PetriGame game
     ) implements Target<MetaConfiguration, MetaEdge, MetaTarget> {
         @Override
         public MetaConfiguration getConfiguration() {
@@ -239,6 +244,11 @@ public class DGStrategySynthesiser {
         @Override
         public Transition getTransition() {
             return transition;
+        }
+
+        @Override
+        public PetriGame getGame() {
+            return game;
         }
     }
 

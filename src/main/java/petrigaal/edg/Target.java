@@ -1,5 +1,6 @@
 package petrigaal.edg;
 
+import petrigaal.petri.PetriGame;
 import petrigaal.petri.Transition;
 
 public interface Target<
@@ -8,6 +9,8 @@ public interface Target<
         T extends Target<C, E, T>
         > {
     C getConfiguration();
+
+    PetriGame getGame();
 
     Transition getTransition();
 }
