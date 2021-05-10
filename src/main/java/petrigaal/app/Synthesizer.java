@@ -9,8 +9,10 @@ import petrigaal.loader.PNMLLoader;
 import petrigaal.loader.TAPNLoader;
 import petrigaal.petri.PetriGame;
 import petrigaal.solver.NonModifyingDGSolver;
+import petrigaal.strategy.MdgToMpsConverter;
 import petrigaal.strategy.MetaDGGenerator;
 import petrigaal.strategy.MetaDGGenerator.MetaConfiguration;
+import petrigaal.strategy.automata.AutomataStrategy;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -42,7 +44,10 @@ public class Synthesizer {
         MetaConfiguration c2 = metaDgGenerator.synthesize(c, propagationByConfiguration);
         Map<MetaConfiguration, Boolean> metaPropagationByConfiguration = new NonModifyingDGSolver<>(c2).solve();
 
-        return new Result(c, propagationByConfiguration, c2, metaPropagationByConfiguration);
+        MdgToMpsConverter strategyConverter = new MdgToMpsConverter();
+        AutomataStrategy strategy = strategyConverter.convert(c2, metaPropagationByConfiguration);
+
+        return new Result(c, propagationByConfiguration, c2, metaPropagationByConfiguration, strategy);
     }
 
     private PetriGame loadGame(File file) throws FileNotFoundException {
@@ -66,7 +71,8 @@ public class Synthesizer {
             DGConfiguration dg,
             Map<DGConfiguration, Boolean> propagationByDGConfiguration,
             MetaConfiguration mdg,
-            Map<MetaConfiguration, Boolean> propagationByMetaConfiguration
+            Map<MetaConfiguration, Boolean> propagationByMetaConfiguration,
+            AutomataStrategy mps
     ) {
     }
 }

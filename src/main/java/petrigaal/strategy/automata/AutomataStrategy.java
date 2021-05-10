@@ -121,6 +121,7 @@ public class AutomataStrategy implements Strategy {
     }
 
     public void addFinalState(AutomataState state) {
+        addTransition(state, null, null, state);
         finalStates.add(state);
     }
 

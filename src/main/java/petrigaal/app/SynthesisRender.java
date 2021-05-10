@@ -3,6 +3,7 @@ package petrigaal.app;
 import guru.nidi.graphviz.engine.Graphviz;
 import guru.nidi.graphviz.model.MutableGraph;
 import guru.nidi.graphviz.parse.Parser;
+import petrigaal.draw.AutomataStrategyToGraphViz;
 import petrigaal.draw.DGToGraphViz;
 import petrigaal.draw.EDGToGraphViz;
 
@@ -19,8 +20,6 @@ public class SynthesisRender {
         clearResults();
         int index = counter++;
 
-        File strategyFile = getFile(index, "strategy");
-
         EDGToGraphViz edgToGraphViz = new EDGToGraphViz();
         edgToGraphViz.setDisplayOnlyConfigurationsWhichPropagateOne(options.displayOnlyOne());
         var dgToGraphViz = new DGToGraphViz<>(
@@ -30,8 +29,11 @@ public class SynthesisRender {
         dgToGraphViz.setDisplayOnlyConfigurationsWhichPropagateOne(options.displayOnlyOne());
         String dg = edgToGraphViz.draw(synthesisState.dg(), synthesisState.propagationByDGConfiguration());
         String mdg = dgToGraphViz.draw(synthesisState.mdg());
+        String mps = new AutomataStrategyToGraphViz().draw(synthesisState.mps());
+
         File dgFile = renderViz(dg, index, "dg");
         File mdgFile = renderViz(mdg, index, "mdg");
+        File strategyFile = renderViz(mps, index, "strategy");
 
         return new Result(dgFile, mdgFile, strategyFile);
     }
@@ -61,7 +63,7 @@ public class SynthesisRender {
         }
     }
 
-    boolean deleteDirectory(File directoryToBeDeleted) {
+    private boolean deleteDirectory(File directoryToBeDeleted) {
         File[] allContents = directoryToBeDeleted.listFiles();
         if (allContents != null) {
             for (File file : allContents) {

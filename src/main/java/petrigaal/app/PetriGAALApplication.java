@@ -206,6 +206,12 @@ public class PetriGAALApplication extends Application {
         } else {
             view.meta().loadImage(result.mdgFile().getAbsolutePath());
         }
+
+        if (!result.strategyFile().exists()) {
+            view.strategy().loadImage(DEFAULT_IMAGE);
+        } else {
+            view.strategy().loadImage(result.strategyFile().getAbsolutePath());
+        }
     }
 
     private static record StateView(
