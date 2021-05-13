@@ -12,13 +12,11 @@ import java.util.*;
 public class MdgToMpsConverter {
     private final Queue<MetaConfiguration> queue = new LinkedList<>();
     private final Set<MetaConfiguration> visited = new HashSet<>();
-    private final HashMap<MetaConfiguration, String> stateNames = new HashMap<>();
 
     public AutomataStrategy convert(
             MetaConfiguration rootConf,
             Map<MetaConfiguration, Boolean> propagationByConfiguration
     ) {
-        stateNames.clear();
         visited.clear();
         queue.clear();
         final AutomataStrategy strategy = new AutomataStrategy();
