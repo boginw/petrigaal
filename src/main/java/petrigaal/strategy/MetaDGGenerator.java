@@ -1,5 +1,6 @@
 package petrigaal.strategy;
 
+import javafx.util.Pair;
 import petrigaal.edg.*;
 import petrigaal.petri.PetriGame;
 import petrigaal.petri.Player;
@@ -10,11 +11,11 @@ import java.util.*;
 import static java.util.stream.Collectors.groupingBy;
 import static java.util.stream.Collectors.toSet;
 
-public class DGStrategySynthesiser {
+public class MetaDGGenerator {
+    private final Map<MetaConfiguration, MetaConfiguration> configurations = new HashMap<>();
+    private final Queue<MetaConfiguration> queue = new LinkedList<>();
     private DGConfiguration root;
     private Map<DGConfiguration, Boolean> propagationByConfiguration;
-    private Map<MetaConfiguration, MetaConfiguration> configurations = new HashMap<>();
-    private Queue<MetaConfiguration> queue = new LinkedList<>();
 
     public MetaConfiguration synthesize(
             DGConfiguration root,
@@ -30,7 +31,7 @@ public class DGStrategySynthesiser {
 
         do {
             MetaConfiguration configuration = Objects.requireNonNull(queue.poll());
-            visit(new MetaTarget(configuration, null));
+            visit(new MetaTarget(configuration, null, null));
         } while (!queue.isEmpty());
 
         return c;
@@ -67,17 +68,20 @@ public class DGStrategySynthesiser {
             if (transitions.stream().anyMatch(t -> t.size() > 1))
                 continue;
 
-            Set<Set<Closure>> uncontrollableClosureByTransition = new HashSet<>(
-                    uncontrollable.stream()
-                            .collect(groupingBy(c -> c.target().getTransition(), toSet()))
-                            .values()
-            );
+            var uncontrollableClosureByTransition = uncontrollable.stream()
+                    .collect(groupingBy(
+                            c -> new Pair<>(c.target().getTransition(), c.source().getGame()), toSet()
+                    ));
 
-            for (Set<Closure> uncontrollableClosures : uncontrollableClosureByTransition) {
-                Set<DGConfiguration> configurations = getConfigurations(uncontrollableClosures);
+            for (var uncontrollableClosures : uncontrollableClosureByTransition.entrySet()) {
+                Set<DGConfiguration> configurations = getConfigurations(uncontrollableClosures.getValue());
                 MetaConfiguration conf = getOrCreateConf(new MetaConfiguration(configurations));
                 MetaEdge edge = new MetaEdge(target.configuration);
-                edge.add(new MetaTarget(conf, null));
+                edge.add(new MetaTarget(
+                        conf,
+                        uncontrollableClosures.getKey().getKey(),
+                        uncontrollableClosures.getKey().getValue()
+                ));
                 target.configuration.successors.add(edge);
             }
 
@@ -89,7 +93,11 @@ public class DGStrategySynthesiser {
                     Set<DGConfiguration> configurations = getConfigurations(entry.getValue());
                     MetaConfiguration conf = getOrCreateConf(new MetaConfiguration(configurations));
                     MetaEdge edge = new MetaEdge(target.configuration);
-                    edge.add(new MetaTarget(conf, entry.getValue().iterator().next().target().getTransition()));
+                    edge.add(new MetaTarget(
+                            conf,
+                            entry.getValue().iterator().next().target().getTransition(),
+                            entry.getKey()
+                    ));
                     target.configuration.successors.add(edge);
                 }
             }
@@ -214,7 +222,7 @@ public class DGStrategySynthesiser {
         }
     }
 
-    private static class MetaEdge extends ArrayList<MetaTarget> implements Edge<MetaConfiguration, MetaEdge, MetaTarget> {
+    public static class MetaEdge extends ArrayList<MetaTarget> implements Edge<MetaConfiguration, MetaEdge, MetaTarget> {
         private final MetaConfiguration source;
 
         public MetaEdge(MetaConfiguration source) {
@@ -227,9 +235,10 @@ public class DGStrategySynthesiser {
         }
     }
 
-    private record MetaTarget(
+    public static record MetaTarget(
             MetaConfiguration configuration,
-            Transition transition
+            Transition transition,
+            PetriGame game
     ) implements Target<MetaConfiguration, MetaEdge, MetaTarget> {
         @Override
         public MetaConfiguration getConfiguration() {
@@ -239,6 +248,11 @@ public class DGStrategySynthesiser {
         @Override
         public Transition getTransition() {
             return transition;
+        }
+
+        @Override
+        public PetriGame getGame() {
+            return game;
         }
     }
 

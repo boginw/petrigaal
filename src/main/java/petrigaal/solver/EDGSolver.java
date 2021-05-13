@@ -25,7 +25,7 @@ public class EDGSolver {
         root = c;
         done = false;
 
-        explore(new DGTarget(c, null));
+        explore(new DGTarget(c, null, null));
         while (!done && (!waitingHyperEdges.isEmpty() || !waitingNegationEdges.isEmpty())) {
             if (!waitingHyperEdges.isEmpty()) {
                 processHyperEdge(waitingHyperEdges.poll());

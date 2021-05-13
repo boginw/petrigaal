@@ -59,12 +59,6 @@ public class TopDownStrategySynthesiser implements StrategySynthesiser<TopDownSt
             emit(successors);
             boolean dead = true;
             if (successors.contains(Collections.emptySet())) {
-                strategy.addTransition(
-                        pair.getState(),
-                        null,
-                        null,
-                        pair.getState()
-                );
                 strategy.addFinalState(pair.getState());
                 continue;
             }

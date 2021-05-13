@@ -1,5 +1,6 @@
 package petrigaal.edg;
 
+import petrigaal.petri.PetriGame;
 import petrigaal.petri.Transition;
 
 import java.util.Objects;
@@ -7,15 +8,18 @@ import java.util.Objects;
 public class DGTarget implements Target<DGConfiguration, DGEdge, DGTarget> {
     private final DGConfiguration configuration;
     private final Transition transition;
+    private final PetriGame game;
 
-    public DGTarget(DGConfiguration configuration, Transition transition) {
+    public DGTarget(DGConfiguration configuration, Transition transition, PetriGame game) {
         this.configuration = configuration;
         this.transition = transition;
+        this.game = game;
     }
 
     public DGTarget(DGConfiguration configuration) {
         this.configuration = configuration;
         this.transition = null;
+        this.game = null;
     }
 
     @Override
@@ -24,12 +28,17 @@ public class DGTarget implements Target<DGConfiguration, DGEdge, DGTarget> {
     }
 
     @Override
+    public PetriGame getGame() {
+        return game;
+    }
+
+    @Override
     public Transition getTransition() {
         return transition;
     }
 
     public DGTarget withConfiguration(DGConfiguration configuration) {
-        return new DGTarget(configuration, getTransition());
+        return new DGTarget(configuration, getTransition(), getGame());
     }
 
     @Override

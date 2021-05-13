@@ -25,7 +25,7 @@ sourceSets {
 
 javafx {
     version = "16"
-    modules = [ 'javafx.controls', 'javafx.web' ]
+    modules = ['javafx.controls', 'javafx.web']
 }
 
 dependencies {
@@ -33,7 +33,6 @@ dependencies {
     implementation group: 'fr.lip6.pnml', name: 'framework.releng', version: '2.2.12', ext: 'pom'
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.7.1'
     testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.7.1'
-    implementation 'info.picocli:picocli:4.6.1'
 
     antlr "org.antlr:antlr4:4.9.2"
 }
