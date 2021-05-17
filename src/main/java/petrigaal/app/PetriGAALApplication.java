@@ -38,6 +38,7 @@ public class PetriGAALApplication extends Application {
         view = new StateView(
                 new SvgViewer(DEFAULT_IMAGE),
                 new SvgViewer(DEFAULT_IMAGE),
+                new SvgViewer(DEFAULT_IMAGE),
                 new SvgViewer(DEFAULT_IMAGE)
         );
 
@@ -182,7 +183,8 @@ public class PetriGAALApplication extends Application {
         Tab strategyTab = new Tab("Strategy", view.strategy().getWebView());
         Tab dependencyGraphTab = new Tab("Dependency Graph", view.dg().getWebView());
         Tab metaTab = new Tab("Meta Dependency Graph", view.meta().getWebView());
-        tabPane.getTabs().addAll(metaTab, dependencyGraphTab, strategyTab);
+        Tab instanceTab = new Tab("Strategy Instance", view.instance().getWebView());
+        tabPane.getTabs().addAll(dependencyGraphTab, metaTab, strategyTab, instanceTab);
         return tabPane;
     }
 
@@ -212,12 +214,19 @@ public class PetriGAALApplication extends Application {
         } else {
             view.strategy().loadImage(result.strategyFile().getAbsolutePath());
         }
+
+        if (!result.instanceFile().exists()) {
+            view.instance().loadImage(DEFAULT_IMAGE);
+        } else {
+            view.instance().loadImage(result.instanceFile().getAbsolutePath());
+        }
     }
 
     private static record StateView(
             SvgViewer dg,
             SvgViewer strategy,
-            SvgViewer meta
+            SvgViewer meta,
+            SvgViewer instance
     ) {
     }
 }

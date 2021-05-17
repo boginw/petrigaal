@@ -19,7 +19,7 @@ public class MdgToMpsConverter {
     ) {
         visited.clear();
         queue.clear();
-        final AutomataStrategy strategy = new AutomataStrategy();
+        final AutomataStrategy strategy = new AutomataStrategy(new AutomataState(rootConf.toString()));
 
         queue.add(rootConf);
 

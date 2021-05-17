@@ -30,12 +30,14 @@ public class SynthesisRender {
         String dg = edgToGraphViz.draw(synthesisState.dg(), synthesisState.propagationByDGConfiguration());
         String mdg = dgToGraphViz.draw(synthesisState.mdg());
         String mps = new AutomataStrategyToGraphViz().draw(synthesisState.mps());
+        String instance = new AutomataStrategyToGraphViz().draw(synthesisState.instance());
 
         File dgFile = renderViz(dg, index, "dg");
         File mdgFile = renderViz(mdg, index, "mdg");
         File strategyFile = renderViz(mps, index, "strategy");
+        File instanceFile = renderViz(instance, index, "instance");
 
-        return new Result(dgFile, mdgFile, strategyFile);
+        return new Result(dgFile, mdgFile, strategyFile, instanceFile);
     }
 
     private File renderViz(String graph, int index, String name) {
@@ -89,7 +91,8 @@ public class SynthesisRender {
     public static record Result(
             File dgFile,
             File mdgFile,
-            File strategyFile
+            File strategyFile,
+            File instanceFile
     ) {
     }
 }
