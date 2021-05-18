@@ -6,22 +6,21 @@ import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.concurrent.Task;
-import javafx.geometry.Insets;
 import javafx.geometry.Orientation;
-import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.Scene;
-import javafx.scene.control.*;
-import javafx.scene.layout.*;
-import javafx.scene.paint.Color;
-import javafx.stage.FileChooser;
+import javafx.scene.control.ListView;
+import javafx.scene.control.SplitPane;
+import javafx.scene.control.Tab;
+import javafx.scene.control.TabPane;
+import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
-import petrigaal.atl.CTLSyntaxErrorException;
 import petrigaal.edg.DGConfiguration;
 import petrigaal.strategy.TopDownStrategySynthesiser.SynthesisState;
 
-import java.io.*;
-import java.nio.file.Path;
+import java.io.File;
+import java.io.FileNotFoundException;
 import java.util.Map;
 
 public class PetriGAALApplication extends Application {
@@ -30,8 +29,7 @@ public class PetriGAALApplication extends Application {
     private final ObservableList<SynthesisState> stateList = FXCollections.observableArrayList();
     private final ObservableList<Map<DGConfiguration, Boolean>> closeFiles = FXCollections.observableArrayList();
     private StateView view;
-    private final StackPane loadFileStack = new StackPane();
-    private final VBox vb = new VBox();
+    private LoadView loadView;
 
     @Override
     public void start(Stage primaryStage) throws Exception {
@@ -65,93 +63,12 @@ public class PetriGAALApplication extends Application {
     }
 
     private Node getLoadView(Stage stage) {
-        final Label fileError = new Label();
-        fileError.setTextFill(Color.RED);
-        final Label formulaError = new Label();
-        formulaError.setTextFill(Color.RED);
-        final Button synthesizeButton = new Button("Synthesize");
-        final TextField formulaField = new TextField();
-        final TextField modelPathTextField = new TextField();
-        final CheckBox checkBox = new CheckBox("Display only configurations which propagate 1");
-
-        modelPathTextField.textProperty().addListener((obs, old, newValue) -> {
-            fileError.setVisible(false);
-            if (newValue.trim().isEmpty()) return;
-
-            File file = new File(newValue);
-            if (!file.exists() || !file.canRead()) {
-                fileError.setText("Invalid file");
-                fileError.setVisible(true);
-            } else {
-                File parentFile = file.getParentFile();
-                if (parentFile != null) {
-                    File modelFile = Path.of(parentFile.getPath(), "formula").toFile();
-                    if (modelFile.exists()) {
-                        try (BufferedReader reader = new BufferedReader(new FileReader(modelFile))) {
-                            formulaField.setText(reader.readLine());
-                        } catch (IOException fileNotFoundException) {
-                            fileNotFoundException.printStackTrace();
-                        }
-                    }
-                }
-            }
-        });
-        formulaField.textProperty().addListener((observable, oldValue, newValue) -> {
-            formulaError.setVisible(false);
-            if (newValue.trim().isEmpty()) return;
-            try {
-                new petrigaal.atl.Parser().parse(newValue);
-            } catch (CTLSyntaxErrorException e) {
-                formulaError.setText(e.getMessage());
-                formulaError.setVisible(true);
-            }
-        });
-        synthesizeButton.setOnMouseClicked(e -> synthesize(
-                new File(modelPathTextField.getText()),
-                formulaField.getText(),
-                checkBox.isSelected()
-        ));
-
-        FileChooser fileChooser = new FileChooser();
-        fileChooser.setTitle("Open TAPAAL Model");
-        fileChooser.setSelectedExtensionFilter(new FileChooser.ExtensionFilter("TAPAAL models", "*.tapn"));
-
-        vb.setSpacing(8);
-        vb.setPadding(new Insets(10, 10, 10, 10));
-        Button browseButton = new Button("Browse");
-
-        browseButton.setOnMouseClicked(e -> {
-            File file = fileChooser.showOpenDialog(stage);
-            if (file == null) return;
-            modelPathTextField.setText(file.getPath());
-        });
-
-        HBox hBox = new HBox(modelPathTextField, browseButton);
-        hBox.setSpacing(10);
-        HBox.setHgrow(modelPathTextField, Priority.ALWAYS);
-
-        vb.getChildren().addAll(
-                new Label("Model"),
-                hBox,
-                fileError,
-                new Label("Formula"),
-                formulaField,
-                formulaError,
-                checkBox,
-                synthesizeButton
-        );
-
-        loadFileStack.getChildren().add(vb);
-
-        return loadFileStack;
+        loadView = new LoadView(stage, this::synthesize);
+        return loadView.getView();
     }
 
     private void synthesize(File modelFile, String formula, boolean displayOnlyOne) {
-        ProgressIndicator pi = new ProgressIndicator();
-        VBox box = new VBox(pi);
-        box.setAlignment(Pos.CENTER);
-        vb.setDisable(true);
-        loadFileStack.getChildren().add(box);
+        loadView.startLoading();
 
         Task<Void> task = new Task<>() {
             @Override
@@ -163,8 +80,7 @@ public class PetriGAALApplication extends Application {
                     SynthesisRender.Result render = new SynthesisRender().render(synthesis, options);
 
                     Platform.runLater(() -> {
-                        vb.setDisable(false);
-                        loadFileStack.getChildren().remove(1);
+                        loadView.stopLoading();
                         render(render);
                     });
                 } catch (IllegalAccessException | FileNotFoundException e) {
