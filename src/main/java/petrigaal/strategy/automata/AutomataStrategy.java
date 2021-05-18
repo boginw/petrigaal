@@ -19,7 +19,7 @@ public class AutomataStrategy implements Strategy {
         initialState = new AutomataState("init");
     }
 
-    private AutomataStrategy(AutomataState initialState) {
+    public AutomataStrategy(AutomataState initialState) {
         this.initialState = initialState;
     }
 
@@ -125,10 +125,10 @@ public class AutomataStrategy implements Strategy {
         finalStates.add(state);
     }
 
-    private Set<AutomataState> getAdjacentStates(AutomataState nextState) {
+    private Set<AutomataState> getAdjacentStates(AutomataState state) {
         return stateTransitions.entrySet()
                 .stream()
-                .filter(e -> e.getKey().state().equals(nextState))
+                .filter(e -> e.getKey().state().equals(state))
                 .map(Map.Entry::getValue)
                 .flatMap(Collection::stream)
                 .map(AutomataOutput::state)
@@ -150,6 +150,19 @@ public class AutomataStrategy implements Strategy {
         @Override
         public String toString() {
             return "{name='" + name + "'}";
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+            AutomataState that = (AutomataState) o;
+            return Objects.equals(name, that.name);
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(name);
         }
     }
 }

@@ -7,7 +7,12 @@ html, body {
     overflow: hidden;
 }
 
-img {
+#container, img {
+    height: 100vh;
+    width: 100vw;
+}
+
+#container svg {
     height: 100vh;
     width: 100vw;
 }
