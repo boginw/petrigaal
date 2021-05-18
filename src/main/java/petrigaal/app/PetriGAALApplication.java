@@ -85,6 +85,8 @@ public class PetriGAALApplication extends Application {
                     });
                 } catch (IllegalAccessException | FileNotFoundException e) {
                     throw new RuntimeException(e);
+                } finally {
+                    Platform.runLater(() -> loadView.stopLoading());
                 }
 
                 return null;
