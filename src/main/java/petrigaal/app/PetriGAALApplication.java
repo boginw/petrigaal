@@ -80,13 +80,11 @@ public class PetriGAALApplication extends Application {
                     SynthesisRender.Result render = new SynthesisRender().render(synthesis, options);
 
                     Platform.runLater(() -> {
-                        loadView.stopLoading();
                         render(render);
+                        loadView.stopLoading();
                     });
                 } catch (IllegalAccessException | FileNotFoundException e) {
                     throw new RuntimeException(e);
-                } finally {
-                    Platform.runLater(() -> loadView.stopLoading());
                 }
 
                 return null;

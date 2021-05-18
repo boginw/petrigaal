@@ -92,7 +92,9 @@ public class LoadView {
 
     public void stopLoading() {
         vb.setDisable(false);
-        loadFileStack.getChildren().remove(1);
+        if (loadFileStack.getChildren().size() > 1) {
+            loadFileStack.getChildren().remove(1);
+        }
     }
 
     private boolean checkFormulaField(String newValue) {
@@ -134,7 +136,7 @@ public class LoadView {
     }
 
     @FunctionalInterface
-    public static interface Callback {
+    public interface Callback {
         void apply(File model, String formula, boolean onlyShowPropagationOfOne);
     }
 }

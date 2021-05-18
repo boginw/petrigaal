@@ -59,7 +59,7 @@ public class PetriGame {
     }
 
     private Set<String> placesFromArcs(Set<Transition.Arc> t) {
-        return t.stream().map(Transition.Arc::getPlace).collect(Collectors.toSet());
+        return t.stream().map(Transition.Arc::place).collect(Collectors.toSet());
     }
 
     private HashSet<Transition> getSetForPlayer(Player player) {
@@ -83,7 +83,7 @@ public class PetriGame {
     public boolean isEnabled(Transition t) {
         Set<Transition.Arc> penis = t.getInputsArcs();
         return penis.stream().allMatch(
-                a -> getMarking(a.getPlace()) >= a.getWeight()
+                a -> getMarking(a.place()) >= a.weight()
         );
     }
 
@@ -96,8 +96,8 @@ public class PetriGame {
     }
 
     private void performTransition(Transition t) {
-        t.getInputsArcs().forEach(a -> subtractMarkings(a.getPlace(), a.getWeight()));
-        t.getOutputArcs().forEach(a -> addMarkings(a.getPlace(), a.getWeight()));
+        t.getInputsArcs().forEach(a -> subtractMarkings(a.place(), a.weight()));
+        t.getOutputArcs().forEach(a -> addMarkings(a.place(), a.weight()));
     }
 
     @Override
