@@ -11,7 +11,7 @@ import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
-import petrigaal.atl.CTLSyntaxErrorException;
+import petrigaal.ctl.CTLSyntaxErrorException;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -99,7 +99,7 @@ public class LoadView {
         formulaError.setVisible(false);
         if (newValue.trim().isEmpty()) return false;
         try {
-            new petrigaal.atl.Parser().parse(newValue);
+            new petrigaal.ctl.Parser().parse(newValue);
         } catch (CTLSyntaxErrorException e) {
             formulaError.setText(e.getMessage());
             formulaError.setVisible(true);
