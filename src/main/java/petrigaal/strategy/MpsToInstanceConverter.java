@@ -53,10 +53,10 @@ public class MpsToInstanceConverter {
                 } else {
                     pathDistance = pathDistance.incrementControllable();
 
-                    Set<AutomataOutput> otherSuccessors = strategy.getStateTransitions().get(entry.input);
-                    otherSuccessors.removeIf(s -> isControllable(entry.input.game(), s) && !s.equals(entry.output));
+                    strategy.getStateTransitions().entrySet().stream()
+                            .filter(e -> e.getKey().state().equals(entry.input().state()))
+                            .forEach(e -> e.getValue().removeIf(v -> isControllableAndNotSegment(entry, e, v)));
                 }
-
 
                 if (pathDistance.compareTo(distance.getOrDefault(entry.input().state(), PathDistance.MAX_VALUE)) < 0) {
                     distance.put(entry.input().state(), pathDistance);
@@ -64,6 +64,14 @@ public class MpsToInstanceConverter {
                 }
             }
         }
+    }
+
+    private boolean isControllableAndNotSegment(
+            PathSegment segment,
+            Entry<AutomataInput, Set<AutomataOutput>> entry,
+            AutomataOutput output
+    ) {
+        return isControllable(segment.input.game(), output) && !new PathSegment(entry.getKey(), output).equals(segment);
     }
 
     private Set<PathSegment> getPredecessors(AutomataStrategy strategy, AutomataState state) {
@@ -85,6 +93,18 @@ public class MpsToInstanceConverter {
     }
 
     private static record PathSegment(AutomataInput input, AutomataOutput output) {
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+            PathSegment that = (PathSegment) o;
+            return Objects.equals(input, that.input) && Objects.equals(output, that.output);
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(input, output);
+        }
     }
 
     private static record PathDistance(int environment, int controllable) implements Comparable<PathDistance> {
