@@ -31,6 +31,9 @@ public class SvgViewer {
     }
 
     public void loadImage(String image) {
-        webEngine.executeScript("loadImage('%s')".formatted(image));
+        image = image.replaceAll("\n", "")
+                .replaceAll("\r", "")
+                .replaceAll("<!--.*?-->", "");
+        webEngine.executeScript("loadImage(`%s`)".formatted(image));
     }
 }

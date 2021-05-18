@@ -6,13 +6,31 @@
 </head>
 
 <body>
-<img class='zoom' src="start.png"/>
+<div id="container">
+    <img class='zoom' src="start.png"/>
+</div>
 <script src="script.js"></script>
 <script>
-    wheelzoom(document.querySelector('img.zoom'));
+    let panZoomTiger = null;
 
-    function loadImage(url) {
-        document.querySelector("img.zoom").src = url;
+    function loadImage(image) {
+        if (panZoomTiger !== null) {
+            panZoomTiger.destroy();
+            panZoomTiger = null;
+        }
+
+        if (image.endsWith(".png")) {
+            document.querySelector("#container").innerHTML = `<img class='zoom' src="${image}"/>`
+        } else {
+            document.querySelector("#container").innerHTML = image;
+
+            panZoomTiger = svgPanZoom('#container svg', {
+                fit: true,
+                contain: false,
+                center: true,
+                controlIconsEnabled: true
+            });
+        }
     }
 </script>
 </body>

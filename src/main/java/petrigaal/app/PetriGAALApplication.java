@@ -197,28 +197,28 @@ public class PetriGAALApplication extends Application {
     }
 
     private void render(SynthesisRender.Result result) {
-        if (!result.dgFile().exists()) {
+        if (result.dgSvg() == null) {
             view.dg().loadImage(DEFAULT_IMAGE);
         } else {
-            view.dg().loadImage(result.dgFile().getAbsolutePath());
+            view.dg().loadImage(result.dgSvg());
         }
 
-        if (!result.mdgFile().exists()) {
+        if (result.mdgSvg() == null) {
             view.meta().loadImage(DEFAULT_IMAGE);
         } else {
-            view.meta().loadImage(result.mdgFile().getAbsolutePath());
+            view.meta().loadImage(result.mdgSvg());
         }
 
-        if (!result.strategyFile().exists()) {
+        if (result.strategySvg() == null) {
             view.strategy().loadImage(DEFAULT_IMAGE);
         } else {
-            view.strategy().loadImage(result.strategyFile().getAbsolutePath());
+            view.strategy().loadImage(result.strategySvg());
         }
 
-        if (!result.instanceFile().exists()) {
+        if (result.instanceSvg() == null) {
             view.instance().loadImage(DEFAULT_IMAGE);
         } else {
-            view.instance().loadImage(result.instanceFile().getAbsolutePath());
+            view.instance().loadImage(result.instanceSvg());
         }
     }
 

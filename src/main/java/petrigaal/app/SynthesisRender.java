@@ -32,12 +32,12 @@ public class SynthesisRender {
         String mps = new AutomataStrategyToGraphViz().draw(synthesisState.mps());
         String instance = new AutomataStrategyToGraphViz().draw(synthesisState.instance());
 
-        File dgFile = renderViz(dg, index, "dg");
-        File mdgFile = renderViz(mdg, index, "mdg");
-        File strategyFile = renderViz(mps, index, "strategy");
-        File instanceFile = renderViz(instance, index, "instance");
+        String dgSvg = renderViz(dg);
+        String mdgSvg = renderViz(mdg);
+        String strategySvg = renderViz(mps);
+        String instanceSvg = renderViz(instance);
 
-        return new Result(dgFile, mdgFile, strategyFile, instanceFile);
+        return new Result(dgSvg, mdgSvg, strategySvg, instanceSvg);
     }
 
     private File renderViz(String graph, int index, String name) {
@@ -47,6 +47,15 @@ public class SynthesisRender {
             MutableGraph g = new Parser().read(graph);
             Graphviz.fromGraph(g).totalMemory(480000000).render(FORMAT).toFile(outFile);
             return outFile;
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private String renderViz(String graph) {
+        try {
+            MutableGraph g = new Parser().read(graph);
+            return Graphviz.fromGraph(g).totalMemory(480000000).render(FORMAT).toString();
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -89,10 +98,10 @@ public class SynthesisRender {
     }
 
     public static record Result(
-            File dgFile,
-            File mdgFile,
-            File strategyFile,
-            File instanceFile
+            String dgSvg,
+            String mdgSvg,
+            String strategySvg,
+            String instanceSvg
     ) {
     }
 }
