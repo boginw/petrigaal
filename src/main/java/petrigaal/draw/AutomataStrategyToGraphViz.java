@@ -1,5 +1,6 @@
 package petrigaal.draw;
 
+import petrigaal.petri.Player;
 import petrigaal.strategy.automata.AutomataInput;
 import petrigaal.strategy.automata.AutomataOutput;
 import petrigaal.strategy.automata.AutomataStrategy;
@@ -17,7 +18,7 @@ public class AutomataStrategyToGraphViz {
                 .collect(Collectors.toSet());
         StringBuilder sb = new StringBuilder();
 
-        states.forEach(s -> sb.append(s.name()).append("\n"));
+        states.forEach(s -> sb.append('"').append(s.name()).append('"').append("\n"));
 
         strategy.getStateTransitions().forEach((input, v) -> {
             for (AutomataOutput output : v) {
@@ -38,13 +39,24 @@ public class AutomataStrategyToGraphViz {
                             output.state().name()
                     );
                 } else if (input.game() != null) {
-                    addTransition(
-                            sb,
-                            input.state().name(),
-                            input.game(),
-                            output.transition(),
-                            output.state().name()
-                    );
+                    if (input.game().getEnabledTransitions(Player.Environment).contains(output.transition())) {
+                        addTransition(
+                                sb,
+                                input.state().name(),
+                                input.game(),
+                                output.transition(),
+                                output.state().name(),
+                                true
+                        );
+                    } else {
+                        addTransition(
+                                sb,
+                                input.state().name(),
+                                input.game(),
+                                output.transition(),
+                                output.state().name()
+                        );
+                    }
                 } else {
                     throw new IllegalArgumentException("Game is null");
                 }
@@ -52,7 +64,7 @@ public class AutomataStrategyToGraphViz {
         });
 
         for (AutomataState finalState : strategy.getFinalStates()) {
-            sb.append(finalState.name())
+            sb.append('"').append(finalState.name()).append('"')
                     .append(" [color=green, fillcolor=black]\n");
         }
 
@@ -74,14 +86,28 @@ public class AutomataStrategyToGraphViz {
             Object transition,
             Object end
     ) {
-        sb.append(start)
+        addTransition(sb, start, game, transition, end, false);
+    }
+
+    private void addTransition(
+            StringBuilder sb,
+            Object start,
+            Object game,
+            Object transition,
+            Object end,
+            boolean dashed
+    ) {
+        sb.append('"').append(start).append('"')
                 .append(" -> ")
-                .append(end)
-                .append(" [xlabel=\"")
+                .append('"').append(end).append('"')
+                .append(" [label=\"")
                 .append(game)
                 .append(" / ")
                 .append(transition)
-                .append("\"]")
-                .append("\n");
+                .append("\"");
+        if (dashed) {
+            sb.append(", style=\"dashed\"");
+        }
+        sb.append(']').append("\n");
     }
 }

@@ -1,8 +1,8 @@
 package petrigaal.solver;
 
-import petrigaal.edg.Configuration;
-import petrigaal.edg.Edge;
-import petrigaal.edg.Target;
+import petrigaal.edg.DGConfiguration;
+import petrigaal.edg.DGEdge;
+import petrigaal.edg.DGTarget;
 
 import java.util.*;
 import java.util.function.BiConsumer;
@@ -15,28 +15,28 @@ public class EDGSolver {
     private final int workers = Runtime.getRuntime().availableProcessors();
     private BiConsumer<Integer, Integer> consumer;
 
-    private final Queue<Edge> waitingHyperEdges = new LinkedList<>();
-    private final Set<Edge> waitingNegationEdges = new HashSet<>();
-    private final Map<Configuration, AssignmentValue> assignment = new HashMap<>();
-    private Configuration root;
+    private final Queue<DGEdge> waitingHyperEdges = new LinkedList<>();
+    private final Set<DGEdge> waitingNegationEdges = new HashSet<>();
+    private final Map<DGConfiguration, AssignmentValue> assignment = new HashMap<>();
+    private DGConfiguration root;
     private boolean done = false;
 
-    public Map<Configuration, Boolean> solve(Configuration c, BiConsumer<Integer, Integer> consumer) {
+    public Map<DGConfiguration, Boolean> solve(DGConfiguration c, BiConsumer<Integer, Integer> consumer) {
         root = c;
         done = false;
 
-        explore(new Target(c, null));
+        explore(new DGTarget(c, null, null));
         while (!done && (!waitingHyperEdges.isEmpty() || !waitingNegationEdges.isEmpty())) {
             if (!waitingHyperEdges.isEmpty()) {
                 processHyperEdge(waitingHyperEdges.poll());
             } else {
-                Optional<Edge> allowedNegationEdge = findAllowedNegationEdge();
+                Optional<DGEdge> allowedNegationEdge = findAllowedNegationEdge();
 
                 if (allowedNegationEdge.isPresent()) {
                     waitingNegationEdges.remove(allowedNegationEdge.get());
                     processNegationEdge(allowedNegationEdge.get());
                 } else {
-                    Optional<Edge> minDistance = waitingNegationEdges.stream()
+                    Optional<DGEdge> minDistance = waitingNegationEdges.stream()
                             .min(Comparator.comparing(p -> p.getSource().getNegationDistance()));
 
                     if (minDistance.isPresent()) {
@@ -47,14 +47,14 @@ public class EDGSolver {
             }
         }
 
-        Map<Configuration, Boolean> propagationByConfiguration = new HashMap<>();
+        Map<DGConfiguration, Boolean> propagationByConfiguration = new HashMap<>();
         assignment.forEach((k, v) -> propagationByConfiguration.put(k, v == TRUE));
 
         System.out.println("Can solve: " + propagationByConfiguration.get(c));
         return propagationByConfiguration;
     }
 
-    private void processHyperEdge(Edge edge) {
+    private void processHyperEdge(DGEdge edge) {
         if (edge == null) return;
 
         if (edge.stream().allMatch(targetIsAssigned(TRUE))) {
@@ -69,7 +69,7 @@ public class EDGSolver {
         }
     }
 
-    private void processNegationEdge(Edge edge) {
+    private void processNegationEdge(DGEdge edge) {
         if (edge.stream().allMatch(targetIsAssigned(UNKNOWN, FALSE))) {
             finalAssign(edge.getSource(), AssignmentValue.TRUE);
         } else if (edge.stream().allMatch(targetIsAssigned(TRUE))) {
@@ -80,23 +80,23 @@ public class EDGSolver {
         }
     }
 
-    private void explore(Target target) {
-        Configuration configuration = target.getConfiguration();
+    private void explore(DGTarget target) {
+        DGConfiguration configuration = target.getConfiguration();
 
         assignment.put(configuration, UNKNOWN);
 
         if (configuration.getSuccessors().isEmpty()) {
             finalAssign(configuration, AssignmentValue.FALSE);
         } else {
-            for (Edge successor : configuration.getSuccessors()) {
+            for (DGEdge successor : configuration.getSuccessors()) {
                 if (successor.isNegated()) waitingNegationEdges.add(successor);
                 else waitingHyperEdges.add(successor);
             }
         }
     }
 
-    private void deleteEdge(Edge edge) {
-        Configuration source = edge.getSource();
+    private void deleteEdge(DGEdge edge) {
+        DGConfiguration source = edge.getSource();
         source.getSuccessors().remove(edge);
 
         if (source.getSuccessors().isEmpty()) {
@@ -113,35 +113,35 @@ public class EDGSolver {
                 .forEach(e -> e.getSource().getSuccessors().remove(edge));
     }
 
-    private void finalAssign(Configuration configuration, AssignmentValue value) {
+    private void finalAssign(DGConfiguration configuration, AssignmentValue value) {
         assignment.put(configuration, value);
         if (configuration.equals(root)) {
             done = true;
             return;
         }
 
-        Set<Edge> dependants = getDependantsOf(configuration);
+        Set<DGEdge> dependants = getDependantsOf(configuration);
 
-        for (Edge dependant : dependants) {
+        for (DGEdge dependant : dependants) {
             if (dependant.isNegated()) waitingNegationEdges.add(dependant);
             else waitingHyperEdges.add(dependant);
         }
     }
 
-    private Set<Edge> getDependantsOf(Configuration configuration) {
+    private Set<DGEdge> getDependantsOf(DGConfiguration configuration) {
         return assignment.keySet().stream()
                 .flatMap(c -> c.getSuccessors().stream())
                 .filter(e -> e.stream().anyMatch(t -> t.getConfiguration().equals(configuration)))
                 .collect(Collectors.toSet());
     }
 
-    private Optional<Edge> findAllowedNegationEdge() {
+    private Optional<DGEdge> findAllowedNegationEdge() {
         return waitingNegationEdges.stream()
                 .filter(e -> targetIsAssigned(FALSE, TRUE, BOT).test(e.get(0)))
                 .findFirst();
     }
 
-    private Predicate<Target> targetIsAssigned(AssignmentValue... assignmentValues) {
+    private Predicate<DGTarget> targetIsAssigned(AssignmentValue... assignmentValues) {
         return t -> Arrays.asList(assignmentValues).contains(assignment.getOrDefault(t.getConfiguration(), BOT));
     }
 

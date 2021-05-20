@@ -5,7 +5,7 @@ import petrigaal.atl.language.nodes.ATLType;
 import petrigaal.atl.language.nodes.Binary;
 import petrigaal.atl.language.nodes.Temporal;
 import petrigaal.edg.DependencyGraphGenerator;
-import petrigaal.edg.Target;
+import petrigaal.edg.DGTarget;
 
 public class BinaryTemporal extends Binary<Temporal> implements Temporal {
     public BinaryTemporal() {
@@ -28,7 +28,7 @@ public class BinaryTemporal extends Binary<Temporal> implements Temporal {
     }
 
     @Override
-    public void visit(Target parent, DependencyGraphGenerator graph) {
+    public void visit(DGTarget parent, DependencyGraphGenerator graph) {
         graph.visit(parent, this);
     }
 

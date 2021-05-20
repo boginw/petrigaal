@@ -4,7 +4,7 @@ import petrigaal.atl.language.Visitor;
 import petrigaal.atl.language.nodes.Literal;
 import petrigaal.atl.language.nodes.Predicate;
 import petrigaal.edg.DependencyGraphGenerator;
-import petrigaal.edg.Target;
+import petrigaal.edg.DGTarget;
 
 public class BooleanLiteral extends Literal<Boolean> implements Predicate {
     public BooleanLiteral(String literal) {
@@ -26,7 +26,7 @@ public class BooleanLiteral extends Literal<Boolean> implements Predicate {
     }
 
     @Override
-    public void visit(Target parent, DependencyGraphGenerator graph) {
+    public void visit(DGTarget parent, DependencyGraphGenerator graph) {
         graph.visit(parent, this);
     }
 }
