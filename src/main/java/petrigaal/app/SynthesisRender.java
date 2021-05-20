@@ -7,19 +7,13 @@ import petrigaal.draw.AutomataStrategyToGraphViz;
 import petrigaal.draw.DGToGraphViz;
 import petrigaal.draw.EDGToGraphViz;
 
-import java.io.File;
 import java.io.IOException;
-import java.nio.file.Path;
 
 import static petrigaal.app.PetriGAALApplication.FORMAT;
 
 public class SynthesisRender {
-    private static int counter = 0;
 
     public Result render(Synthesizer.Result synthesisState, Synthesizer.Options options) throws IllegalAccessException {
-        clearResults();
-        int index = counter++;
-
         EDGToGraphViz edgToGraphViz = new EDGToGraphViz();
         edgToGraphViz.setDisplayOnlyConfigurationsWhichPropagateOne(options.displayOnlyOne());
         var dgToGraphViz = new DGToGraphViz<>(
@@ -32,67 +26,28 @@ public class SynthesisRender {
         String mps = new AutomataStrategyToGraphViz().draw(synthesisState.mps());
         String instance = new AutomataStrategyToGraphViz().draw(synthesisState.instance());
 
-        File dgFile = renderViz(dg, index, "dg");
-        File mdgFile = renderViz(mdg, index, "mdg");
-        File strategyFile = renderViz(mps, index, "strategy");
-        File instanceFile = renderViz(instance, index, "instance");
+        String dgSvg = renderViz(dg);
+        String mdgSvg = renderViz(mdg);
+        String strategySvg = renderViz(mps);
+        String instanceSvg = renderViz(instance);
 
-        return new Result(dgFile, mdgFile, strategyFile, instanceFile);
+        return new Result(dgSvg, mdgSvg, strategySvg, instanceSvg);
     }
 
-    private File renderViz(String graph, int index, String name) {
+    private String renderViz(String graph) {
         try {
-            File outFile = getFile(index, name);
-
             MutableGraph g = new Parser().read(graph);
-            Graphviz.fromGraph(g).totalMemory(480000000).render(FORMAT).toFile(outFile);
-            return outFile;
+            return Graphviz.fromGraph(g).totalMemory(480000000).render(FORMAT).toString();
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
     }
 
-    private void clearResults() throws IllegalAccessException {
-        File outFolder = new File("./out/");
-        if (outFolder.exists()) {
-            deleteDirectory(outFolder);
-            clearResults();
-        } else if (outFolder.getParentFile().canWrite()) {
-            boolean folderCreated = outFolder.mkdir() && outFolder.exists();
-            assert folderCreated;
-        } else {
-            throw new IllegalAccessException("Cannot create ./out folder");
-        }
-    }
-
-    private boolean deleteDirectory(File directoryToBeDeleted) {
-        File[] allContents = directoryToBeDeleted.listFiles();
-        if (allContents != null) {
-            for (File file : allContents) {
-                deleteDirectory(file);
-            }
-        }
-        return directoryToBeDeleted.delete();
-    }
-
-    private File getFile(int index, String name) {
-        return Path.of(getDir(index).getAbsolutePath(), name + "." + FORMAT.fileExtension).toFile();
-    }
-
-    private File getDir(int index) {
-        File dir = Path.of(".", "out", String.valueOf(index)).toFile();
-        if (!dir.exists()) {
-            boolean mkdir = dir.mkdir();
-            assert mkdir;
-        }
-        return dir;
-    }
-
     public static record Result(
-            File dgFile,
-            File mdgFile,
-            File strategyFile,
-            File instanceFile
+            String dgSvg,
+            String mdgSvg,
+            String strategySvg,
+            String instanceSvg
     ) {
     }
 }

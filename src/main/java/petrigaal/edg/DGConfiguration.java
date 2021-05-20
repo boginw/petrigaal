@@ -1,19 +1,19 @@
 package petrigaal.edg;
 
-import petrigaal.atl.language.ATLFormula;
+import petrigaal.ctl.language.CTLFormula;
 import petrigaal.petri.PetriGame;
 
 import java.util.*;
 
 public class DGConfiguration implements Configuration<DGConfiguration, DGEdge, DGTarget> {
-    private final ATLFormula formula;
+    private final CTLFormula formula;
     private final PetriGame game;
     private final boolean mode;
     private final Set<DGEdge> successors;
     private int negationDistance = Integer.MAX_VALUE;
 
     public DGConfiguration(
-            ATLFormula formula,
+            CTLFormula formula,
             PetriGame game,
             Set<DGEdge> successors,
             boolean mode
@@ -24,11 +24,11 @@ public class DGConfiguration implements Configuration<DGConfiguration, DGEdge, D
         this.mode = mode;
     }
 
-    public DGConfiguration(ATLFormula formula, PetriGame game, boolean mode) {
+    public DGConfiguration(CTLFormula formula, PetriGame game, boolean mode) {
         this(formula, game, new HashSet<>(), mode);
     }
 
-    public DGConfiguration(ATLFormula formula, PetriGame game) {
+    public DGConfiguration(CTLFormula formula, PetriGame game) {
         this(formula, game, new HashSet<>(), false);
     }
 
@@ -40,7 +40,7 @@ public class DGConfiguration implements Configuration<DGConfiguration, DGEdge, D
         this.negationDistance = negationDistance;
     }
 
-    public ATLFormula getFormula() {
+    public CTLFormula getFormula() {
         return formula;
     }
 

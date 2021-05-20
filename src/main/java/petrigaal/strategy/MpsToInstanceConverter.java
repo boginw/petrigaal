@@ -39,31 +39,43 @@ public class MpsToInstanceConverter {
         while (!queue.isEmpty()) {
             AutomataState state = queue.poll();
 
-            var entries = getPredecessors(strategy, state);
+            Set<PathSegment> segments = getPredecessors(strategy, state);
 
-            for (PathSegment entry : entries) {
-                if (strategy.getFinalStates().contains(entry.input.state())) {
+            for (PathSegment segment : segments) {
+                if (strategy.getFinalStates().contains(segment.input.state())) {
                     continue;
                 }
 
                 PathDistance pathDistance = distance.get(state);
 
-                if (!isControllable(entry.input.game(), entry.output)) {
+                if (!isControllable(segment.input.game(), segment.output)) {
                     pathDistance = pathDistance.incrementEnvironment();
                 } else {
                     pathDistance = pathDistance.incrementControllable();
 
-                    Set<AutomataOutput> otherSuccessors = strategy.getStateTransitions().get(entry.input);
-                    otherSuccessors.removeIf(s -> isControllable(entry.input.game(), s) && !s.equals(entry.output));
+                    strategy.getStateTransitions().entrySet().stream()
+                            .filter(e -> e.getKey().state().equals(segment.input().state()))
+                            .forEach(e -> e.getValue().removeIf(v -> isControllableAndNotSegment(segment, e, v)));
                 }
 
-
-                if (pathDistance.compareTo(distance.getOrDefault(entry.input().state(), PathDistance.MAX_VALUE)) < 0) {
-                    distance.put(entry.input().state(), pathDistance);
-                    queue.add(entry.input().state());
+                if (segmentDistanceHasLowerDistanceThan(segment, pathDistance)) {
+                    distance.put(segment.input().state(), pathDistance);
+                    queue.add(segment.input().state());
                 }
             }
         }
+    }
+
+    private boolean segmentDistanceHasLowerDistanceThan(PathSegment segment, PathDistance pathDistance) {
+        return pathDistance.compareTo(distance.getOrDefault(segment.input().state(), PathDistance.MAX_VALUE)) < 0;
+    }
+
+    private boolean isControllableAndNotSegment(
+            PathSegment segment,
+            Entry<AutomataInput, Set<AutomataOutput>> entry,
+            AutomataOutput output
+    ) {
+        return isControllable(segment.input.game(), output) && !new PathSegment(entry.getKey(), output).equals(segment);
     }
 
     private Set<PathSegment> getPredecessors(AutomataStrategy strategy, AutomataState state) {
