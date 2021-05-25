@@ -1,8 +1,8 @@
 package petrigaal.strategy;
 
-import petrigaal.edg.DGConfiguration;
-import petrigaal.edg.DGEdge;
-import petrigaal.edg.DGTarget;
+import petrigaal.edg.dg.DGConfiguration;
+import petrigaal.edg.dg.DGEdge;
+import petrigaal.edg.dg.DGTarget;
 import petrigaal.petri.PetriGame;
 import petrigaal.petri.Player;
 import petrigaal.petri.Transition;
@@ -80,7 +80,7 @@ public class TopDownStrategySynthesiser implements StrategySynthesiser<TopDownSt
                         .collect(groupingBy(c -> c.source().getGame(), toSet()))
                         .values()
                         .stream()
-                        .map(c -> c.stream().map(s -> s.target().getTransition()).collect(toSet()))
+                        .map(c -> c.stream().map(s -> s.target().getTransitions()).collect(toSet()))
                         .collect(toSet());
 
                 if (transitions.stream().anyMatch(t -> t.size() > 1))
@@ -88,7 +88,7 @@ public class TopDownStrategySynthesiser implements StrategySynthesiser<TopDownSt
 
                 Set<Set<Closure>> uncontrollableClosureByTransition = new HashSet<>(
                         uncontrollable.stream()
-                                .collect(groupingBy(c -> c.target().getTransition(), toSet()))
+                                .collect(groupingBy(c -> c.target().getTransitions(), toSet()))
                                 .values()
                 );
 
@@ -117,7 +117,7 @@ public class TopDownStrategySynthesiser implements StrategySynthesiser<TopDownSt
                         strategy.addTransition(
                                 pair.getState(),
                                 entry.getKey(),
-                                entry.getValue().iterator().next().target().getTransition(),
+                                entry.getValue().iterator().next().target().getTransitions(),
                                 newPair.getState()
                         );
                     }
@@ -178,7 +178,7 @@ public class TopDownStrategySynthesiser implements StrategySynthesiser<TopDownSt
                 } else {
                     for (DGTarget target : edge) {
                         Set<Set<Closure>> succ;
-                        if (target.getTransition() == null) {
+                        if (target.getTransitions() == null) {
                             succ = close(Set.of(target.getConfiguration()));
                         } else {
                             succ = Set.of(Set.of(Closure.of(configuration, target)));
@@ -241,7 +241,7 @@ public class TopDownStrategySynthesiser implements StrategySynthesiser<TopDownSt
     }
 
     private boolean isControllable(Closure closure) {
-        return isControllable(closure.target().getTransition());
+        return isControllable(closure.target().getTransitions());
     }
 
     private boolean isControllable(Transition transition) {

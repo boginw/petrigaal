@@ -4,7 +4,7 @@ import javafx.collections.ObservableList;
 import javafx.scene.control.ListCell;
 import javafx.scene.control.ListView;
 import javafx.util.Callback;
-import petrigaal.edg.DGConfiguration;
+import petrigaal.edg.dg.DGConfiguration;
 
 import java.util.Map;
 

@@ -5,7 +5,7 @@ import petrigaal.ctl.language.nodes.Binary;
 import petrigaal.ctl.language.nodes.Expression;
 import petrigaal.ctl.language.nodes.Predicate;
 import petrigaal.edg.DependencyGraphGenerator;
-import petrigaal.edg.DGTarget;
+import petrigaal.edg.dg.DGTarget;
 
 public class RelationalPredicate extends Binary<Expression> implements Predicate {
     @Override

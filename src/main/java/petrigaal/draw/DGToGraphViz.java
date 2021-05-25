@@ -148,12 +148,12 @@ public class DGToGraphViz<C extends Configuration<C, E, T>,
     }
 
     private String getLabel(T target) {
-        if (target.getGame() != null && target.getTransition() != null) {
-            return target.getGame() + " / " + target.getTransition();
+        if (target.getGame() != null && target.getTransitions() != null) {
+            return target.getGame() + " / " + target.getTransitions();
         } else if (target.getGame() != null) {
             return target.getGame().toString();
-        } else if (target.getTransition() != null) {
-            return target.getTransition().toString();
+        } else if (target.getTransitions() != null) {
+            return target.getTransitions().toString();
         } else {
             return "";
         }

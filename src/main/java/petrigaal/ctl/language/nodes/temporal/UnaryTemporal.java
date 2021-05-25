@@ -5,7 +5,7 @@ import petrigaal.ctl.language.nodes.ATLType;
 import petrigaal.ctl.language.nodes.Temporal;
 import petrigaal.ctl.language.nodes.Unary;
 import petrigaal.edg.DependencyGraphGenerator;
-import petrigaal.edg.DGTarget;
+import petrigaal.edg.dg.DGTarget;
 
 public class UnaryTemporal extends Unary<Temporal> implements Temporal {
     public UnaryTemporal() {

@@ -5,7 +5,7 @@ import petrigaal.ctl.language.nodes.ATLType;
 import petrigaal.ctl.language.nodes.Binary;
 import petrigaal.ctl.language.nodes.Temporal;
 import petrigaal.edg.DependencyGraphGenerator;
-import petrigaal.edg.DGTarget;
+import petrigaal.edg.dg.DGTarget;
 
 public class BinaryTemporal extends Binary<Temporal> implements Temporal {
     public BinaryTemporal() {

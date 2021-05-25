@@ -1,5 +1,6 @@
 package petrigaal.app;
 
+import guru.nidi.graphviz.engine.Engine;
 import guru.nidi.graphviz.engine.Graphviz;
 import guru.nidi.graphviz.model.MutableGraph;
 import guru.nidi.graphviz.parse.Parser;
@@ -37,7 +38,11 @@ public class SynthesisRender {
     private String renderViz(String graph) {
         try {
             MutableGraph g = new Parser().read(graph);
-            return Graphviz.fromGraph(g).totalMemory(480000000).render(FORMAT).toString();
+            return Graphviz.fromGraph(g)
+                    .engine(Engine.DOT)
+                    .totalMemory(480000000)
+                    .render(FORMAT)
+                    .toString();
         } catch (IOException e) {
             throw new RuntimeException(e);
         }

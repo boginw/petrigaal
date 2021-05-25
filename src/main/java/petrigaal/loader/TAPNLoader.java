@@ -51,7 +51,7 @@ public class TAPNLoader implements Loader {
             String tag = node.getNodeName();
             if (tag.equals("place")) {
                 parsePlace(node);
-            } else if (tag.equals("transition")) {
+            } else if (tag.equals("transitions")) {
                 parseTransition(node);
             }
             node = node.getNextSibling();

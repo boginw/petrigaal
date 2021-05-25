@@ -1,6 +1,6 @@
 package petrigaal.strategy;
 
-import petrigaal.edg.DGConfiguration;
+import petrigaal.edg.dg.DGConfiguration;
 import petrigaal.strategy.automata.AutomataStrategy;
 
 import java.util.Map;

@@ -3,6 +3,8 @@ package petrigaal.edg;
 import petrigaal.petri.PetriGame;
 import petrigaal.petri.Transition;
 
+import java.util.Set;
+
 public interface Target<
         C extends Configuration<C, E, T>,
         E extends Edge<C, E, T>,
@@ -12,5 +14,5 @@ public interface Target<
 
     PetriGame getGame();
 
-    Transition getTransition();
+    Set<Transition> getTransitions();
 }

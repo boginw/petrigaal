@@ -1,8 +1,8 @@
 package petrigaal.solver;
 
-import petrigaal.edg.DGConfiguration;
-import petrigaal.edg.DGEdge;
-import petrigaal.edg.DGTarget;
+import petrigaal.edg.dg.DGConfiguration;
+import petrigaal.edg.dg.DGEdge;
+import petrigaal.edg.dg.DGTarget;
 
 import java.util.*;
 import java.util.function.BiConsumer;

@@ -1,9 +1,11 @@
-package petrigaal.edg;
+package petrigaal.edg.dg;
 
+import petrigaal.edg.Target;
 import petrigaal.petri.PetriGame;
 import petrigaal.petri.Transition;
 
 import java.util.Objects;
+import java.util.Set;
 
 public class DGTarget implements Target<DGConfiguration, DGEdge, DGTarget> {
     private final DGConfiguration configuration;
@@ -33,19 +35,19 @@ public class DGTarget implements Target<DGConfiguration, DGEdge, DGTarget> {
     }
 
     @Override
-    public Transition getTransition() {
-        return transition;
+    public Set<Transition> getTransitions() {
+        return transition != null ? Set.of(transition) : Set.of();
     }
 
     public DGTarget withConfiguration(DGConfiguration configuration) {
-        return new DGTarget(configuration, getTransition(), getGame());
+        return new DGTarget(configuration, transition, game);
     }
 
     @Override
     public String toString() {
         return "Target{"
                 + "configuration=" + configuration
-                + ", transition=" + transition
+                + ", transitions=" + transition
                 + '}';
     }
 

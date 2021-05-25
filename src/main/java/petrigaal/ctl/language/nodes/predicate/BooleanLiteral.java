@@ -4,7 +4,7 @@ import petrigaal.ctl.language.Visitor;
 import petrigaal.ctl.language.nodes.Literal;
 import petrigaal.ctl.language.nodes.Predicate;
 import petrigaal.edg.DependencyGraphGenerator;
-import petrigaal.edg.DGTarget;
+import petrigaal.edg.dg.DGTarget;
 
 public class BooleanLiteral extends Literal<Boolean> implements Predicate {
     public BooleanLiteral(String literal) {

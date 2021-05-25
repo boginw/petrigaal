@@ -4,7 +4,7 @@ import petrigaal.ctl.language.Visitor;
 import petrigaal.ctl.language.nodes.QuantifierTemporal;
 import petrigaal.edg.DependencyGraphGenerator;
 import petrigaal.ctl.language.Path;
-import petrigaal.edg.DGTarget;
+import petrigaal.edg.dg.DGTarget;
 
 public class UnaryQuantifierTemporal extends UnaryTemporal implements QuantifierTemporal {
     private Path path;

@@ -1,6 +1,7 @@
-package petrigaal.edg;
+package petrigaal.edg.dg;
 
 import petrigaal.ctl.language.CTLFormula;
+import petrigaal.edg.Configuration;
 import petrigaal.petri.PetriGame;
 
 import java.util.*;

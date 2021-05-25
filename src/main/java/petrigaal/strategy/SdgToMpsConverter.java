@@ -1,15 +1,15 @@
 package petrigaal.strategy;
 
-import petrigaal.edg.DGConfiguration;
-import petrigaal.strategy.MetaDGGenerator.MetaConfiguration;
-import petrigaal.strategy.MetaDGGenerator.MetaEdge;
-import petrigaal.strategy.MetaDGGenerator.MetaTarget;
+import petrigaal.edg.dg.DGConfiguration;
+import petrigaal.edg.mdg.MetaConfiguration;
+import petrigaal.edg.mdg.MetaEdge;
+import petrigaal.edg.mdg.MetaTarget;
 import petrigaal.strategy.automata.AutomataStrategy;
 import petrigaal.strategy.automata.AutomataStrategy.AutomataState;
 
 import java.util.*;
 
-public class MdgToMpsConverter {
+public class SdgToMpsConverter {
     private final Queue<MetaConfiguration> queue = new LinkedList<>();
     private final Set<MetaConfiguration> visited = new HashSet<>();
 
@@ -46,7 +46,7 @@ public class MdgToMpsConverter {
                         strategy.addTransition(
                                 new AutomataState(metaConf.toString()),
                                 target.getGame(),
-                                target.getTransition(),
+                                target.getTransitions().iterator().next(),
                                 new AutomataState(target.configuration().toString())
                         );
 

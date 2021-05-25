@@ -1,7 +1,12 @@
 package petrigaal.strategy;
 
 import javafx.util.Pair;
-import petrigaal.edg.*;
+import petrigaal.edg.dg.DGConfiguration;
+import petrigaal.edg.dg.DGEdge;
+import petrigaal.edg.dg.DGTarget;
+import petrigaal.edg.mdg.MetaConfiguration;
+import petrigaal.edg.mdg.MetaEdge;
+import petrigaal.edg.mdg.MetaTarget;
 import petrigaal.petri.PetriGame;
 import petrigaal.petri.Player;
 import petrigaal.petri.Transition;
@@ -11,7 +16,7 @@ import java.util.*;
 import static java.util.stream.Collectors.groupingBy;
 import static java.util.stream.Collectors.toSet;
 
-public class MetaDGGenerator {
+public class SdgGenerator {
     private final Map<MetaConfiguration, MetaConfiguration> configurations = new HashMap<>();
     private final Queue<MetaConfiguration> queue = new LinkedList<>();
     private DGConfiguration root;
@@ -62,7 +67,7 @@ public class MetaDGGenerator {
                     .collect(groupingBy(c -> c.source().getGame(), toSet()))
                     .values()
                     .stream()
-                    .map(c -> c.stream().map(s -> s.target().getTransition()).collect(toSet()))
+                    .map(c -> c.stream().map(s -> s.target().getTransitions()).collect(toSet()))
                     .collect(toSet());
 
             if (transitions.stream().anyMatch(t -> t.size() > 1))
@@ -70,7 +75,7 @@ public class MetaDGGenerator {
 
             var uncontrollableClosureByTransition = uncontrollable.stream()
                     .collect(groupingBy(
-                            c -> new Pair<>(c.target().getTransition(), c.source().getGame()), toSet()
+                            c -> new Pair<>(c.target().getTransitions(), c.source().getGame()), toSet()
                     ));
 
             for (var uncontrollableClosures : uncontrollableClosureByTransition.entrySet()) {
@@ -95,7 +100,7 @@ public class MetaDGGenerator {
                     MetaEdge edge = new MetaEdge(target.configuration);
                     edge.add(new MetaTarget(
                             conf,
-                            entry.getValue().iterator().next().target().getTransition(),
+                            entry.getValue().iterator().next().target().getTransitions(),
                             entry.getKey()
                     ));
                     target.configuration.successors.add(edge);
@@ -124,7 +129,7 @@ public class MetaDGGenerator {
                 } else {
                     for (DGTarget target : edge) {
                         Set<Set<Closure>> succ;
-                        if (target.getTransition() == null) {
+                        if (target.getTransitions() == null) {
                             succ = close(Set.of(target.getConfiguration()));
                         } else {
                             succ = Set.of(Set.of(Closure.of(configuration, target)));
@@ -161,7 +166,7 @@ public class MetaDGGenerator {
     }
 
     private boolean isControllable(Closure closure) {
-        return isControllable(closure.target().getTransition());
+        return isControllable(closure.target().getTransitions());
     }
 
     private boolean isControllable(Transition transition) {
@@ -169,11 +174,9 @@ public class MetaDGGenerator {
     }
 
     private Set<Set<Closure>> combine(Set<Set<Closure>> s1, Set<Set<Closure>> s2) {
-        if (s1.isEmpty()) {
-            return s2;
-        } else if (s2.isEmpty()) {
-            return s1;
-        }
+        if (s1.isEmpty()) return s2;
+        if (s2.isEmpty()) return s1;
+
         Set<Set<Closure>> combined = new HashSet<>();
         for (Set<Closure> t : s2) {
             for (Set<Closure> k : s1) {
@@ -184,76 +187,6 @@ public class MetaDGGenerator {
             }
         }
         return combined;
-    }
-
-    public static class MetaConfiguration implements Configuration<MetaConfiguration, MetaEdge, MetaTarget> {
-        private final Set<MetaEdge> successors = new HashSet<>();
-        private final Set<DGConfiguration> configurations;
-
-        public MetaConfiguration(Set<DGConfiguration> configurations) {
-            this.configurations = configurations;
-        }
-
-        public Set<DGConfiguration> getConfigurations() {
-            return configurations;
-        }
-
-        @Override
-        public Set<MetaEdge> getSuccessors() {
-            return successors;
-        }
-
-        @Override
-        public String toString() {
-            return "{" + configurations + '}';
-        }
-
-        @Override
-        public boolean equals(Object o) {
-            if (this == o) return true;
-            if (o == null || getClass() != o.getClass()) return false;
-            MetaConfiguration that = (MetaConfiguration) o;
-            return Objects.equals(configurations, that.configurations);
-        }
-
-        @Override
-        public int hashCode() {
-            return Objects.hash(configurations);
-        }
-    }
-
-    public static class MetaEdge extends ArrayList<MetaTarget> implements Edge<MetaConfiguration, MetaEdge, MetaTarget> {
-        private final MetaConfiguration source;
-
-        public MetaEdge(MetaConfiguration source) {
-            this.source = source;
-        }
-
-        @Override
-        public MetaConfiguration getSource() {
-            return source;
-        }
-    }
-
-    public static record MetaTarget(
-            MetaConfiguration configuration,
-            Transition transition,
-            PetriGame game
-    ) implements Target<MetaConfiguration, MetaEdge, MetaTarget> {
-        @Override
-        public MetaConfiguration getConfiguration() {
-            return configuration;
-        }
-
-        @Override
-        public Transition getTransition() {
-            return transition;
-        }
-
-        @Override
-        public PetriGame getGame() {
-            return game;
-        }
     }
 
     private record Closure(DGConfiguration source, DGTarget target) {

@@ -1,4 +1,6 @@
-package petrigaal.edg;
+package petrigaal.edg.dg;
+
+import petrigaal.edg.Edge;
 
 import java.util.ArrayList;
 import java.util.Arrays;

@@ -3,15 +3,15 @@ package petrigaal.app;
 import petrigaal.ctl.Optimizer;
 import petrigaal.ctl.language.CTLFormula;
 import petrigaal.ctl.language.CTLNode;
-import petrigaal.edg.DGConfiguration;
+import petrigaal.edg.dg.DGConfiguration;
 import petrigaal.edg.DependencyGraphGenerator;
 import petrigaal.loader.PNMLLoader;
 import petrigaal.loader.TAPNLoader;
 import petrigaal.petri.PetriGame;
 import petrigaal.solver.NonModifyingDGSolver;
-import petrigaal.strategy.MdgToMpsConverter;
-import petrigaal.strategy.MetaDGGenerator;
-import petrigaal.strategy.MetaDGGenerator.MetaConfiguration;
+import petrigaal.strategy.SdgToMpsConverter;
+import petrigaal.strategy.SdgGenerator;
+import petrigaal.edg.mdg.MetaConfiguration;
 import petrigaal.strategy.MpsToInstanceConverter;
 import petrigaal.strategy.automata.AutomataStrategy;
 
@@ -41,11 +41,11 @@ public class Synthesizer {
         long milliseconds = (endTime - startTime) / 1000000;
         System.out.printf("Total ms: %d", milliseconds);
 
-        MetaDGGenerator metaDgGenerator = new MetaDGGenerator();
-        MetaConfiguration c2 = metaDgGenerator.synthesize(c, propagationByConfiguration);
+        SdgGenerator SDGGenerator = new SdgGenerator();
+        MetaConfiguration c2 = SDGGenerator.synthesize(c, propagationByConfiguration);
         Map<MetaConfiguration, Boolean> metaPropagationByConfiguration = new NonModifyingDGSolver<>(c2).solve();
 
-        MdgToMpsConverter strategyConverter = new MdgToMpsConverter();
+        SdgToMpsConverter strategyConverter = new SdgToMpsConverter();
         AutomataStrategy strategy = strategyConverter.convert(c2, metaPropagationByConfiguration);
         AutomataStrategy instance = new MpsToInstanceConverter().convert(strategy);
 

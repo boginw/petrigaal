@@ -1,9 +1,9 @@
 package petrigaal.draw;
 
 import org.antlr.v4.runtime.misc.Pair;
-import petrigaal.edg.DGConfiguration;
-import petrigaal.edg.DGEdge;
-import petrigaal.edg.DGTarget;
+import petrigaal.edg.dg.DGConfiguration;
+import petrigaal.edg.dg.DGEdge;
+import petrigaal.edg.dg.DGTarget;
 
 import java.util.*;
 
@@ -43,8 +43,8 @@ public class EDGToGraphViz extends DGToGraphViz<DGConfiguration, DGEdge, DGTarge
 
         for (DGTarget target : edge) {
             String label = "";
-            if (target.getTransition() != null) {
-                label = target.getTransition().toString();
+            if (target.getTransitions() != null) {
+                label = target.getTransitions().toString();
             }
             children.add(nameOf(target.getConfiguration()) + " [xlabel=\"" + label + "\"" + suffix + "]");
             queue.add(new Pair<>(target.getConfiguration(), rank + 1));
