@@ -3,7 +3,8 @@ package petrigaal.app;
 import guru.nidi.graphviz.engine.Graphviz;
 import guru.nidi.graphviz.model.MutableGraph;
 import guru.nidi.graphviz.parse.Parser;
-import petrigaal.draw.AutomataStrategyToGraphViz;
+import petrigaal.draw.AutomataStrategyGraphVizVisualizer;
+import petrigaal.draw.DGCytoscapeVisualizer;
 import petrigaal.draw.DGToGraphViz;
 import petrigaal.draw.EDGToGraphViz;
 
@@ -20,18 +21,28 @@ public class SynthesisRender {
                 synthesisState.mdg(),
                 synthesisState.propagationByMetaConfiguration()
         );
+        var dgToCytoscape = new DGCytoscapeVisualizer<>(
+                synthesisState.mdg(),
+                synthesisState.propagationByMetaConfiguration()
+        );
+        var dgToCytoscape2 = new DGCytoscapeVisualizer<>(
+                synthesisState.dg(),
+                synthesisState.propagationByDGConfiguration()
+        );
         dgToGraphViz.setDisplayOnlyConfigurationsWhichPropagateOne(options.displayOnlyOne());
-        String dg = edgToGraphViz.draw(synthesisState.dg(), synthesisState.propagationByDGConfiguration());
-        String mdg = dgToGraphViz.draw(synthesisState.mdg());
-        String mps = new AutomataStrategyToGraphViz().draw(synthesisState.mps());
-        String instance = new AutomataStrategyToGraphViz().draw(synthesisState.instance());
+        //String dg = edgToGraphViz.draw(synthesisState.dg(), synthesisState.propagationByDGConfiguration());
+        //String mdg = dgToGraphViz.draw(synthesisState.mdg());
+        String dg = dgToCytoscape2.draw();
+        String mdg = dgToCytoscape.draw();
+        String mps = new AutomataStrategyGraphVizVisualizer().draw(synthesisState.mps());
+        String instance = new AutomataStrategyGraphVizVisualizer().draw(synthesisState.instance());
 
-        String dgSvg = renderViz(dg);
-        String mdgSvg = renderViz(mdg);
+        //String dgSvg = renderViz(dg);
+        //String mdgSvg = renderViz(mdg);
         String strategySvg = renderViz(mps);
         String instanceSvg = renderViz(instance);
 
-        return new Result(dgSvg, mdgSvg, strategySvg, instanceSvg);
+        return new Result(dg, mdg, strategySvg, instanceSvg);
     }
 
     private String renderViz(String graph) {

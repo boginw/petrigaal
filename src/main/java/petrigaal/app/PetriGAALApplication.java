@@ -116,13 +116,13 @@ public class PetriGAALApplication extends Application {
         if (result.dgSvg() == null) {
             view.dg().loadImage(DEFAULT_IMAGE);
         } else {
-            view.dg().loadImage(result.dgSvg());
+            view.dg().loadGraph(result.dgSvg());
         }
 
         if (result.mdgSvg() == null) {
             view.meta().loadImage(DEFAULT_IMAGE);
         } else {
-            view.meta().loadImage(result.mdgSvg());
+            view.meta().loadGraph(result.mdgSvg());
         }
 
         if (result.strategySvg() == null) {
