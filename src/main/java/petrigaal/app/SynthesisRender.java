@@ -5,7 +5,7 @@ import guru.nidi.graphviz.model.MutableGraph;
 import guru.nidi.graphviz.parse.Parser;
 import petrigaal.draw.AutomataStrategyGraphVizVisualizer;
 import petrigaal.draw.DGCytoscapeVisualizer;
-import petrigaal.draw.DGToGraphViz;
+import petrigaal.draw.DGGraphVizVisualizer;
 
 import java.io.IOException;
 
@@ -18,11 +18,11 @@ public class SynthesisRender {
         String mdg;
 
         if (options.legacyRender()) {
-            var dgVis = new DGToGraphViz<>(synthesisState.dg(), synthesisState.propagationByDGConfiguration());
+            var dgVis = new DGGraphVizVisualizer<>(synthesisState.dg(), synthesisState.propagationByDGConfiguration());
             dgVis.setDisplayOnlyConfigurationsWhichPropagateOne(options.displayOnlyOne());
             dg = renderViz(dgVis.draw());
 
-            var mdgVis = new DGToGraphViz<>(synthesisState.mdg(), synthesisState.propagationByMetaConfiguration());
+            var mdgVis = new DGGraphVizVisualizer<>(synthesisState.mdg(), synthesisState.propagationByMetaConfiguration());
             mdg = renderViz(mdgVis.draw());
         } else {
             dg = DGCytoscapeVisualizer.builder()

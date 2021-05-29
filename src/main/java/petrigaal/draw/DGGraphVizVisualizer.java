@@ -8,12 +8,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.StringJoiner;
 
-public class DGToGraphViz<C extends Configuration<C, E, T>,
+public class DGGraphVizVisualizer<C extends Configuration<C, E, T>,
         E extends Edge<C, E, T>,
         T extends Target<C, E, T>>
         extends DGVisualizer<C, E, T> {
 
-    public DGToGraphViz(C configuration, Map<C, Boolean> propagationByConfiguration) {
+    public DGGraphVizVisualizer(C configuration, Map<C, Boolean> propagationByConfiguration) {
         super(configuration, propagationByConfiguration);
     }
 
