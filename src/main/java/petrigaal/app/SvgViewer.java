@@ -36,4 +36,12 @@ public class SvgViewer {
                 .replaceAll("<!--.*?-->", "");
         webEngine.executeScript("loadImage(`%s`)".formatted(image));
     }
+
+    public void loadGraph(String graph) {
+        graph = graph.replaceAll("\n", "")
+                .replaceAll("\r", "")
+                .replaceAll("\\s\\s", "")
+                .replaceAll("<!--.*?-->", "");
+        webEngine.executeScript("loadGraph(`%s`)".formatted(graph));
+    }
 }

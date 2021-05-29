@@ -29,7 +29,7 @@ javafx {
 }
 
 dependencies {
-    implementation "guru.nidi:graphviz-java:0.12.1"
+    implementation "guru.nidi:graphviz-java:0.18.1"
     implementation group: 'fr.lip6.pnml', name: 'framework.releng', version: '2.2.12', ext: 'pom'
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.7.1'
     testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.7.1'

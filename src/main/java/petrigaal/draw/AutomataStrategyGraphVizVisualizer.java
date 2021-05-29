@@ -9,7 +9,8 @@ import petrigaal.strategy.automata.AutomataStrategy.AutomataState;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-public class AutomataStrategyToGraphViz {
+public class AutomataStrategyGraphVizVisualizer implements Visualizer<AutomataStrategy> {
+    @Override
     public String draw(AutomataStrategy strategy) {
         Set<AutomataState> states = strategy.getStateTransitions()
                 .keySet()

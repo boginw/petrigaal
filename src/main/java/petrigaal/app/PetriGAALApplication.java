@@ -67,20 +67,25 @@ public class PetriGAALApplication extends Application {
         return loadView.getView();
     }
 
-    private void synthesize(File modelFile, String formula, boolean displayOnlyOne) {
+    private void synthesize(File modelFile, String formula, boolean displayOnlyOne, boolean legacyRender) {
         loadView.startLoading();
 
         Task<Void> task = new Task<>() {
             @Override
             protected Void call() {
                 try {
-                    Synthesizer.Options options = new Synthesizer.Options(modelFile, formula, displayOnlyOne);
+                    Synthesizer.Options options = new Synthesizer.Options(
+                            modelFile,
+                            formula,
+                            displayOnlyOne,
+                            legacyRender
+                    );
                     Synthesizer synthesizer = new Synthesizer(options);
                     Synthesizer.Result synthesis = synthesizer.synthesize();
                     SynthesisRender.Result render = new SynthesisRender().render(synthesis, options);
 
                     Platform.runLater(() -> {
-                        render(render);
+                        render(render, legacyRender);
                         loadView.stopLoading();
                     });
                 } catch (IllegalAccessException | FileNotFoundException e) {
@@ -112,17 +117,21 @@ public class PetriGAALApplication extends Application {
         return new SynthesisStateListView(stateList);
     }
 
-    private void render(SynthesisRender.Result result) {
+    private void render(SynthesisRender.Result result, boolean legacyRender) {
         if (result.dgSvg() == null) {
             view.dg().loadImage(DEFAULT_IMAGE);
-        } else {
+        } else if (legacyRender) {
             view.dg().loadImage(result.dgSvg());
+        } else {
+            view.dg().loadGraph(result.dgSvg());
         }
 
         if (result.mdgSvg() == null) {
             view.meta().loadImage(DEFAULT_IMAGE);
-        } else {
+        } else if (legacyRender) {
             view.meta().loadImage(result.mdgSvg());
+        } else {
+            view.meta().loadGraph(result.mdgSvg());
         }
 
         if (result.strategySvg() == null) {
