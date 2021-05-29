@@ -65,7 +65,8 @@ public class Synthesizer {
     public static record Options(
             File modelFile,
             String formula,
-            boolean displayOnlyOne
+            boolean displayOnlyOne,
+            boolean legacyRender
     ) {
     }
 

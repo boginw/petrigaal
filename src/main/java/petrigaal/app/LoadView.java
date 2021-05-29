@@ -24,7 +24,8 @@ public class LoadView {
     private final Label formulaError = new Label();
     private final TextField formulaField = new TextField();
     private final TextField modelPathTextField = new TextField();
-    private final CheckBox checkBox = new CheckBox("Display only configurations which propagate 1");
+    private final CheckBox onlyOnes = new CheckBox("Display only configurations which propagate 1");
+    private final CheckBox legacy = new CheckBox("Use the legacy GraphViz renderer");
     private final VBox vb = new VBox();
     private final StackPane loadFileStack = new StackPane();
 
@@ -42,7 +43,12 @@ public class LoadView {
         Button synthesizeButton = new Button("Synthesize");
         synthesizeButton.setOnMouseClicked(e -> {
             if (checkModelPathTextField(modelPathTextField.getText()) && checkFormulaField(formulaField.getText())) {
-                callback.apply(new File(modelPathTextField.getText()), formulaField.getText(), checkBox.isSelected());
+                callback.apply(
+                        new File(modelPathTextField.getText()),
+                        formulaField.getText(),
+                        onlyOnes.isSelected(),
+                        legacy.isSelected()
+                );
             }
         });
 
@@ -71,7 +77,8 @@ public class LoadView {
                 new Label("Formula"),
                 formulaField,
                 formulaError,
-                checkBox,
+                onlyOnes,
+                legacy,
                 synthesizeButton
         );
 
@@ -137,6 +144,6 @@ public class LoadView {
 
     @FunctionalInterface
     public interface Callback {
-        void apply(File model, String formula, boolean onlyShowPropagationOfOne);
+        void apply(File model, String formula, boolean onlyShowPropagationOfOne, boolean legacyRender);
     }
 }

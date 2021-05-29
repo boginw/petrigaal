@@ -1,92 +1,51 @@
 package petrigaal.draw;
 
-import org.antlr.v4.runtime.misc.Pair;
 import petrigaal.edg.Configuration;
 import petrigaal.edg.Edge;
 import petrigaal.edg.Target;
 
-import java.util.*;
-import java.util.function.Predicate;
+import java.util.List;
+import java.util.Map;
 
 public class DGCytoscapeVisualizer<C extends Configuration<C, E, T>,
         E extends Edge<C, E, T>,
-        T extends Target<C, E, T>> {
-    private final Map<C, Boolean> propagationByConfiguration;
-    private final Map<C, Set<Integer>> configToJointIdEdges = new HashMap<>();
-    private final Map<Integer, Set<T>> jointIdToTargetEdges = new HashMap<>();
-    private final Map<Integer, Integer> jointIdToEmptyIdEdges = new HashMap<>();
-    private final Map<Integer, List<String>> ranks = new HashMap<>();
-    private final Set<C> nodes = new LinkedHashSet<>();
-    private final Queue<Pair<C, Integer>> queue = new LinkedList<>();
-    private int empties = 0;
-    private int joints = 0;
-    private C configuration;
-    private boolean displayOnlyConfigurationsWhichPropagateOne = false;
+        T extends Target<C, E, T>> extends DGVisualizer<C, E, T> {
 
-    public DGCytoscapeVisualizer(C configuration, Map<C, Boolean> propagationByConfiguration) {
-        this.configuration = configuration;
-        this.propagationByConfiguration = propagationByConfiguration;
+    private DGCytoscapeVisualizer(C configuration, Map<C, Boolean> propagationByConfiguration) {
+        super(configuration, propagationByConfiguration);
     }
 
-    public String draw() {
-        queue.clear();
-        queue.add(new Pair<>(configuration, 0));
-
-        while (!queue.isEmpty()) {
-            visit(queue.poll());
-        }
-
-        List<String> vertices = new ArrayList<>();
-        List<String> edges = new ArrayList<>();
-
-        List<String> configs = nodes.stream()
-                .filter(Predicate.not(this::shouldSkipConfiguration))
-                .map(this::declareConfiguration)
-                .toList();
-
-        vertices.addAll(configs);
-
-        for (int i = 1; i <= joints; i++) {
-            vertices.add(declareJoint(i));
-        }
-
-        for (int i = 0; i < empties; i++) {
-            vertices.add(declareEmpty(i));
-        }
-
-        List<String> configEdges = configToJointIdEdges.entrySet()
-                .stream()
-                .flatMap(e -> e.getValue().stream().map(j -> declareConfigurationToJointEdge(e.getKey(), j)))
-                .toList();
-
-        List<String> jointEdges = jointIdToTargetEdges.entrySet()
-                .stream()
-                .flatMap(e -> e.getValue().stream().map(j -> declareJointToTargetEdge(e.getKey(), j)))
-                .toList();
-
-        List<String> emptyEdges = jointIdToEmptyIdEdges.entrySet()
-                .stream()
-                .map(e -> declareJointToEmptyEdge(e.getKey(), e.getValue()))
-                .toList();
-
-        edges.addAll(configEdges);
-        edges.addAll(jointEdges);
-        edges.addAll(emptyEdges);
-
-        List<String> rankList = ranks.values()
-                .stream()
-                .map(values -> values.stream().map(value -> '"' + value + '"').toList())
-                .map(values -> "[" + String.join(", ", values) + "]")
-                .toList();
-
-        return "{\"nodes\": [%s], \"edges\": [%s], \"ranks\": [%s]}".formatted(
-                String.join(",", vertices),
-                String.join(",", edges),
-                String.join(",", rankList)
-        );
+    public static RootBuilder builder() {
+        return new RootBuilder();
     }
 
-    private String declareConfiguration(C conf) {
+    @Override
+    protected String declareDependencyGraph(String vertices, String edges, String ranks) {
+        return "{\"nodes\": [%s], \"edges\": [%s], \"ranks\": [%s]}".formatted(vertices, edges, ranks);
+    }
+
+    @Override
+    protected String getVertexDelimiter() {
+        return ",";
+    }
+
+    @Override
+    protected String getEdgeDelimiter() {
+        return ",";
+    }
+
+    @Override
+    protected String getRankDelimiter() {
+        return ",";
+    }
+
+    @Override
+    protected String declareRank(List<String> nodeIds) {
+        return '[' + String.join(",", nodeIds.stream().map(id -> '"' + id + '"').toList()) + ']';
+    }
+
+    @Override
+    protected String declareConfiguration(C conf) {
         return "{\"data\": {\"id\": \"%d\", \"name\": \"%s\", \"propagates\": %s}}".formatted(
                 conf.hashCode(),
                 conf.toString(),
@@ -94,19 +53,23 @@ public class DGCytoscapeVisualizer<C extends Configuration<C, E, T>,
         );
     }
 
-    private String declareJoint(int jointId) {
+    @Override
+    protected String declareJoint(int jointId) {
         return "{\"data\": {\"id\": \"joint%d\", \"joint\": true}}".formatted(jointId);
     }
 
-    private String declareEmpty(int emptyId) {
+    @Override
+    protected String declareEmpty(int emptyId) {
         return "{\"data\": {\"id\": \"empty%d\", \"empty\": true}}".formatted(emptyId);
     }
 
-    private String declareConfigurationToJointEdge(C conf, int jointId) {
+    @Override
+    protected String declareConfigurationToJointEdge(C conf, int jointId) {
         return "{\"data\": { \"source\": \"%d\", \"target\": \"joint%d\"}}".formatted(conf.hashCode(), jointId);
     }
 
-    private String declareJointToTargetEdge(int jointId, T target) {
+    @Override
+    protected String declareJointToTargetEdge(int jointId, T target) {
         return "{\"data\": {\"source\": \"joint%d\", \"target\": \"%d\", \"label\": \"%s\"}}".formatted(
                 jointId,
                 target.getConfiguration().hashCode(),
@@ -114,81 +77,46 @@ public class DGCytoscapeVisualizer<C extends Configuration<C, E, T>,
         );
     }
 
-    private String declareJointToEmptyEdge(int jointId, int emptyId) {
+    @Override
+    protected String declareJointToEmptyEdge(int jointId, int emptyId) {
         return "{\"data\": {\"source\": \"joint%d\", \"target\": \"empty%d\"}}".formatted(
                 jointId,
                 emptyId
         );
     }
 
-    private void visit(Pair<C, Integer> pair) {
-        visit(pair.a, pair.b);
-    }
-
-    private void visit(C c, int rank) {
-        if (shouldSkipConfiguration(c)) {
-            return;
-        }
-
-        nodes.add(c);
-        ranks.computeIfAbsent(rank, n -> new ArrayList<>());
-        ranks.get(rank).add(String.valueOf(c.hashCode()));
-
-        for (E edge : c.getSuccessors()) {
-            visitJoint(c, edge, rank + 1);
+    public static class RootBuilder {
+        public <C extends Configuration<C, E, T>, E extends Edge<C, E, T>, T extends Target<C, E, T>>
+        Builder<C, E, T> forConfiguration(C configuration) {
+            return new Builder<>(configuration);
         }
     }
 
-    protected void visitJoint(C parent, E edge, int rank) {
-        if (shouldSkipJoint(edge)) {
-            return;
+    public static class Builder<C extends Configuration<C, E, T>, E extends Edge<C, E, T>, T extends Target<C, E, T>> {
+        private final C configuration;
+        private Map<C, Boolean> propagationByConfiguration = Map.of();
+        private boolean displayOnlyConfigurationsWhichPropagateOne = false;
+
+        public Builder(C configuration) {
+            this.configuration = configuration;
         }
 
-        int joint = ++joints;
-        ranks.computeIfAbsent(rank, n -> new ArrayList<>());
-        ranks.get(rank).add("joint" + joint);
-
-        configToJointIdEdges.computeIfAbsent(parent, n -> new LinkedHashSet<>());
-        configToJointIdEdges.get(parent).add(joint);
-
-        jointIdToTargetEdges.computeIfAbsent(joint, n -> new LinkedHashSet<>());
-        Set<T> children = jointIdToTargetEdges.get(joint);
-
-        if (edge.isEmpty()) {
-            int empty = empties++;
-            jointIdToEmptyIdEdges.put(joint, empty);
-            ranks.computeIfAbsent(rank + 1, n -> new ArrayList<>());
-            ranks.get(rank + 1).add("empty" + empty);
-            return;
+        public Builder<C, E, T> withPropagationMapping(Map<C, Boolean> propagationByConfiguration) {
+            this.propagationByConfiguration = propagationByConfiguration;
+            return this;
         }
 
-        for (T target : edge) {
-            children.add(target);
-
-            if (!nodes.contains(target.getConfiguration())) {
-                queue.add(new Pair<>(target.getConfiguration(), rank + 1));
-            }
+        public Builder<C, E, T> withOnlyDisplayingPropagationOfOneBeing(
+                boolean displayOnlyConfigurationsWhichPropagateOne
+        ) {
+            this.displayOnlyConfigurationsWhichPropagateOne = displayOnlyConfigurationsWhichPropagateOne;
+            return this;
         }
-    }
 
-    private String getLabel(T target) {
-        if (target.getGame() != null && target.getTransition() != null) {
-            return target.getGame() + " / " + target.getTransition();
-        } else if (target.getGame() != null) {
-            return target.getGame().toString();
-        } else if (target.getTransition() != null) {
-            return target.getTransition().toString();
-        } else {
-            return "";
+        public String build() {
+            var visualizer = new DGCytoscapeVisualizer<>(configuration, propagationByConfiguration);
+            visualizer.displayOnlyConfigurationsWhichPropagateOne = displayOnlyConfigurationsWhichPropagateOne;
+            return visualizer.draw();
         }
-    }
-
-    protected boolean shouldSkipJoint(E edge) {
-        return edge.stream().anyMatch(t -> shouldSkipConfiguration(t.getConfiguration()));
-    }
-
-    private boolean shouldSkipConfiguration(C c) {
-        return displayOnlyConfigurationsWhichPropagateOne
-                && !propagationByConfiguration.getOrDefault(c, false);
     }
 }

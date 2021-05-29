@@ -6,7 +6,6 @@ import guru.nidi.graphviz.parse.Parser;
 import petrigaal.draw.AutomataStrategyGraphVizVisualizer;
 import petrigaal.draw.DGCytoscapeVisualizer;
 import petrigaal.draw.DGToGraphViz;
-import petrigaal.draw.EDGToGraphViz;
 
 import java.io.IOException;
 
@@ -15,30 +14,32 @@ import static petrigaal.app.PetriGAALApplication.FORMAT;
 public class SynthesisRender {
 
     public Result render(Synthesizer.Result synthesisState, Synthesizer.Options options) throws IllegalAccessException {
-        EDGToGraphViz edgToGraphViz = new EDGToGraphViz();
-        edgToGraphViz.setDisplayOnlyConfigurationsWhichPropagateOne(options.displayOnlyOne());
-        var dgToGraphViz = new DGToGraphViz<>(
-                synthesisState.mdg(),
-                synthesisState.propagationByMetaConfiguration()
-        );
-        var dgToCytoscape = new DGCytoscapeVisualizer<>(
-                synthesisState.mdg(),
-                synthesisState.propagationByMetaConfiguration()
-        );
-        var dgToCytoscape2 = new DGCytoscapeVisualizer<>(
-                synthesisState.dg(),
-                synthesisState.propagationByDGConfiguration()
-        );
-        dgToGraphViz.setDisplayOnlyConfigurationsWhichPropagateOne(options.displayOnlyOne());
-        //String dg = edgToGraphViz.draw(synthesisState.dg(), synthesisState.propagationByDGConfiguration());
-        //String mdg = dgToGraphViz.draw(synthesisState.mdg());
-        String dg = dgToCytoscape2.draw();
-        String mdg = dgToCytoscape.draw();
+        String dg;
+        String mdg;
+
+        if (options.legacyRender()) {
+            var dgVis = new DGToGraphViz<>(synthesisState.dg(), synthesisState.propagationByDGConfiguration());
+            dgVis.setDisplayOnlyConfigurationsWhichPropagateOne(options.displayOnlyOne());
+            dg = renderViz(dgVis.draw());
+
+            var mdgVis = new DGToGraphViz<>(synthesisState.mdg(), synthesisState.propagationByMetaConfiguration());
+            mdg = renderViz(mdgVis.draw());
+        } else {
+            dg = DGCytoscapeVisualizer.builder()
+                    .forConfiguration(synthesisState.dg())
+                    .withPropagationMapping(synthesisState.propagationByDGConfiguration())
+                    .withOnlyDisplayingPropagationOfOneBeing(options.displayOnlyOne())
+                    .build();
+            mdg = DGCytoscapeVisualizer.builder()
+                    .forConfiguration(synthesisState.mdg())
+                    .withPropagationMapping(synthesisState.propagationByMetaConfiguration())
+                    .withOnlyDisplayingPropagationOfOneBeing(options.displayOnlyOne())
+                    .build();
+        }
+
         String mps = new AutomataStrategyGraphVizVisualizer().draw(synthesisState.mps());
         String instance = new AutomataStrategyGraphVizVisualizer().draw(synthesisState.instance());
 
-        //String dgSvg = renderViz(dg);
-        //String mdgSvg = renderViz(mdg);
         String strategySvg = renderViz(mps);
         String instanceSvg = renderViz(instance);
 
