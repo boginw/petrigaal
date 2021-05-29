@@ -17,7 +17,7 @@
 <script src="cytoscape.dot.js"></script>
 <script>
     let panZoomTiger = null;
-    cytoscape('layout', 'dot', CytoscapeDotLayout);
+    cytoscape("layout", "dot", CytoscapeDotLayout);
 
     function loadImage(image) {
         if (panZoomTiger !== null) {
@@ -81,7 +81,8 @@
                     "line-color": "black",
                     "target-arrow-color": "black",
                     "target-arrow-shape": (edge) => edge.data("target").startsWith("joint") ? "none" : "triangle",
-                    "curve-style": "straight"
+                    "curve-style": "bezier",
+                    "control-point-distance": 50
                 }),
             layout: {
                 name: "dot",
