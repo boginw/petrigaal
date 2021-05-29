@@ -19,11 +19,19 @@
     let panZoomTiger = null;
     cytoscape("layout", "dot", CytoscapeDotLayout);
 
-    function loadImage(image) {
+    function destroy() {
+        if (window.cy != null) {
+            window.cy.destroy();
+            window.cy = null;
+        }
         if (panZoomTiger !== null) {
             panZoomTiger.destroy();
             panZoomTiger = null;
         }
+    }
+
+    function loadImage(image) {
+        destroy();
 
         if (image.endsWith(".png")) {
             document.querySelector("#container").innerHTML = `<img class="zoom" src="${image}"/>`
@@ -40,15 +48,12 @@
     }
 
     function loadGraph(graph) {
+        destroy();
         let container = document.getElementById("container");
         container.innerHTML = "";
 
-        if (window.cy != null) {
-            window.cy.destroy();
-            window.cy = null;
-        }
-
         const data = JSON.parse(graph);
+        const isStrategy = data.strategy === true;
 
         window.cy = cytoscape({
             container: container,
@@ -61,7 +66,7 @@
                     "border-color": (node) => node.data("propagates") ? "green" : "black",
                     "border-width": (node) => node.data("empty") ? "0" : node.data("propagates") ? "5" : "2",
                     "background-color": (node) => node.data("joint") ? "black" : "white",
-                    "shape": (node) => node.data("joint") ? "hexagon" : "rectangle",
+                    "shape": (node) => isStrategy ? "round-rectangle" : node.data("joint") ? "hexagon" : "rectangle",
                     "padding": (node) => node.data("joint") ? "2" : "10",
                     "width": (node) => node.data("joint") ? "1" : "label",
                     "height": (node) => node.data("joint") ? "1" : "label",

@@ -3,6 +3,7 @@ package petrigaal.app;
 import guru.nidi.graphviz.engine.Graphviz;
 import guru.nidi.graphviz.model.MutableGraph;
 import guru.nidi.graphviz.parse.Parser;
+import petrigaal.draw.AutomataStrategyCytoscapeVisualizer;
 import petrigaal.draw.AutomataStrategyGraphVizVisualizer;
 import petrigaal.draw.DGCytoscapeVisualizer;
 import petrigaal.draw.DGGraphVizVisualizer;
@@ -16,6 +17,8 @@ public class SynthesisRender {
     public Result render(Synthesizer.Result synthesisState, Synthesizer.Options options) throws IllegalAccessException {
         String dg;
         String mdg;
+        String mps;
+        String instance;
 
         if (options.legacyRender()) {
             var dgVis = new DGGraphVizVisualizer<>(synthesisState.dg(), synthesisState.propagationByDGConfiguration());
@@ -24,6 +27,9 @@ public class SynthesisRender {
 
             var mdgVis = new DGGraphVizVisualizer<>(synthesisState.mdg(), synthesisState.propagationByMetaConfiguration());
             mdg = renderViz(mdgVis.draw());
+
+            mps = renderViz(new AutomataStrategyGraphVizVisualizer().draw(synthesisState.mps()));
+            instance = renderViz(new AutomataStrategyGraphVizVisualizer().draw(synthesisState.instance()));
         } else {
             dg = DGCytoscapeVisualizer.builder()
                     .forConfiguration(synthesisState.dg())
@@ -35,15 +41,12 @@ public class SynthesisRender {
                     .withPropagationMapping(synthesisState.propagationByMetaConfiguration())
                     .withOnlyDisplayingPropagationOfOneBeing(options.displayOnlyOne())
                     .build();
+
+            mps = new AutomataStrategyCytoscapeVisualizer().draw(synthesisState.mps());
+            instance = new AutomataStrategyCytoscapeVisualizer().draw(synthesisState.instance());
         }
 
-        String mps = new AutomataStrategyGraphVizVisualizer().draw(synthesisState.mps());
-        String instance = new AutomataStrategyGraphVizVisualizer().draw(synthesisState.instance());
-
-        String strategySvg = renderViz(mps);
-        String instanceSvg = renderViz(instance);
-
-        return new Result(dg, mdg, strategySvg, instanceSvg);
+        return new Result(dg, mdg, mps, instance);
     }
 
     private String renderViz(String graph) {
