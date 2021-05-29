@@ -1,11 +1,8 @@
 package petrigaal.edg;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
+import java.util.*;
 
-public class DGEdge extends ArrayList<DGTarget> implements Edge<DGConfiguration, DGEdge, DGTarget> {
+public class DGEdge extends HashSet<DGTarget> implements Edge<DGConfiguration, DGEdge, DGTarget> {
     private final DGConfiguration source;
     private boolean isNegated;
 
@@ -51,5 +48,20 @@ public class DGEdge extends ArrayList<DGTarget> implements Edge<DGConfiguration,
     public DGEdge setNegated(boolean negated) {
         isNegated = negated;
         return this;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        if (!super.equals(o)) return false;
+        DGEdge dgTargets = (DGEdge) o;
+        return isNegated == dgTargets.isNegated
+                && Objects.equals(source, dgTargets.source);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(super.hashCode(), source, isNegated);
     }
 }

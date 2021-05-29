@@ -36,10 +36,7 @@ public class Synthesizer {
         int size = new DependencyGraphGenerator().crawl(c);
 
         long startTime = System.nanoTime();
-        long endTime = System.nanoTime();
         Map<DGConfiguration, Boolean> propagationByConfiguration = new NonModifyingDGSolver<>(c).solve();
-        long milliseconds = (endTime - startTime) / 1000000;
-        System.out.printf("Total ms: %d", milliseconds);
 
         MetaDGGenerator metaDgGenerator = new MetaDGGenerator();
         MetaConfiguration c2 = metaDgGenerator.synthesize(c, propagationByConfiguration);
@@ -48,6 +45,10 @@ public class Synthesizer {
         MdgToMpsConverter strategyConverter = new MdgToMpsConverter();
         AutomataStrategy strategy = strategyConverter.convert(c2, metaPropagationByConfiguration);
         AutomataStrategy instance = new MpsToInstanceConverter().convert(strategy);
+
+        long endTime = System.nanoTime();
+        long milliseconds = (endTime - startTime) / 1000000;
+        System.out.printf("Total ms: %d\n", milliseconds);
 
         return new Result(c, propagationByConfiguration, c2, metaPropagationByConfiguration, strategy, instance);
     }

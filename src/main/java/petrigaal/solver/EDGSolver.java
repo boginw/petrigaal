@@ -76,7 +76,7 @@ public class EDGSolver {
             deleteEdge(edge);
         } else if (edge.stream().allMatch(targetIsAssigned(BOT))) {
             waitingNegationEdges.add(edge);
-            explore(edge.get(0));
+            explore(edge.iterator().next());
         }
     }
 
@@ -137,7 +137,7 @@ public class EDGSolver {
 
     private Optional<DGEdge> findAllowedNegationEdge() {
         return waitingNegationEdges.stream()
-                .filter(e -> targetIsAssigned(FALSE, TRUE, BOT).test(e.get(0)))
+                .filter(e -> targetIsAssigned(FALSE, TRUE, BOT).test(e.iterator().next()))
                 .findFirst();
     }
 

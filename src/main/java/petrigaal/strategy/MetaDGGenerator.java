@@ -222,7 +222,7 @@ public class MetaDGGenerator {
         }
     }
 
-    public static class MetaEdge extends ArrayList<MetaTarget> implements Edge<MetaConfiguration, MetaEdge, MetaTarget> {
+    public static class MetaEdge extends HashSet<MetaTarget> implements Edge<MetaConfiguration, MetaEdge, MetaTarget> {
         private final MetaConfiguration source;
 
         public MetaEdge(MetaConfiguration source) {
