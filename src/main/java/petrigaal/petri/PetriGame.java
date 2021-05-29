@@ -81,8 +81,9 @@ public class PetriGame {
     }
 
     public boolean isEnabled(Transition t) {
-        return t.getInputsArcs().stream().allMatch(
-                a -> getMarking(a.getPlace()) >= a.getWeight()
+        Set<Transition.Arc> inputsArcs = t.getInputsArcs();
+        return inputsArcs.stream().allMatch(
+            a -> getMarking(a.place()) >= a.weight()
         );
     }
 
