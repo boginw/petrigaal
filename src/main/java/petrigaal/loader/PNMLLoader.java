@@ -6,7 +6,6 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 import petrigaal.petri.PetriGame;
-import petrigaal.atl.language.Path;
 import petrigaal.petri.Player;
 import petrigaal.petri.Transition;
 

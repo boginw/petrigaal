@@ -11,7 +11,7 @@ import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
-import petrigaal.atl.CTLSyntaxErrorException;
+import petrigaal.ctl.CTLSyntaxErrorException;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -24,7 +24,8 @@ public class LoadView {
     private final Label formulaError = new Label();
     private final TextField formulaField = new TextField();
     private final TextField modelPathTextField = new TextField();
-    private final CheckBox checkBox = new CheckBox("Display only configurations which propagate 1");
+    private final CheckBox onlyOnes = new CheckBox("Display only configurations which propagate 1");
+    private final CheckBox legacy = new CheckBox("Use the legacy GraphViz renderer");
     private final VBox vb = new VBox();
     private final StackPane loadFileStack = new StackPane();
 
@@ -42,7 +43,12 @@ public class LoadView {
         Button synthesizeButton = new Button("Synthesize");
         synthesizeButton.setOnMouseClicked(e -> {
             if (checkModelPathTextField(modelPathTextField.getText()) && checkFormulaField(formulaField.getText())) {
-                callback.apply(new File(modelPathTextField.getText()), formulaField.getText(), checkBox.isSelected());
+                callback.apply(
+                        new File(modelPathTextField.getText()),
+                        formulaField.getText(),
+                        onlyOnes.isSelected(),
+                        legacy.isSelected()
+                );
             }
         });
 
@@ -71,7 +77,8 @@ public class LoadView {
                 new Label("Formula"),
                 formulaField,
                 formulaError,
-                checkBox,
+                onlyOnes,
+                legacy,
                 synthesizeButton
         );
 
@@ -92,14 +99,16 @@ public class LoadView {
 
     public void stopLoading() {
         vb.setDisable(false);
-        loadFileStack.getChildren().remove(1);
+        if (loadFileStack.getChildren().size() > 1) {
+            loadFileStack.getChildren().remove(1);
+        }
     }
 
     private boolean checkFormulaField(String newValue) {
         formulaError.setVisible(false);
         if (newValue.trim().isEmpty()) return false;
         try {
-            new petrigaal.atl.Parser().parse(newValue);
+            new petrigaal.ctl.Parser().parse(newValue);
         } catch (CTLSyntaxErrorException e) {
             formulaError.setText(e.getMessage());
             formulaError.setVisible(true);
@@ -134,7 +143,7 @@ public class LoadView {
     }
 
     @FunctionalInterface
-    public static interface Callback {
-        void apply(File model, String formula, boolean onlyShowPropagationOfOne);
+    public interface Callback {
+        void apply(File model, String formula, boolean onlyShowPropagationOfOne, boolean legacyRender);
     }
 }

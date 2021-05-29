@@ -1,17 +1,17 @@
 package petrigaal.edg;
 
-import petrigaal.atl.language.ATLFormula;
-import petrigaal.atl.language.nodes.Expression;
-import petrigaal.atl.language.nodes.expression.BinaryExpression;
-import petrigaal.atl.language.nodes.expression.IntegerLiteralExpression;
-import petrigaal.atl.language.nodes.expression.UnaryExpression;
-import petrigaal.atl.language.nodes.expression.VariableExpression;
-import petrigaal.atl.language.nodes.predicate.BooleanLiteral;
-import petrigaal.atl.language.nodes.predicate.RelationalPredicate;
-import petrigaal.atl.language.nodes.temporal.BinaryQuantifierTemporal;
-import petrigaal.atl.language.nodes.temporal.BinaryTemporal;
-import petrigaal.atl.language.nodes.temporal.UnaryQuantifierTemporal;
-import petrigaal.atl.language.nodes.temporal.UnaryTemporal;
+import petrigaal.ctl.language.CTLFormula;
+import petrigaal.ctl.language.nodes.Expression;
+import petrigaal.ctl.language.nodes.expression.BinaryExpression;
+import petrigaal.ctl.language.nodes.expression.IntegerLiteralExpression;
+import petrigaal.ctl.language.nodes.expression.UnaryExpression;
+import petrigaal.ctl.language.nodes.expression.VariableExpression;
+import petrigaal.ctl.language.nodes.predicate.BooleanLiteral;
+import petrigaal.ctl.language.nodes.predicate.RelationalPredicate;
+import petrigaal.ctl.language.nodes.temporal.BinaryQuantifierTemporal;
+import petrigaal.ctl.language.nodes.temporal.BinaryTemporal;
+import petrigaal.ctl.language.nodes.temporal.UnaryQuantifierTemporal;
+import petrigaal.ctl.language.nodes.temporal.UnaryTemporal;
 import petrigaal.petri.PetriGame;
 import petrigaal.petri.Player;
 import petrigaal.petri.Transition;
@@ -19,8 +19,8 @@ import petrigaal.petri.Transition;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import static petrigaal.atl.language.Path.A;
-import static petrigaal.atl.language.Path.E;
+import static petrigaal.ctl.language.Path.A;
+import static petrigaal.ctl.language.Path.E;
 
 public class DependencyGraphGenerator {
     Map<DGConfiguration, DGConfiguration> configurations = new HashMap<>();
@@ -256,7 +256,7 @@ public class DependencyGraphGenerator {
         }
     }
 
-    private DGConfiguration createOrGet(ATLFormula formula, PetriGame game, boolean mode) {
+    private DGConfiguration createOrGet(CTLFormula formula, PetriGame game, boolean mode) {
         DGConfiguration config = new DGConfiguration(formula, game, mode);
         return createOrGet(config);
     }

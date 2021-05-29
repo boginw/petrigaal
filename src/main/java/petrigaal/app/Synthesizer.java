@@ -1,8 +1,8 @@
 package petrigaal.app;
 
-import petrigaal.atl.Optimizer;
-import petrigaal.atl.language.ATLFormula;
-import petrigaal.atl.language.ATLNode;
+import petrigaal.ctl.Optimizer;
+import petrigaal.ctl.language.CTLFormula;
+import petrigaal.ctl.language.CTLNode;
 import petrigaal.edg.DGConfiguration;
 import petrigaal.edg.DependencyGraphGenerator;
 import petrigaal.loader.PNMLLoader;
@@ -29,10 +29,10 @@ public class Synthesizer {
 
     public Result synthesize() throws IllegalAccessException, FileNotFoundException {
         PetriGame game = loadGame(options.modelFile);
-        ATLNode tree = new petrigaal.atl.Parser().parse(options.formula);
-        ATLNode optimizedTree = new Optimizer().optimize(tree);
+        CTLNode tree = new petrigaal.ctl.Parser().parse(options.formula);
+        CTLNode optimizedTree = new Optimizer().optimize(tree);
 
-        DGConfiguration c = new DGConfiguration((ATLFormula) optimizedTree, game);
+        DGConfiguration c = new DGConfiguration((CTLFormula) optimizedTree, game);
         int size = new DependencyGraphGenerator().crawl(c);
 
         long startTime = System.nanoTime();
@@ -65,7 +65,8 @@ public class Synthesizer {
     public static record Options(
             File modelFile,
             String formula,
-            boolean displayOnlyOne
+            boolean displayOnlyOne,
+            boolean legacyRender
     ) {
     }
 
