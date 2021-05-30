@@ -17,6 +17,8 @@ import petrigaal.edg.DGConfiguration;
 import petrigaal.strategy.TopDownStrategySynthesiser.SynthesisState;
 
 import java.io.File;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.util.Map;
 
 public class PetriGAALApplication extends Application {
@@ -89,7 +91,8 @@ public class PetriGAALApplication extends Application {
                         loadView.stopLoading();
                         Alert alert = new Alert(Alert.AlertType.ERROR);
                         alert.setTitle("Error");
-                        alert.setHeaderText(e.getLocalizedMessage());
+                        alert.setHeaderText("An error occurred while trying to render one of the models.");
+                        alert.setContentText(e.getLocalizedMessage());
                         alert.showAndWait();
                     });
                     e.printStackTrace();
