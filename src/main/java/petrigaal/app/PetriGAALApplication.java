@@ -9,10 +9,7 @@ import javafx.concurrent.Task;
 import javafx.geometry.Orientation;
 import javafx.scene.Node;
 import javafx.scene.Scene;
-import javafx.scene.control.ListView;
-import javafx.scene.control.SplitPane;
-import javafx.scene.control.Tab;
-import javafx.scene.control.TabPane;
+import javafx.scene.control.*;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
@@ -20,7 +17,6 @@ import petrigaal.edg.DGConfiguration;
 import petrigaal.strategy.TopDownStrategySynthesiser.SynthesisState;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.util.Map;
 
 public class PetriGAALApplication extends Application {
@@ -88,8 +84,15 @@ public class PetriGAALApplication extends Application {
                         render(render, legacyRender);
                         loadView.stopLoading();
                     });
-                } catch (IllegalAccessException | FileNotFoundException e) {
-                    throw new RuntimeException(e);
+                } catch (Exception e) {
+                    Platform.runLater(() -> {
+                        loadView.stopLoading();
+                        Alert alert = new Alert(Alert.AlertType.ERROR);
+                        alert.setTitle("Error");
+                        alert.setHeaderText(e.getLocalizedMessage());
+                        alert.showAndWait();
+                    });
+                    e.printStackTrace();
                 }
 
                 return null;
