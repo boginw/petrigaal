@@ -38,15 +38,15 @@ public class MpsToInstanceConverter {
 
         while (!queue.isEmpty()) {
             AutomataState state = queue.poll();
-
             Set<PathSegment> segments = getPredecessors(strategy, state);
+            PathDistance oldPathDistance = distance.get(state);
 
             for (PathSegment segment : segments) {
                 if (strategy.getFinalStates().contains(segment.input.state())) {
                     continue;
                 }
 
-                PathDistance pathDistance = distance.get(state);
+                PathDistance pathDistance = oldPathDistance;
 
                 if (!isControllable(segment.input.game(), segment.output)) {
                     pathDistance = pathDistance.incrementEnvironment();
@@ -58,7 +58,7 @@ public class MpsToInstanceConverter {
                             .forEach(e -> e.getValue().removeIf(v -> isControllableAndNotSegment(segment, e, v)));
                 }
 
-                if (segmentDistanceHasLowerDistanceThan(segment, pathDistance)) {
+                if (pathDistanceHasLowerDistanceThanSegment(pathDistance, segment)) {
                     distance.put(segment.input().state(), pathDistance);
                     queue.add(segment.input().state());
                 }
@@ -66,7 +66,7 @@ public class MpsToInstanceConverter {
         }
     }
 
-    private boolean segmentDistanceHasLowerDistanceThan(PathSegment segment, PathDistance pathDistance) {
+    private boolean pathDistanceHasLowerDistanceThanSegment(PathDistance pathDistance, PathSegment segment) {
         return pathDistance.compareTo(distance.getOrDefault(segment.input().state(), PathDistance.MAX_VALUE)) < 0;
     }
 
