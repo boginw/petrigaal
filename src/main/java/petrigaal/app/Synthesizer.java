@@ -48,9 +48,15 @@ public class Synthesizer {
 
         long endTime = System.nanoTime();
         long milliseconds = (endTime - startTime) / 1000000;
-        System.out.printf("Total ms: %d\n", milliseconds);
 
-        return new Result(c, propagationByConfiguration, c2, metaPropagationByConfiguration, strategy, instance);
+        return new Result(c,
+                propagationByConfiguration,
+                c2,
+                metaPropagationByConfiguration,
+                strategy,
+                instance,
+                milliseconds
+        );
     }
 
     private PetriGame loadGame(File file) throws FileNotFoundException {
@@ -77,7 +83,8 @@ public class Synthesizer {
             MetaConfiguration mdg,
             Map<MetaConfiguration, Boolean> propagationByMetaConfiguration,
             AutomataStrategy mps,
-            AutomataStrategy instance
+            AutomataStrategy instance,
+            long time
     ) {
     }
 }

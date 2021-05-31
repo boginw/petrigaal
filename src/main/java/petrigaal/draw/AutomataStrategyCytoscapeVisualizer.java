@@ -18,6 +18,10 @@ public class AutomataStrategyCytoscapeVisualizer implements Visualizer<AutomataS
 
     @Override
     public String draw(AutomataStrategy strategy) {
+        if (strategy.getStateTransitions().isEmpty()) {
+            return null;
+        }
+
         this.strategy = strategy;
         Set<AutomataState> states = strategy.getStateTransitions()
                 .keySet()

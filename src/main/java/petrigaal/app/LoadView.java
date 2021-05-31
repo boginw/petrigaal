@@ -22,6 +22,7 @@ import java.nio.file.Path;
 public class LoadView {
     private final Label fileError = new Label();
     private final Label formulaError = new Label();
+    private final Label loadTime = new Label();
     private final TextField formulaField = new TextField();
     private final TextField modelPathTextField = new TextField();
     private final CheckBox onlyOnes = new CheckBox("Display only configurations which propagate 1");
@@ -70,6 +71,11 @@ public class LoadView {
         hBox.setSpacing(10);
         HBox.setHgrow(modelPathTextField, Priority.ALWAYS);
 
+        VBox loadingTimeVbox = new VBox(loadTime);
+        HBox synthesizeBox = new HBox(loadingTimeVbox, synthesizeButton);
+        synthesizeBox.setSpacing(10);
+        HBox.setHgrow(loadingTimeVbox, Priority.ALWAYS);
+
         vb.getChildren().addAll(
                 new Label("Model"),
                 hBox,
@@ -79,10 +85,14 @@ public class LoadView {
                 formulaError,
                 onlyOnes,
                 legacy,
-                synthesizeButton
+                synthesizeBox
         );
 
         loadFileStack.getChildren().add(vb);
+    }
+
+    public void setLoadTime(long ms) {
+        loadTime.setText(String.format("Completed in %d ms", ms));
     }
 
     public Node getView() {
