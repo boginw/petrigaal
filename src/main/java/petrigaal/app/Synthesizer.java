@@ -32,10 +32,10 @@ public class Synthesizer {
         CTLNode tree = new petrigaal.ctl.Parser().parse(options.formula);
         CTLNode optimizedTree = new Optimizer().optimize(tree);
 
+        long startTime = System.nanoTime();
         DGConfiguration c = new DGConfiguration((CTLFormula) optimizedTree, game);
         int size = new DependencyGraphGenerator().crawl(c);
 
-        long startTime = System.nanoTime();
         Map<DGConfiguration, Boolean> propagationByConfiguration = new NonModifyingDGSolver<>(c).solve();
 
         MetaDGGenerator metaDgGenerator = new MetaDGGenerator();

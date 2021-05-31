@@ -81,6 +81,7 @@
                 })
                 .selector("edge")
                 .css({
+                    "line-style": (edge) => edge.data("uncontrollable") ? "dashed" : "solid",
                     "label": "data(label)",
                     "width": 1,
                     "line-color": "black",
