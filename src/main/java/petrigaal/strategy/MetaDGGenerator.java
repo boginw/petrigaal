@@ -57,9 +57,6 @@ public class MetaDGGenerator {
                 }
             }
 
-            var groups = controllable.stream()
-                    .collect(groupingBy(c -> new Label(c.source().getGame(), c.target().getTransition()), toSet()));
-
             Set<Set<Transition>> transitions = controllable.stream()
                     .collect(groupingBy(c -> c.source().getGame(), toSet()))
                     .values()
@@ -72,31 +69,21 @@ public class MetaDGGenerator {
 
             var uncontrollableClosureByTransition = uncontrollable.stream()
                     .collect(groupingBy(c -> new Label(c.source().getGame(), c.target().getTransition()), toSet()));
+            var controllableClosureByTransition = controllable.stream()
+                    .collect(groupingBy(c -> new Label(c.source().getGame(), c.target().getTransition()), toSet()));
+            var combined = new HashSet<>(uncontrollableClosureByTransition.entrySet());
+            combined.addAll(controllableClosureByTransition.entrySet());
 
-            for (var uncontrollableClosures : uncontrollableClosureByTransition.entrySet()) {
-                Set<DGConfiguration> configurations = getConfigurations(uncontrollableClosures.getValue());
+            for (var combinedClosures : combined) {
+                Set<DGConfiguration> configurations = getConfigurations(combinedClosures.getValue());
                 MetaConfiguration conf = getOrCreateConf(new MetaConfiguration(configurations));
                 MetaEdge edge = new MetaEdge(target.configuration);
                 edge.add(new MetaTarget(
                         conf,
-                        uncontrollableClosures.getKey().transition(),
-                        uncontrollableClosures.getKey().game()
+                        combinedClosures.getKey().transition(),
+                        combinedClosures.getKey().game()
                 ));
                 target.configuration.successors.add(edge);
-            }
-
-            if (!controllable.isEmpty()) {
-                for (var entry : groups.entrySet()) {
-                    Set<DGConfiguration> configurations = getConfigurations(entry.getValue());
-                    MetaConfiguration conf = getOrCreateConf(new MetaConfiguration(configurations));
-                    MetaEdge edge = new MetaEdge(target.configuration);
-                    edge.add(new MetaTarget(
-                            conf,
-                            entry.getValue().iterator().next().target().getTransition(),
-                            entry.getKey().game()
-                    ));
-                    target.configuration.successors.add(edge);
-                }
             }
         }
     }
