@@ -72,7 +72,7 @@ public class PetriGAALApplication extends Application {
                     SynthesisRender.Result render = new SynthesisRender().render(synthesis, options);
 
                     Platform.runLater(() -> {
-                        render(render, legacyRender, synthesis.time());
+                        render(render, legacyRender, synthesis.time(), synthesis.bytes());
                         loadView.stopLoading();
                     });
                 } catch (Exception e) {
@@ -104,8 +104,9 @@ public class PetriGAALApplication extends Application {
         return tabPane;
     }
 
-    private void render(SynthesisRender.Result result, boolean legacyRender, long time) {
+    private void render(SynthesisRender.Result result, boolean legacyRender, long time, long bytes) {
         loadView.setLoadTime(time);
+        loadView.setMemoryUsage(bytes);
 
         if (result.dgSvg() == null) {
             view.dg().loadImage(DEFAULT_IMAGE);

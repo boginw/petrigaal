@@ -93,8 +93,8 @@
             layout: {
                 name: "dot",
                 ranks: data.ranks,
-                padding: 0,
                 spacingFactor: 0.5,
+                stop: () => cy.fit(cy.elements(), 20),
             },
             elements: {nodes: data.nodes, edges: data.edges},
         });

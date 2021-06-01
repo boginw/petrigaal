@@ -18,6 +18,10 @@ import petrigaal.strategy.automata.AutomataStrategy;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.lang.management.ManagementFactory;
+import java.lang.management.MemoryPoolMXBean;
+import java.lang.management.MemoryType;
+import java.util.List;
 import java.util.Map;
 
 public class Synthesizer {
@@ -32,6 +36,9 @@ public class Synthesizer {
         CTLNode tree = new petrigaal.ctl.Parser().parse(options.formula);
         CTLNode optimizedTree = new Optimizer().optimize(tree);
 
+        System.gc();
+        List<MemoryPoolMXBean> pools = ManagementFactory.getMemoryPoolMXBeans();
+        pools.forEach(MemoryPoolMXBean::resetPeakUsage);
         long startTime = System.nanoTime();
         DGConfiguration c = new DGConfiguration((CTLFormula) optimizedTree, game);
         int size = new DependencyGraphGenerator().crawl(c);
@@ -49,13 +56,23 @@ public class Synthesizer {
         long endTime = System.nanoTime();
         long milliseconds = (endTime - startTime) / 1000000;
 
+        long total = 0;
+        for (MemoryPoolMXBean memoryPoolMXBean : pools) {
+            if (memoryPoolMXBean.getType() == MemoryType.HEAP) {
+                long peakUsed = memoryPoolMXBean.getPeakUsage().getUsed();
+                System.out.println("Peak used for: " + memoryPoolMXBean.getName() + " is: " + peakUsed);
+                total = total + peakUsed;
+            }
+        }
+
         return new Result(c,
                 propagationByConfiguration,
                 c2,
                 metaPropagationByConfiguration,
                 strategy,
                 instance,
-                milliseconds
+                milliseconds,
+                total
         );
     }
 
@@ -84,7 +101,8 @@ public class Synthesizer {
             Map<MetaConfiguration, Boolean> propagationByMetaConfiguration,
             AutomataStrategy mps,
             AutomataStrategy instance,
-            long time
+            long time,
+            long bytes
     ) {
     }
 }
