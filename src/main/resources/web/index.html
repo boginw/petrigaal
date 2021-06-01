@@ -89,7 +89,9 @@
                     "target-arrow-shape": (edge) => edge.data("target").startsWith("joint") ? "none" : "triangle",
                     "curve-style": "bezier",
                     "control-point-distance": 50
-                }),
+                })
+                .selector(".loop")
+                .css({"control-point-step-size": 72}),
             layout: {
                 name: "dot",
                 ranks: data.ranks,
