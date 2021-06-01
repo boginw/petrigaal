@@ -33,6 +33,10 @@ public class Synthesizer {
 
     public Result synthesize() throws IllegalAccessException, FileNotFoundException {
         PetriGame game = loadGame(options.modelFile);
+        return synthesize(game);
+    }
+
+    public Result synthesize(PetriGame game) throws IllegalAccessException, FileNotFoundException {
         CTLNode tree = new petrigaal.ctl.Parser().parse(options.formula);
         CTLNode optimizedTree = new Optimizer().optimize(tree);
 
@@ -55,15 +59,7 @@ public class Synthesizer {
 
         long endTime = System.nanoTime();
         long milliseconds = (endTime - startTime) / 1000000;
-
-        long total = 0;
-        for (MemoryPoolMXBean memoryPoolMXBean : pools) {
-            if (memoryPoolMXBean.getType() == MemoryType.HEAP) {
-                long peakUsed = memoryPoolMXBean.getPeakUsage().getUsed();
-                System.out.println("Peak used for: " + memoryPoolMXBean.getName() + " is: " + peakUsed);
-                total = total + peakUsed;
-            }
-        }
+        long total = getPeakMemoryUsage(pools);
 
         return new Result(c,
                 propagationByConfiguration,
@@ -84,6 +80,17 @@ public class Synthesizer {
         } else {
             throw new RuntimeException("Unsupported file format");
         }
+    }
+
+    private long getPeakMemoryUsage(List<MemoryPoolMXBean> pools) {
+        long total = 0;
+        for (MemoryPoolMXBean memoryPoolMXBean : pools) {
+            if (memoryPoolMXBean.getType() == MemoryType.HEAP) {
+                long peakUsed = memoryPoolMXBean.getPeakUsage().getUsed();
+                total = total + peakUsed;
+            }
+        }
+        return total;
     }
 
     public static record Options(
