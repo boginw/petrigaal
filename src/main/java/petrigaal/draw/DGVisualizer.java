@@ -36,15 +36,13 @@ public abstract class DGVisualizer<C extends Configuration<C, E, T>,
             visit(queue.poll());
         }
 
-        List<String> vertices = new ArrayList<>();
-        List<String> edges = new ArrayList<>();
-
         List<String> configs = visitedConfigs.stream()
                 .filter(Predicate.not(this::shouldSkipConfiguration))
                 .map(this::declareConfiguration)
                 .toList();
 
-        vertices.addAll(configs);
+        List<String> edges = new ArrayList<>();
+        List<String> vertices = new ArrayList<>(configs);
 
         for (int i = 1; i <= joints; i++) {
             vertices.add(declareJoint(i));
@@ -61,7 +59,7 @@ public abstract class DGVisualizer<C extends Configuration<C, E, T>,
 
         List<String> jointEdges = jointIdToTargetEdges.entrySet()
                 .stream()
-                .flatMap(e -> e.getValue().stream().map(j -> declareJointToTargetEdge(e.getKey(), j)))
+                .flatMap(e -> e.getValue().stream().map(c -> declareJointToTargetEdge(e.getKey(), c)))
                 .toList();
 
         List<String> emptyEdges = jointIdToEmptyIdEdges.entrySet()
@@ -112,11 +110,12 @@ public abstract class DGVisualizer<C extends Configuration<C, E, T>,
     }
 
     private void visit(C c, int rank) {
-        if (shouldSkipConfiguration(c)) {
+        if (shouldSkipConfiguration(c) || visitedConfigs.contains(c)) {
             return;
         }
 
         visitedConfigs.add(c);
+
         ranks.computeIfAbsent(rank, n -> new ArrayList<>());
         ranks.get(rank).add(String.valueOf(c.hashCode()));
 

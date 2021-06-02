@@ -43,23 +43,25 @@ public class DGTarget implements Target<DGConfiguration, DGEdge, DGTarget> {
 
     @Override
     public String toString() {
-        return "Target{"
-                + "configuration=" + configuration
-                + ", transition=" + transition
-                + '}';
+        return "DGTarget{" +
+                "configuration=" + configuration +
+                ", transition=" + transition +
+                ", game=" + game +
+                '}';
     }
 
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        DGTarget target = (DGTarget) o;
-        return Objects.equals(configuration, target.configuration)
-                && Objects.equals(transition, target.transition);
+        DGTarget dgTarget = (DGTarget) o;
+        return Objects.equals(configuration, dgTarget.configuration)
+                && Objects.equals(transition, dgTarget.transition)
+                && Objects.equals(game, dgTarget.game);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(configuration, transition);
+        return Objects.hash(configuration, transition, game);
     }
 }

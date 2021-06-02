@@ -3,31 +3,22 @@ package petrigaal.app;
 import guru.nidi.graphviz.engine.Format;
 import javafx.application.Application;
 import javafx.application.Platform;
-import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
 import javafx.concurrent.Task;
-import javafx.geometry.Orientation;
 import javafx.scene.Node;
 import javafx.scene.Scene;
-import javafx.scene.control.ListView;
+import javafx.scene.control.Alert;
 import javafx.scene.control.SplitPane;
 import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
-import petrigaal.edg.DGConfiguration;
-import petrigaal.strategy.TopDownStrategySynthesiser.SynthesisState;
 
 import java.io.File;
-import java.io.FileNotFoundException;
-import java.util.Map;
 
 public class PetriGAALApplication extends Application {
     public static final Format FORMAT = Format.SVG;
-    public static final String DEFAULT_IMAGE = "start.png";
-    private final ObservableList<SynthesisState> stateList = FXCollections.observableArrayList();
-    private final ObservableList<Map<DGConfiguration, Boolean>> closeFiles = FXCollections.observableArrayList();
+    public static final String DEFAULT_IMAGE = "start.svg";
     private StateView view;
     private LoadView loadView;
 
@@ -42,22 +33,18 @@ public class PetriGAALApplication extends Application {
 
         VBox leftPanel = new VBox();
         leftPanel.getChildren().add(getLoadView(primaryStage));
-        SplitPane horizontal = new SplitPane();
-        horizontal.setOrientation(Orientation.VERTICAL);
-        horizontal.getItems().addAll(getSynthesisStateListView(), getFileListView());
-        leftPanel.getChildren().add(horizontal);
 
         SplitPane splitView = new SplitPane();
         splitView.getItems().add(leftPanel);
         splitView.getItems().add(getTabPane());
-        splitView.setDividerPositions(0.2f, 0.8f);
+        splitView.setDividerPositions(0.25f, 0.75f);
 
         BorderPane root = new BorderPane();
         root.setCenter(splitView);
 
-        Scene scene = new Scene(root, 1920, 1080);
+        Scene scene = new Scene(root, 1400, 720);
 
-        primaryStage.setTitle("IntelliGaal");
+        primaryStage.setTitle("PetriGAAL");
         primaryStage.setScene(scene);
         primaryStage.show();
     }
@@ -85,11 +72,19 @@ public class PetriGAALApplication extends Application {
                     SynthesisRender.Result render = new SynthesisRender().render(synthesis, options);
 
                     Platform.runLater(() -> {
-                        render(render, legacyRender);
+                        render(render, legacyRender, synthesis.time(), synthesis.bytes());
                         loadView.stopLoading();
                     });
-                } catch (IllegalAccessException | FileNotFoundException e) {
-                    throw new RuntimeException(e);
+                } catch (Exception e) {
+                    Platform.runLater(() -> {
+                        loadView.stopLoading();
+                        Alert alert = new Alert(Alert.AlertType.ERROR);
+                        alert.setTitle("Error");
+                        alert.setHeaderText("An error occurred while trying to render one of the models.");
+                        alert.setContentText(e.getLocalizedMessage());
+                        alert.showAndWait();
+                    });
+                    e.printStackTrace();
                 }
 
                 return null;
@@ -109,15 +104,10 @@ public class PetriGAALApplication extends Application {
         return tabPane;
     }
 
-    private ListView<Map<DGConfiguration, Boolean>> getFileListView() {
-        return new CloseListView(closeFiles);
-    }
+    private void render(SynthesisRender.Result result, boolean legacyRender, long time, long bytes) {
+        loadView.setLoadTime(time);
+        loadView.setMemoryUsage(bytes);
 
-    private ListView<SynthesisState> getSynthesisStateListView() {
-        return new SynthesisStateListView(stateList);
-    }
-
-    private void render(SynthesisRender.Result result, boolean legacyRender) {
         if (result.dgSvg() == null) {
             view.dg().loadImage(DEFAULT_IMAGE);
         } else if (legacyRender) {
@@ -136,14 +126,18 @@ public class PetriGAALApplication extends Application {
 
         if (result.strategySvg() == null) {
             view.strategy().loadImage(DEFAULT_IMAGE);
-        } else {
+        } else if (legacyRender) {
             view.strategy().loadImage(result.strategySvg());
+        } else {
+            view.strategy().loadGraph(result.strategySvg());
         }
 
         if (result.instanceSvg() == null) {
             view.instance().loadImage(DEFAULT_IMAGE);
-        } else {
+        } else if (legacyRender) {
             view.instance().loadImage(result.instanceSvg());
+        } else {
+            view.instance().loadGraph(result.instanceSvg());
         }
     }
 

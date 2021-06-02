@@ -1,31 +1,39 @@
 <!doctype html>
 <html lang="en">
-
 <head>
     <meta charset="utf-8">
     <link rel="stylesheet" href="style.css">
+    <title>PetriGAAL</title>
+    <script src="js/svg-pan-zoom.js"></script>
+    <script src="js/cytoscape.min.js"></script>
+    <script src="js/viz.js"></script>
+    <script src="js/full.render.js"></script>
+    <script src="js/cytoscape.dot.js"></script>
 </head>
-
 <body>
-<div id="container">
-    <img class="zoom" src="start.png"/>
-</div>
-<script src="script.js"></script>
-<script src="cytoscape.min.js"></script>
-<script src="viz.js"></script>
-<script src="full.render.js"></script>
-<script src="cytoscape.dot.js"></script>
+<div id="container"><img class="zoom" src="start.svg" alt="PetriGAAL Logo"/></div>
 <script>
     let panZoomTiger = null;
-    cytoscape('layout', 'dot', CytoscapeDotLayout);
 
-    function loadImage(image) {
+    window.addEventListener('load', function () {
+        cytoscape("layout", "dot", CytoscapeDotLayout);
+    });
+
+    function destroy() {
+        if (window.cy != null) {
+            window.cy.destroy();
+            window.cy = null;
+        }
         if (panZoomTiger !== null) {
             panZoomTiger.destroy();
             panZoomTiger = null;
         }
+    }
 
-        if (image.endsWith(".png")) {
+    function loadImage(image) {
+        destroy();
+
+        if (image.endsWith(".svg")) {
             document.querySelector("#container").innerHTML = `<img class="zoom" src="${image}"/>`
         } else {
             document.querySelector("#container").innerHTML = image;
@@ -40,15 +48,12 @@
     }
 
     function loadGraph(graph) {
+        destroy();
         let container = document.getElementById("container");
         container.innerHTML = "";
 
-        if (window.cy != null) {
-            window.cy.destroy();
-            window.cy = null;
-        }
-
         const data = JSON.parse(graph);
+        const isStrategy = data.strategy === true;
 
         window.cy = cytoscape({
             container: container,
@@ -61,7 +66,7 @@
                     "border-color": (node) => node.data("propagates") ? "green" : "black",
                     "border-width": (node) => node.data("empty") ? "0" : node.data("propagates") ? "5" : "2",
                     "background-color": (node) => node.data("joint") ? "black" : "white",
-                    "shape": (node) => node.data("joint") ? "hexagon" : "rectangle",
+                    "shape": (node) => isStrategy ? "round-rectangle" : node.data("joint") ? "hexagon" : "rectangle",
                     "padding": (node) => node.data("joint") ? "2" : "10",
                     "width": (node) => node.data("joint") ? "1" : "label",
                     "height": (node) => node.data("joint") ? "1" : "label",
@@ -76,18 +81,22 @@
                 })
                 .selector("edge")
                 .css({
+                    "line-style": (edge) => edge.data("uncontrollable") ? "dashed" : "solid",
                     "label": "data(label)",
                     "width": 1,
                     "line-color": "black",
                     "target-arrow-color": "black",
                     "target-arrow-shape": (edge) => edge.data("target").startsWith("joint") ? "none" : "triangle",
-                    "curve-style": "straight"
-                }),
+                    "curve-style": "bezier",
+                    "control-point-distance": 50
+                })
+                .selector(".loop")
+                .css({"control-point-step-size": 100}),
             layout: {
                 name: "dot",
                 ranks: data.ranks,
-                padding: 0,
                 spacingFactor: 0.5,
+                stop: () => cy.fit(cy.elements(), 20),
             },
             elements: {nodes: data.nodes, edges: data.edges},
         });

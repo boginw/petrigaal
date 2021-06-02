@@ -4,7 +4,7 @@ plugins {
     id 'antlr'
     id 'application'
     id "com.github.johnrengelman.shadow" version "6.1.0"
-    id 'org.openjfx.javafxplugin' version '0.0.9'
+    id 'org.openjfx.javafxplugin' version '0.0.10'
 }
 
 version '1.0'
@@ -30,9 +30,12 @@ javafx {
 
 dependencies {
     implementation "guru.nidi:graphviz-java:0.18.1"
-    implementation group: 'fr.lip6.pnml', name: 'framework.releng', version: '2.2.12', ext: 'pom'
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.7.1'
     testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.7.1'
+
+    // TODO: use these deps instead of embedding our own
+    //implementation 'org.webjars.npm:viz.js:2.1.2'
+    //implementation 'org.webjars.npm:cytoscape:3.19.0'
 
     antlr "org.antlr:antlr4:4.9.2"
 }

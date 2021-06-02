@@ -1,10 +1,10 @@
 package petrigaal.edg;
 
-import java.util.List;
+import java.util.Set;
 
 public interface Edge<
         C extends Configuration<C, E, T>,
         E extends Edge<C, E, T>,
-        T extends Target<C, E, T>> extends List<T> {
+        T extends Target<C, E, T>> extends Set<T> {
     C getSource();
 }

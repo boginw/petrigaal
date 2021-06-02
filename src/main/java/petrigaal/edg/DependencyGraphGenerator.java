@@ -35,7 +35,16 @@ public class DependencyGraphGenerator {
             configuration.getFormula().visit(new DGTarget(configuration), this);
         } while (!queue.isEmpty());
 
+        clean();
         return configurations.size();
+    }
+
+    private void clean() {
+        for (DGConfiguration conf : configurations.values()) {
+            Set<DGEdge> edges = new HashSet<>(conf.getSuccessors().stream().toList());
+            conf.getSuccessors().clear();
+            conf.getSuccessors().addAll(edges);
+        }
     }
 
     public void visitConjunction(DGTarget target, BinaryTemporal formula) {

@@ -1,6 +1,5 @@
 package petrigaal.strategy;
 
-import javafx.util.Pair;
 import petrigaal.edg.*;
 import petrigaal.petri.PetriGame;
 import petrigaal.petri.Player;
@@ -69,37 +68,22 @@ public class MetaDGGenerator {
                 continue;
 
             var uncontrollableClosureByTransition = uncontrollable.stream()
-                    .collect(groupingBy(
-                            c -> new Pair<>(c.target().getTransition(), c.source().getGame()), toSet()
-                    ));
+                    .collect(groupingBy(c -> new Label(c.source().getGame(), c.target().getTransition()), toSet()));
+            var controllableClosureByTransition = controllable.stream()
+                    .collect(groupingBy(c -> new Label(c.source().getGame(), c.target().getTransition()), toSet()));
+            var combined = new HashSet<>(uncontrollableClosureByTransition.entrySet());
+            combined.addAll(controllableClosureByTransition.entrySet());
 
-            for (var uncontrollableClosures : uncontrollableClosureByTransition.entrySet()) {
-                Set<DGConfiguration> configurations = getConfigurations(uncontrollableClosures.getValue());
+            for (var combinedClosures : combined) {
+                Set<DGConfiguration> configurations = getConfigurations(combinedClosures.getValue());
                 MetaConfiguration conf = getOrCreateConf(new MetaConfiguration(configurations));
                 MetaEdge edge = new MetaEdge(target.configuration);
                 edge.add(new MetaTarget(
                         conf,
-                        uncontrollableClosures.getKey().getKey(),
-                        uncontrollableClosures.getKey().getValue()
+                        combinedClosures.getKey().transition(),
+                        combinedClosures.getKey().game()
                 ));
                 target.configuration.successors.add(edge);
-            }
-
-            if (!controllable.isEmpty()) {
-                Map<PetriGame, Set<Closure>> groups = controllable.stream()
-                        .collect(groupingBy(c -> c.source().getGame(), toSet()));
-
-                for (Map.Entry<PetriGame, Set<Closure>> entry : groups.entrySet()) {
-                    Set<DGConfiguration> configurations = getConfigurations(entry.getValue());
-                    MetaConfiguration conf = getOrCreateConf(new MetaConfiguration(configurations));
-                    MetaEdge edge = new MetaEdge(target.configuration);
-                    edge.add(new MetaTarget(
-                            conf,
-                            entry.getValue().iterator().next().target().getTransition(),
-                            entry.getKey()
-                    ));
-                    target.configuration.successors.add(edge);
-                }
             }
         }
     }
@@ -171,8 +155,6 @@ public class MetaDGGenerator {
     private Set<Set<Closure>> combine(Set<Set<Closure>> s1, Set<Set<Closure>> s2) {
         if (s1.isEmpty()) {
             return s2;
-        } else if (s2.isEmpty()) {
-            return s1;
         }
         Set<Set<Closure>> combined = new HashSet<>();
         for (Set<Closure> t : s2) {
@@ -222,7 +204,7 @@ public class MetaDGGenerator {
         }
     }
 
-    public static class MetaEdge extends ArrayList<MetaTarget> implements Edge<MetaConfiguration, MetaEdge, MetaTarget> {
+    public static class MetaEdge extends HashSet<MetaTarget> implements Edge<MetaConfiguration, MetaEdge, MetaTarget> {
         private final MetaConfiguration source;
 
         public MetaEdge(MetaConfiguration source) {
@@ -269,19 +251,8 @@ public class MetaDGGenerator {
                     + ", target=" + target
                     + '}';
         }
+    }
 
-        @Override
-        public boolean equals(Object o) {
-            if (this == o) return true;
-            if (o == null || getClass() != o.getClass()) return false;
-            Closure closure = (Closure) o;
-            return Objects.equals(source, closure.source)
-                    && Objects.equals(target, closure.target);
-        }
-
-        @Override
-        public int hashCode() {
-            return Objects.hash(source, target);
-        }
+    private record Label(PetriGame game, Transition transition) {
     }
 }
