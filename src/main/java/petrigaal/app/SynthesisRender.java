@@ -50,6 +50,10 @@ public class SynthesisRender {
     }
 
     private String renderViz(String graph) {
+        if (graph == null) {
+            return null;
+        }
+
         try {
             MutableGraph g = new Parser().read(graph);
             return Graphviz.fromGraph(g).totalMemory(480000000).render(FORMAT).toString();

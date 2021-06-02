@@ -18,6 +18,10 @@ public class AutomataStrategyCytoscapeVisualizer implements Visualizer<AutomataS
 
     @Override
     public String draw(AutomataStrategy strategy) {
+        if (strategy.getStateTransitions().isEmpty()) {
+            return null;
+        }
+
         this.strategy = strategy;
         Set<AutomataState> states = strategy.getStateTransitions()
                 .keySet()
@@ -83,11 +87,12 @@ public class AutomataStrategyCytoscapeVisualizer implements Visualizer<AutomataS
             AutomataState end
     ) {
         return ("{\"data\": { \"source\": \"%d\", \"target\": \"%d\", " +
-                "\"label\": \"%s / %s\", \"uncontrollable\": true}}").formatted(
+                "\"label\": \"%s / %s\", \"uncontrollable\": true}, \"classes\": \"%s\"}").formatted(
                 start.hashCode(),
                 end.hashCode(),
                 String.valueOf(game),
-                String.valueOf(transition)
+                String.valueOf(transition),
+                start.equals(end) ? "loop" : ""
         );
     }
 
@@ -97,11 +102,13 @@ public class AutomataStrategyCytoscapeVisualizer implements Visualizer<AutomataS
             Transition transition,
             AutomataState end
     ) {
-        return "{\"data\": { \"source\": \"%d\", \"target\": \"%d\", \"label\": \"%s / %s\"}}".formatted(
+        return ("{\"data\": { \"source\": \"%d\", \"target\": \"%d\", " +
+                "\"label\": \"%s / %s\"}, \"classes\": \"%s\"}").formatted(
                 start.hashCode(),
                 end.hashCode(),
                 String.valueOf(game),
-                String.valueOf(transition)
+                String.valueOf(transition),
+                start.equals(end) ? "loop" : ""
         );
     }
 
@@ -109,9 +116,11 @@ public class AutomataStrategyCytoscapeVisualizer implements Visualizer<AutomataS
             AutomataState start,
             AutomataState end
     ) {
-        return "{\"data\": { \"source\": \"%d\", \"target\": \"%d\", \"label\": \"* / *\"}}".formatted(
+        return ("{\"data\": { \"source\": \"%d\", \"target\": \"%d\", " +
+                "\"label\": \"* / *\"}, \"classes\": \"%s\"}").formatted(
                 start.hashCode(),
-                end.hashCode()
+                end.hashCode(),
+                start.equals(end) ? "loop" : ""
         );
     }
 }

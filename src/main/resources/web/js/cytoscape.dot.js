@@ -32,7 +32,10 @@ CytoscapeDotLayout.prototype.run = function () {
     const viz = new Viz();
 
     viz.renderSVGElement(dotStr).then((svg) => {
-        console.log(svg);
+        const width = svg.width.baseVal.value;
+        const height = svg.height.baseVal.value;
+        const middleX = width / 2;
+        const middleY = height / 2;
         const svgNodes = svg.getElementsByClassName('node');
         const idToPositions = {};
 
@@ -40,22 +43,18 @@ CytoscapeDotLayout.prototype.run = function () {
 
         for (let i = 0; i < svgNodes.length; ++i) {
             const node = svgNodes[i];
-
             const id = node.getElementsByTagName('title')[0].innerHTML.trim();
-
             const ellipse = node.getElementsByTagName('ellipse')[0];
-            console.log(ellipse);
             const y = ellipse.cy.baseVal.value * 2;
 
             idToPositions[id] = {x: ellipse.cx.baseVal.value * 2, y};
 
             minY = Math.min(minY, y);
         }
-
         nodes.layoutPositions(this, this.options, (ele) => {
             let {x, y} = idToPositions[ele.id()];
             y -= minY - 30;
-            return {x, y};
+            return {x: x - middleX, y: y - middleY + 300};
         });
     });
 

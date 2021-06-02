@@ -12,6 +12,10 @@ import java.util.stream.Collectors;
 public class AutomataStrategyGraphVizVisualizer implements Visualizer<AutomataStrategy> {
     @Override
     public String draw(AutomataStrategy strategy) {
+        if (strategy.getStateTransitions().isEmpty()) {
+            return null;
+        }
+
         Set<AutomataState> states = strategy.getStateTransitions()
                 .keySet()
                 .stream()

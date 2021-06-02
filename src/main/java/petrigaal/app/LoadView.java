@@ -18,10 +18,14 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.nio.file.Path;
+import java.text.CharacterIterator;
+import java.text.StringCharacterIterator;
 
 public class LoadView {
     private final Label fileError = new Label();
     private final Label formulaError = new Label();
+    private final Label loadTime = new Label();
+    private final Label memUsage = new Label();
     private final TextField formulaField = new TextField();
     private final TextField modelPathTextField = new TextField();
     private final CheckBox onlyOnes = new CheckBox("Display only configurations which propagate 1");
@@ -70,6 +74,11 @@ public class LoadView {
         hBox.setSpacing(10);
         HBox.setHgrow(modelPathTextField, Priority.ALWAYS);
 
+        VBox loadingTimeVbox = new VBox(loadTime, memUsage);
+        HBox synthesizeBox = new HBox(loadingTimeVbox, synthesizeButton);
+        synthesizeBox.setSpacing(10);
+        HBox.setHgrow(loadingTimeVbox, Priority.ALWAYS);
+
         vb.getChildren().addAll(
                 new Label("Model"),
                 hBox,
@@ -79,10 +88,18 @@ public class LoadView {
                 formulaError,
                 onlyOnes,
                 legacy,
-                synthesizeButton
+                synthesizeBox
         );
 
         loadFileStack.getChildren().add(vb);
+    }
+
+    public void setLoadTime(long ms) {
+        loadTime.setText(String.format("Completed in %d ms", ms));
+    }
+
+    public void setMemoryUsage(long bytes) {
+        memUsage.setText("Maximum memory usage: " + humanReadableByteCountSI(bytes));
     }
 
     public Node getView() {
@@ -140,6 +157,18 @@ public class LoadView {
             }
         }
         return true;
+    }
+
+    public static String humanReadableByteCountSI(long bytes) {
+        if (-1000 < bytes && bytes < 1000) {
+            return bytes + " B";
+        }
+        CharacterIterator ci = new StringCharacterIterator("kMGTPE");
+        while (bytes <= -999_950 || bytes >= 999_950) {
+            bytes /= 1000;
+            ci.next();
+        }
+        return String.format("%.1f %cB", bytes / 1000.0, ci.current());
     }
 
     @FunctionalInterface

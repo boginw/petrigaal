@@ -18,6 +18,10 @@ import petrigaal.strategy.automata.AutomataStrategy;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.lang.management.ManagementFactory;
+import java.lang.management.MemoryPoolMXBean;
+import java.lang.management.MemoryType;
+import java.util.List;
 import java.util.Map;
 
 public class Synthesizer {
@@ -29,9 +33,16 @@ public class Synthesizer {
 
     public Result synthesize() throws IllegalAccessException, FileNotFoundException {
         PetriGame game = loadGame(options.modelFile);
+        return synthesize(game);
+    }
+
+    public Result synthesize(PetriGame game) throws IllegalAccessException, FileNotFoundException {
         CTLNode tree = new petrigaal.ctl.Parser().parse(options.formula);
         CTLNode optimizedTree = new Optimizer().optimize(tree);
 
+        System.gc();
+        List<MemoryPoolMXBean> pools = ManagementFactory.getMemoryPoolMXBeans();
+        pools.forEach(MemoryPoolMXBean::resetPeakUsage);
         long startTime = System.nanoTime();
         DGConfiguration c = new DGConfiguration((CTLFormula) optimizedTree, game);
         int size = new DependencyGraphGenerator().crawl(c);
@@ -48,9 +59,17 @@ public class Synthesizer {
 
         long endTime = System.nanoTime();
         long milliseconds = (endTime - startTime) / 1000000;
-        System.out.printf("Total ms: %d\n", milliseconds);
+        long total = getPeakMemoryUsage(pools);
 
-        return new Result(c, propagationByConfiguration, c2, metaPropagationByConfiguration, strategy, instance);
+        return new Result(c,
+                propagationByConfiguration,
+                c2,
+                metaPropagationByConfiguration,
+                strategy,
+                instance,
+                milliseconds,
+                total
+        );
     }
 
     private PetriGame loadGame(File file) throws FileNotFoundException {
@@ -61,6 +80,17 @@ public class Synthesizer {
         } else {
             throw new RuntimeException("Unsupported file format");
         }
+    }
+
+    private long getPeakMemoryUsage(List<MemoryPoolMXBean> pools) {
+        long total = 0;
+        for (MemoryPoolMXBean memoryPoolMXBean : pools) {
+            if (memoryPoolMXBean.getType() == MemoryType.HEAP) {
+                long peakUsed = memoryPoolMXBean.getPeakUsage().getUsed();
+                total = total + peakUsed;
+            }
+        }
+        return total;
     }
 
     public static record Options(
@@ -77,7 +107,9 @@ public class Synthesizer {
             MetaConfiguration mdg,
             Map<MetaConfiguration, Boolean> propagationByMetaConfiguration,
             AutomataStrategy mps,
-            AutomataStrategy instance
+            AutomataStrategy instance,
+            long time,
+            long bytes
     ) {
     }
 }
