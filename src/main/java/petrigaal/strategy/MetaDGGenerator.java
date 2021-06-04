@@ -46,6 +46,15 @@ public class MetaDGGenerator {
                 continue;
             }
 
+            /*MetaConfiguration conf = getOrCreateConf(new MetaConfiguration(getConfigurations(closures)));
+            MetaEdge edge = new MetaEdge(target.configuration);
+            edge.add(new MetaTarget(
+                    conf,
+                    null,
+                    null
+            ));
+            target.configuration.successors.add(edge);*/
+
             Set<Closure> controllable = new HashSet<>();
             Set<Closure> uncontrollable = new HashSet<>();
 
