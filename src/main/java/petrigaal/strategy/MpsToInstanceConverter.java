@@ -75,7 +75,9 @@ public class MpsToInstanceConverter {
             Entry<AutomataInput, Set<AutomataOutput>> entry,
             AutomataOutput output
     ) {
-        return isControllable(segment.input.game(), output) && !new PathSegment(entry.getKey(), output).equals(segment);
+        return isControllable(segment.input.game(), output)
+                && segment.input().state().equals(entry.getKey().state())
+                && !segment.output().equals(output);
     }
 
     private Set<PathSegment> getPredecessors(AutomataStrategy strategy, AutomataState state) {
@@ -93,7 +95,7 @@ public class MpsToInstanceConverter {
     }
 
     private boolean isControllable(PetriGame game, AutomataOutput o) {
-        return game.getEnabledTransitions(Player.Controller).contains(o.transition());
+        return game.getTransitions(Player.Controller).contains(o.transition());
     }
 
     private static record PathSegment(AutomataInput input, AutomataOutput output) {
@@ -105,8 +107,9 @@ public class MpsToInstanceConverter {
 
         @Override
         public int compareTo(PathDistance o) {
-            int result = Integer.compare(environment, o.environment);
-            return result != 0 ? result : Integer.compare(controllable, o.controllable);
+            return Comparator.comparing(PathDistance::environment)
+                    .thenComparing(PathDistance::controllable)
+                    .compare(this, o);
         }
 
         public PathDistance incrementEnvironment() {
