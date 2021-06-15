@@ -1,5 +1,8 @@
 package petrigaal.benchmark;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Stream;
 import petrigaal.benchmark.QSATProblem.Clause;
 import petrigaal.benchmark.QSATProblem.Literal;
 

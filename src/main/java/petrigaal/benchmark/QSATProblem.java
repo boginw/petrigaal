@@ -8,4 +8,5 @@ public record QSATProblem(List<String> variables, List<Clause> clauses) {
 
     public record Literal(String variable, boolean negated) {
     }
+
 }
