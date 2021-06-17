@@ -6,7 +6,6 @@ import petrigaal.edg.Target;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.function.BiConsumer;
 
 public class NonModifyingDGSolver<
         C extends Configuration<C, E, T>,

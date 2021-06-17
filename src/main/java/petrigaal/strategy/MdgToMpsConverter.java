@@ -50,7 +50,7 @@ public class MdgToMpsConverter {
                                 new AutomataState(target.configuration().toString())
                         );
 
-                        if (!visited.contains(target.getConfiguration())) {
+                        if (!visited.contains(target.getConfiguration()) && !queue.contains(target.configuration())) {
                             queue.add(target.configuration());
                         }
                     }
