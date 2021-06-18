@@ -7,8 +7,8 @@
     <place displayName="true" id="P3" initialMarking="0" invariant="&lt; inf" name="P3" nameOffsetX="0" nameOffsetY="0" positionX="345" positionY="360"/>
     <transition angle="0" displayName="true" id="GoFish" infiniteServer="false" name="GoFish" nameOffsetX="0" nameOffsetY="0" player="0" positionX="150" positionY="180" priority="0" urgent="false"/>
     <transition angle="0" displayName="true" id="Catch" infiniteServer="false" name="Catch" nameOffsetX="59" nameOffsetY="-4" player="1" positionX="435" positionY="180" priority="0" urgent="false"/>
-    <transition angle="0" displayName="true" id="Sell" infiniteServer="false" name="Sell" nameOffsetX="0" nameOffsetY="0" player="0" positionX="225" positionY="285" priority="0" urgent="false"/>
-    <transition angle="0" displayName="true" id="Destroy" infiniteServer="false" name="Destroy" nameOffsetX="80" nameOffsetY="-3" player="0" positionX="345" positionY="285" priority="0" urgent="false"/>
+    <transition angle="0" displayName="true" id="SellRod" infiniteServer="false" name="SellRod" nameOffsetX="0" nameOffsetY="0" player="0" positionX="225" positionY="285" priority="0" urgent="false"/>
+    <transition angle="0" displayName="true" id="ThrowRodAway" infiniteServer="false" name="ThrowRodAway" nameOffsetX="80" nameOffsetY="-3" player="0" positionX="345" positionY="285" priority="0" urgent="false"/>
     <transition angle="0" displayName="true" id="Fishing" infiniteServer="false" name="Fishing" nameOffsetX="0" nameOffsetY="0" player="0" positionX="285" positionY="45" priority="0" urgent="false"/>
     <transition angle="0" displayName="true" id="GiveUp" infiniteServer="false" name="GiveUp" nameOffsetX="-2" nameOffsetY="19" player="0" positionX="285" positionY="180" priority="0" urgent="false"/>
     <arc id="A0" inscription="[0,inf)" nameOffsetX="0" nameOffsetY="0" source="P0" target="GoFish" type="timed" weight="1">
@@ -27,31 +27,31 @@
       <arcpath arcPointType="false" id="0" xCoord="444" yCoord="200"/>
       <arcpath arcPointType="false" id="1" xCoord="314" yCoord="249"/>
     </arc>
-    <arc id="A4" inscription="[0,inf)" nameOffsetX="0" nameOffsetY="0" source="P0" target="Sell" type="timed" weight="1">
+    <arc id="A4" inscription="[0,inf)" nameOffsetX="0" nameOffsetY="0" source="P0" target="SellRod" type="timed" weight="1">
       <arcpath arcPointType="false" id="0" xCoord="288" yCoord="264"/>
       <arcpath arcPointType="false" id="1" xCoord="244" yCoord="300"/>
     </arc>
-    <arc id="A5" inscription="1" nameOffsetX="0" nameOffsetY="0" source="Sell" target="P2" type="normal" weight="1">
+    <arc id="A5" inscription="1" nameOffsetX="0" nameOffsetY="0" source="SellRod" target="P2" type="normal" weight="1">
       <arcpath arcPointType="false" id="0" xCoord="240" yCoord="315"/>
       <arcpath arcPointType="false" id="1" xCoord="240" yCoord="360"/>
     </arc>
-    <arc id="A6" inscription="[0,inf)" nameOffsetX="0" nameOffsetY="0" source="P0" target="Destroy" type="timed" weight="1">
+    <arc id="A6" inscription="[0,inf)" nameOffsetX="0" nameOffsetY="0" source="P0" target="ThrowRodAway" type="timed" weight="1">
       <arcpath arcPointType="false" id="0" xCoord="311" yCoord="264"/>
       <arcpath arcPointType="false" id="1" xCoord="354" yCoord="300"/>
     </arc>
-    <arc id="A7" inscription="1" nameOffsetX="0" nameOffsetY="0" source="Destroy" target="P3" type="normal" weight="1">
+    <arc id="A7" inscription="1" nameOffsetX="0" nameOffsetY="0" source="ThrowRodAway" target="P3" type="normal" weight="1">
       <arcpath arcPointType="false" id="0" xCoord="360" yCoord="315"/>
       <arcpath arcPointType="false" id="1" xCoord="360" yCoord="360"/>
     </arc>
     <arc id="A8" inscription="[0,inf)" nameOffsetX="0" nameOffsetY="0" source="P1" target="Fishing" type="timed" weight="1">
-      <arcpath arcPointType="false" id="0" xCoord="286" yCoord="144"/>
-      <arcpath arcPointType="true" id="1" xCoord="222" yCoord="101"/>
+      <arcpath arcPointType="false" id="0" xCoord="285" yCoord="144"/>
+      <arcpath arcPointType="true" id="1" xCoord="226" yCoord="105"/>
       <arcpath arcPointType="true" id="2" xCoord="294" yCoord="60"/>
     </arc>
     <arc id="A9" inscription="1" nameOffsetX="0" nameOffsetY="0" source="Fishing" target="P1" type="normal" weight="1">
       <arcpath arcPointType="false" id="0" xCoord="304" yCoord="60"/>
-      <arcpath arcPointType="true" id="1" xCoord="385" yCoord="100"/>
-      <arcpath arcPointType="true" id="2" xCoord="313" yCoord="144"/>
+      <arcpath arcPointType="true" id="1" xCoord="389" yCoord="104"/>
+      <arcpath arcPointType="true" id="2" xCoord="314" yCoord="145"/>
     </arc>
     <arc id="A10" inscription="[0,inf)" nameOffsetX="0" nameOffsetY="0" source="P1" target="GiveUp" type="timed" weight="1">
       <arcpath arcPointType="false" id="0" xCoord="300" yCoord="165"/>
